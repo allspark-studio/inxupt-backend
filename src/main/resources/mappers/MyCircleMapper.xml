@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.CircleMapper">
+    <select id="isNameExist" parameterType="java.lang.String" resultType="java.lang.Boolean">
+        select count(*)
+        from circle
+        where name = #{name, jdbcType=VARCHAR}
+          and state = 0
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from circle
+    </select>
+</mapper>

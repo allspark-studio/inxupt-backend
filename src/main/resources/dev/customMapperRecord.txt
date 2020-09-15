@@ -1,0 +1,51 @@
+UserMapper:
+    User selectByPhone(String phone);
+    useGeneratedKeys="true" keyProperty="id"
+
+FollowMapper:
+    int countByUserId(Integer userId);
+    int countByFollowedUserId(Integer userId);
+    Boolean isFollowed(Integer myId, Integer hisId);
+    int updateFollow(Follow follow);
+    List<Integer> selectFansIdList(Integer userId);
+
+PostMapper:
+    int countByAuthorId(Integer userId);
+    List<Post> selectAll();
+    useGeneratedKeys="true" keyProperty="id"
+
+PostStatisticMapper:
+    PostStatistics selectByPostId(Integer postId);
+
+PostTagMapper:
+    Set<Integer> selectTagIdsByPostId(Integer postId);
+
+TagMapper:
+    List<Tag> selectByIdSet(@Param("idSet")Set<Integer> idSet);
+    Tag selectByName(String name);
+    useGeneratedKeys="true" keyProperty="id"
+
+CategoryMapper:
+    Category selectByName(String name);
+
+UserPostMapper:
+    int countLikeByUserId(Integer userId);
+    int countFavoriteByUserId(Integer uid);
+    UserPost selectByUserIdAndPostId(Integer userId, Integer postId);
+
+UserCircleMapper:
+    List<Integer> selectFollowedCircleIdsByUserId(Integer userId);
+    List<Integer> selectFollowedUserIdByCircleId(Integer circleId);
+
+UserCommentMapper:
+    int countLikeByUserId(Integer userId);
+    UserComment selectByUserIdAndCommentId(Integer userId, Integer commentId);
+
+CommentMapper:
+    List<Comment> selectByPostId(Integer postId);
+
+CommentStatisticMapper:
+    CommentStatistics selectByCommentId(Integer commentId);
+
+CircleMapper:
+    useGeneratedKeys="true" keyProperty="id"

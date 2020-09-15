@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.UserCommentMapper">
+    <select id="countLikeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_comment
+        where user_id = #{userId, jdbcType=INTEGER}
+          and liked = 1
+    </select>
+    <select id="selectByUserIdAndCommentId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_comment
+        where user_id = #{userId,jdbcType=INTEGER}
+        and comment_id = #{commentId,jdbcType=INTEGER}
+    </select>
+    <select id="countLikeByCommentId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_comment
+        where comment_id = #{commentId, jdbcType=INTEGER}
+          and liked = 1
+    </select>
+    <select id="countCoinsByCommentId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_comment
+        where comment_id = #{commentId, jdbcType=INTEGER}
+          and coined = 1
+    </select>
+    <update id="updateState" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserComment">
+        replace into user_comment
+        <set>
+            user_id = #{userId,jdbcType=INTEGER},
+            comment_id = #{commentId,jdbcType=INTEGER},
+            <if test="liked != null">
+                liked = #{liked,jdbcType=BIT},
+            </if>
+            <if test="coined != null">
+                coined = #{coined,jdbcType=BIT}
+            </if>
+        </set>
+    </update>
+</mapper>

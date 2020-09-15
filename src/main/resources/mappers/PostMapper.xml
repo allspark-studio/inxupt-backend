@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.PostMapper">
+  <resultMap id="BaseResultMap" type="com.allsparkstudio.zaixiyou.pojo.po.Post">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="body" jdbcType="VARCHAR" property="body" />
+    <result column="author_id" jdbcType="INTEGER" property="authorId" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="edit_time" jdbcType="TIMESTAMP" property="editTime" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="post_media_urls" jdbcType="VARCHAR" property="postMediaUrls" />
+    <result column="article_title" jdbcType="VARCHAR" property="articleTitle" />
+    <result column="at_ids" jdbcType="VARCHAR" property="atIds" />
+    <result column="visible_outside_circle" jdbcType="BIT" property="visibleOutsideCircle" />
+    <result column="article_text" jdbcType="VARCHAR" property="articleText" />
+    <result column="article_cover" jdbcType="VARCHAR" property="articleCover" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, body, author_id, state, create_time, edit_time, type, post_media_urls, article_title, 
+    at_ids, visible_outside_circle, article_text, article_cover
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from post
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from post
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+    insert into post (id, body, author_id, 
+      state, create_time, edit_time, 
+      type, post_media_urls, article_title, 
+      at_ids, visible_outside_circle, article_text, 
+      article_cover)
+    values (#{id,jdbcType=INTEGER}, #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, 
+      #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{editTime,jdbcType=TIMESTAMP}, 
+      #{type,jdbcType=INTEGER}, #{postMediaUrls,jdbcType=VARCHAR}, #{articleTitle,jdbcType=VARCHAR}, 
+      #{atIds,jdbcType=VARCHAR}, #{visibleOutsideCircle,jdbcType=BIT}, #{articleText,jdbcType=VARCHAR}, 
+      #{articleCover,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+    insert into post
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="body != null">
+        body,
+      </if>
+      <if test="authorId != null">
+        author_id,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="editTime != null">
+        edit_time,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="postMediaUrls != null">
+        post_media_urls,
+      </if>
+      <if test="articleTitle != null">
+        article_title,
+      </if>
+      <if test="atIds != null">
+        at_ids,
+      </if>
+      <if test="visibleOutsideCircle != null">
+        visible_outside_circle,
+      </if>
+      <if test="articleText != null">
+        article_text,
+      </if>
+      <if test="articleCover != null">
+        article_cover,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="body != null">
+        #{body,jdbcType=VARCHAR},
+      </if>
+      <if test="authorId != null">
+        #{authorId,jdbcType=INTEGER},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="editTime != null">
+        #{editTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="postMediaUrls != null">
+        #{postMediaUrls,jdbcType=VARCHAR},
+      </if>
+      <if test="articleTitle != null">
+        #{articleTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="atIds != null">
+        #{atIds,jdbcType=VARCHAR},
+      </if>
+      <if test="visibleOutsideCircle != null">
+        #{visibleOutsideCircle,jdbcType=BIT},
+      </if>
+      <if test="articleText != null">
+        #{articleText,jdbcType=VARCHAR},
+      </if>
+      <if test="articleCover != null">
+        #{articleCover,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+    update post
+    <set>
+      <if test="body != null">
+        body = #{body,jdbcType=VARCHAR},
+      </if>
+      <if test="authorId != null">
+        author_id = #{authorId,jdbcType=INTEGER},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="editTime != null">
+        edit_time = #{editTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="postMediaUrls != null">
+        post_media_urls = #{postMediaUrls,jdbcType=VARCHAR},
+      </if>
+      <if test="articleTitle != null">
+        article_title = #{articleTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="atIds != null">
+        at_ids = #{atIds,jdbcType=VARCHAR},
+      </if>
+      <if test="visibleOutsideCircle != null">
+        visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
+      </if>
+      <if test="articleText != null">
+        article_text = #{articleText,jdbcType=VARCHAR},
+      </if>
+      <if test="articleCover != null">
+        article_cover = #{articleCover,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+    update post
+    set body = #{body,jdbcType=VARCHAR},
+      author_id = #{authorId,jdbcType=INTEGER},
+      state = #{state,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      edit_time = #{editTime,jdbcType=TIMESTAMP},
+      type = #{type,jdbcType=INTEGER},
+      post_media_urls = #{postMediaUrls,jdbcType=VARCHAR},
+      article_title = #{articleTitle,jdbcType=VARCHAR},
+      at_ids = #{atIds,jdbcType=VARCHAR},
+      visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
+      article_text = #{articleText,jdbcType=VARCHAR},
+      article_cover = #{articleCover,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

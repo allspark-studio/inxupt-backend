@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!--scan: 此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true-->
+    <!--scanPeriod: 设置监测配置文件是否有修改的时间间隔,当scan为true时生效-->
+    <!--debug: 当此属性设置为true时，将打印出logback内部日志信息.默认false-->
+
+    <!-- 定义日志文件 输出位置 -->
+    <property name="log.home_dir" value="log" />
+
+    <property name="log.maxHistory" value="60"/>
+    <property name="log.maxFileSize" value="100MB" />
+    <property name="log.totalSizeCap" value="20GB"/>
+
+
+    <!--ConsoleAppender 控制台输出日志 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 过滤器，只记录ERROR级别的日志 -->
+        <!-- 如果日志级别等于配置级别，过滤器会根据onMath 和 onMismatch接收或拒绝日志。 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 设置过滤级别 -->
+            <level>DEBUG</level>
+            <!-- 用于配置符合过滤条件的操作 -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 用于配置不符合过滤条件的操作 -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>
+                <pattern>%d | %-5p | %t:%c{1}:%L | %m%n</pattern>
+            </pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- RollingFileAppender 文件输出日志 ERROR级别-->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 过滤器，只记录ERROR级别的日志 -->
+        <!-- 如果日志级别等于配置级别，过滤器会根据onMath 和 onMismatch接收或拒绝日志。 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 设置过滤级别 -->
+            <level>ERROR</level>
+            <!-- 用于配置符合过滤条件的操作 -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 用于配置不符合过滤条件的操作 -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 定义日志文件大小和时间策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>
+                ${log.home_dir}/errorLog-%d{yyyy-MM-dd}.%i.txt
+            </fileNamePattern>
+            <!-- 当每个文件达到100MB，会生成新的日志文件，日志文件最多保存60天，总日志文件大小达到20GB，会删除旧日志-->
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+            <maxHistory>${log.maxHistory}</maxHistory>
+            <totalSizeCap>${log.totalSizeCap}</totalSizeCap>
+
+        </rollingPolicy>
+        <encoder>
+            <pattern>
+                <!-- 设置日志输出格式 -->
+                %d{yyyy-MM-dd HH:mm:ss.SSS} | %-5p | %t:%c{1}:%L | %m%n
+            </pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- INFO级别-->
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home_dir}/appLog-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+            <maxFileSize>${log.maxFileSize}</maxFileSize>
+            <maxHistory>${log.maxHistory}</maxHistory>
+            <totalSizeCap>${log.totalSizeCap}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d | %-5p | %t:%c{1}:%L | %m%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ERROR"/>
+        <appender-ref ref="INFO"/>
+    </root>
+
+</configuration>

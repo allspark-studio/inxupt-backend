@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.UserPostMapper">
+    <select id="countLikeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_post
+        where user_id = #{userId, jdbcType=INTEGER}
+          and liked = 1
+    </select>
+    <select id="countFavoriteByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_post
+        where user_id = #{userId, jdbcType=INTEGER}
+          and favorited = 1
+    </select>
+    <select id="selectByUserIdAndPostId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_post
+        where user_id = #{userId, jdbcType=INTEGER}
+        and post_id = #{postId, jdbcType=INTEGER}
+    </select>
+    <select id="countLikeByPostId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_post
+        where post_id = #{postId, jdbcType=INTEGER}
+          and liked = 1
+    </select>
+    <select id="countFavoriteByPostId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_post
+        where post_id = #{postId, jdbcType=INTEGER}
+          and favorited = 1
+    </select>
+    <select id="countCoinsByPostId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from user_post
+        where post_id = #{postId, jdbcType=INTEGER}
+          and coined = 1
+    </select>
+    <update id="updateState" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserPost">
+        replace into user_post
+        <set>
+            user_id = #{userId,jdbcType=INTEGER},
+            post_id = #{postId,jdbcType=INTEGER},
+            <if test="liked != null">
+                liked = #{liked,jdbcType=BIT},
+            </if>
+            <if test="favorited != null">
+                favorited = #{favorited,jdbcType=BIT},
+            </if>
+            <if test="coined != null">
+                coined = #{coined,jdbcType=BIT}
+            </if>
+        </set>
+    </update>
+    <delete id="deleteByPostId" parameterType="java.lang.Integer">
+        delete from user_post
+        where post_id = #{postId,jdbcType=INTEGER}
+    </delete>
+</mapper>

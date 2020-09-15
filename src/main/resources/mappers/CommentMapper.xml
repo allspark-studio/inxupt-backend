@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.CommentMapper">
+  <resultMap id="BaseResultMap" type="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="media_urls" jdbcType="VARCHAR" property="mediaUrls" />
+    <result column="author_id" jdbcType="INTEGER" property="authorId" />
+    <result column="post_id" jdbcType="INTEGER" property="postId" />
+    <result column="root_id" jdbcType="INTEGER" property="rootId" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="reply_user_id" jdbcType="INTEGER" property="replyUserId" />
+    <result column="privately" jdbcType="BIT" property="privately" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    <result column="body" jdbcType="LONGVARCHAR" property="body" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, media_urls, author_id, post_id, root_id, parent_id, reply_user_id, privately, 
+    state, create_time
+  </sql>
+  <sql id="Blob_Column_List">
+    body
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from comment
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from comment
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    insert into comment (id, media_urls, author_id, 
+      post_id, root_id, parent_id, 
+      reply_user_id, privately, state, 
+      create_time, body)
+    values (#{id,jdbcType=INTEGER}, #{mediaUrls,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, 
+      #{postId,jdbcType=INTEGER}, #{rootId,jdbcType=INTEGER}, #{parentId,jdbcType=INTEGER}, 
+      #{replyUserId,jdbcType=INTEGER}, #{privately,jdbcType=BIT}, #{state,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{body,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    insert into comment
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="mediaUrls != null">
+        media_urls,
+      </if>
+      <if test="authorId != null">
+        author_id,
+      </if>
+      <if test="postId != null">
+        post_id,
+      </if>
+      <if test="rootId != null">
+        root_id,
+      </if>
+      <if test="parentId != null">
+        parent_id,
+      </if>
+      <if test="replyUserId != null">
+        reply_user_id,
+      </if>
+      <if test="privately != null">
+        privately,
+      </if>
+      <if test="state != null">
+        state,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="body != null">
+        body,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="mediaUrls != null">
+        #{mediaUrls,jdbcType=VARCHAR},
+      </if>
+      <if test="authorId != null">
+        #{authorId,jdbcType=INTEGER},
+      </if>
+      <if test="postId != null">
+        #{postId,jdbcType=INTEGER},
+      </if>
+      <if test="rootId != null">
+        #{rootId,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null">
+        #{parentId,jdbcType=INTEGER},
+      </if>
+      <if test="replyUserId != null">
+        #{replyUserId,jdbcType=INTEGER},
+      </if>
+      <if test="privately != null">
+        #{privately,jdbcType=BIT},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="body != null">
+        #{body,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    update comment
+    <set>
+      <if test="mediaUrls != null">
+        media_urls = #{mediaUrls,jdbcType=VARCHAR},
+      </if>
+      <if test="authorId != null">
+        author_id = #{authorId,jdbcType=INTEGER},
+      </if>
+      <if test="postId != null">
+        post_id = #{postId,jdbcType=INTEGER},
+      </if>
+      <if test="rootId != null">
+        root_id = #{rootId,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null">
+        parent_id = #{parentId,jdbcType=INTEGER},
+      </if>
+      <if test="replyUserId != null">
+        reply_user_id = #{replyUserId,jdbcType=INTEGER},
+      </if>
+      <if test="privately != null">
+        privately = #{privately,jdbcType=BIT},
+      </if>
+      <if test="state != null">
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="body != null">
+        body = #{body,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    update comment
+    set media_urls = #{mediaUrls,jdbcType=VARCHAR},
+      author_id = #{authorId,jdbcType=INTEGER},
+      post_id = #{postId,jdbcType=INTEGER},
+      root_id = #{rootId,jdbcType=INTEGER},
+      parent_id = #{parentId,jdbcType=INTEGER},
+      reply_user_id = #{replyUserId,jdbcType=INTEGER},
+      privately = #{privately,jdbcType=BIT},
+      state = #{state,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      body = #{body,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Comment">
+    update comment
+    set media_urls = #{mediaUrls,jdbcType=VARCHAR},
+      author_id = #{authorId,jdbcType=INTEGER},
+      post_id = #{postId,jdbcType=INTEGER},
+      root_id = #{rootId,jdbcType=INTEGER},
+      parent_id = #{parentId,jdbcType=INTEGER},
+      reply_user_id = #{replyUserId,jdbcType=INTEGER},
+      privately = #{privately,jdbcType=BIT},
+      state = #{state,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

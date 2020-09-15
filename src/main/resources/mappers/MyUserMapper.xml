@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.UserMapper">
+    <select id="selectByPhone" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where phone = #{phone,jdbcType=VARCHAR}
+    </select>
+    <select id="selectFans" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where id in (select user_id from follow where followed_user_id = #{userId,jdbcType=INTEGER} and status = 1)
+    </select>
+    <select id="selectFollowers" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where id in (select followed_user_id from follow where user_id = #{userId,jdbcType=INTEGER} and status = 1)
+    </select>
+    <select id="selectAllMembersByCircleId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where id in (select user_id from user_circle where circle_id = #{circleId,jdbcType=INTEGER} and role &gt; 1)
+    </select>
+</mapper>
