@@ -24,7 +24,7 @@
         </commentGenerator>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://154.8.202.244:3306/zaixiyou?characterEncoding=utf-8&amp;useSSL=false"
+                        connectionURL="jdbc:mysql://154.8.202.244:3306/zaixiyou?characterEncoding=utf-8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
                         userId="zaixiyouremote"
                         password="AllSparkStudio.com">
         </jdbcConnection>

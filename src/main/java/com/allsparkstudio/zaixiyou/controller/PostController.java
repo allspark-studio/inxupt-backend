@@ -38,7 +38,7 @@ public class PostController {
         return postService.listAll(null, null, null, null, null, token, pageNum, pageSize);
     }
 
-    @GetMapping("category/{categoryId}/posts")
+    @GetMapping("/category/{categoryId}/posts")
     @ApiOperation("根据主标签展示全部帖子")
     public ResponseVO<PageInfo> listByCategory(@PathVariable("categoryId") Integer categoryId,
                                      @RequestParam(required = false, defaultValue = "1") Integer pageNum,

@@ -109,6 +109,7 @@ public class DailyStatisticsConsumers {
             DailyStatistics dailyStatistics = dailyStatisticsMapper.selectByDate(simpleDateFormat.format(new Date()));
             if (dailyStatistics == null) {
                 dailyStatistics = new DailyStatistics();
+                dailyStatistics.setDate(simpleDateFormat.format(new Date()));
                 dailyStatistics.setRegisterUserNum(1);
                 dailyStatisticsMapper.insertSelective(dailyStatistics);
             } else {
