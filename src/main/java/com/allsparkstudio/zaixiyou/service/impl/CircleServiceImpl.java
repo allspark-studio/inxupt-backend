@@ -16,6 +16,7 @@ import com.allsparkstudio.zaixiyou.util.JWTUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -54,6 +55,9 @@ public class CircleServiceImpl implements CircleService {
     @Autowired
     JWTUtils jwtUtils;
 
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
     @Override
     public ResponseVO<Map<String, Integer>> addCircle(AddCircleForm addCircleForm, String token) {
         if (StringUtils.isEmpty(token)) {
@@ -88,6 +92,8 @@ public class CircleServiceImpl implements CircleService {
             log.error("新建圈子时出现错误,数据库表'circle'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESCircleExchange", "add", circle);
         UserCircle userCircle = new UserCircle();
         userCircle.setUserId(userId);
         userCircle.setCircleId(circle.getId());
@@ -109,7 +115,7 @@ public class CircleServiceImpl implements CircleService {
         for (Integer circleId : circleIdList) {
             Circle circle = circleMapper.selectByPrimaryKey(circleId);
             if (circle == null) {
-                log.error("列出用户圈子表时，'category'表查询失败");
+                log.error("列出用户圈子表时，'circle'表查询失败");
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
             CircleInListVO circleInListVO = new CircleInListVO();
@@ -259,21 +265,19 @@ public class CircleServiceImpl implements CircleService {
         // 1.关注
         if (follow) {
             Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
-            // 管理员以下的用户关注，直接改变role为follow
-            if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
+            // 管理员关注，提示已经是管理员
+            if (UserCircleRoleEnum.ADMIN.getCode().equals(role)) {
+                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "您已经是管理员");
+            } else if (UserCircleRoleEnum.OWNER.getCode().equals(role)) {
+                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "您已经是圈主");
+            } else if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
+                // 管理员以下的用户关注，直接改变role为follow
                 int result = userCircleMapper.updateRole(userId, circleId, UserCircleRoleEnum.FOLLOW.getCode());
                 if (result == 0 || result > 2) {
                     log.error("关注圈子时出现错误，数据库表'user_circle'更新失败");
                     return ResponseVO.error(ResponseEnum.ERROR);
                 }
                 return ResponseVO.success();
-            }
-            // 管理员关注，提示已经是管理员
-            if (UserCircleRoleEnum.ADMIN.getCode().equals(role)) {
-                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "您已经是管理员");
-            }
-            if (UserCircleRoleEnum.OWNER.getCode().equals(role)) {
-                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "您已经是圈主");
             }
         }
         // 2.取消关注
@@ -309,6 +313,11 @@ public class CircleServiceImpl implements CircleService {
             circleInListVO.setName(circle.getName());
             circleInListVO.setAvatarUrl(circle.getAvatarUrl());
             circleInListVO.setDescription(circle.getDescription());
+            Integer members = userCircleMapper.countMembers(circle.getId());
+            Integer topics = postCircleMapper.countPostsByCircleId(circle.getId());
+            circleInListVO.setMembers(members);
+            circleInListVO.setTopics(topics);
+            circleInListVO.setSelected(false);
             circleVOList.add(circleInListVO);
         }
         PageInfo pageInfo = new PageInfo<>(circleList);
@@ -437,7 +446,7 @@ public class CircleServiceImpl implements CircleService {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "没有权限");
         }
         notice.setState(top ? 1 : 0);
-        int result = circleNoticeMapper.updateByPrimaryKey(notice);
+        int result = circleNoticeMapper.updateState(notice);
         if (result != 1) {
             return ResponseVO.error(ResponseEnum.ERROR);
         }

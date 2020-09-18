@@ -2,6 +2,8 @@ package com.allsparkstudio.zaixiyou.dao;
 
 import com.allsparkstudio.zaixiyou.pojo.po.Follow;
 
+import java.util.List;
+
 public interface FollowMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -15,16 +17,15 @@ public interface FollowMapper {
 
     int updateByPrimaryKey(Follow record);
 
-    int countByUserId(Integer userId);
+    Integer countByUserId(Integer userId);
 
-    int countByFollowedUserId(Integer userId);
+    Integer countByFollowedUserId(Integer userId);
 
     boolean isFollowed(Integer myId, Integer hisId);
 
-    int updateFollow(Follow follow);
+    int updateFollow(Follow record);
 
-    Integer selectFansIdList(Integer userId);
+    List<Integer> selectFansIdList(Integer userId);
 
-    Integer selectFollowsIdList(Integer userId);
-
+    List<Integer> selectFollowsIdList(Integer userId);
 }

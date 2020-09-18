@@ -6,6 +6,8 @@ import java.util.Date;
 public class Comment implements Serializable {
     private Integer id;
 
+    private String body;
+
     private String mediaUrls;
 
     private Integer authorId;
@@ -24,8 +26,6 @@ public class Comment implements Serializable {
 
     private Date createTime;
 
-    private String body;
-
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -34,6 +34,14 @@ public class Comment implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body == null ? null : body.trim();
     }
 
     public String getMediaUrls() {
@@ -108,14 +116,6 @@ public class Comment implements Serializable {
         this.createTime = createTime;
     }
 
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body == null ? null : body.trim();
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -123,6 +123,7 @@ public class Comment implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
+        sb.append(", body=").append(body);
         sb.append(", mediaUrls=").append(mediaUrls);
         sb.append(", authorId=").append(authorId);
         sb.append(", postId=").append(postId);
@@ -132,7 +133,6 @@ public class Comment implements Serializable {
         sb.append(", privately=").append(privately);
         sb.append(", state=").append(state);
         sb.append(", createTime=").append(createTime);
-        sb.append(", body=").append(body);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

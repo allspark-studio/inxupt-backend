@@ -1,30 +1,47 @@
 package com.allsparkstudio.zaixiyou.service.impl;
 
+import com.allsparkstudio.zaixiyou.dao.*;
+import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
+import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
+import com.allsparkstudio.zaixiyou.pojo.po.*;
+import com.allsparkstudio.zaixiyou.pojo.vo.CircleInListVO;
+import com.allsparkstudio.zaixiyou.pojo.vo.UserVO;
+import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.service.SearchService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.sf.jsqlparser.expression.TimeValue;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
+@Slf4j
 public class SearchServiceImpl implements SearchService {
 
 
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").setPrettyPrinting().create();
+
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     @Qualifier("restHighLevelClient")
@@ -33,33 +50,314 @@ public class SearchServiceImpl implements SearchService {
     @Autowired
     private JWTUtils jwtUtils;
 
+    @Autowired
+    PostMapper postMapper;
+
+    @Autowired
+    UserMapper userMapper;
+
+    @Autowired
+    UserPostMapper userPostMapper;
+
+    @Autowired
+    CommentMapper commentMapper;
+
+    @Autowired
+    TagMapper tagMapper;
+
+    @Autowired
+    PostTagMapper postTagMapper;
+
+    @Autowired
+    FollowMapper followMapper;
+
+    @Autowired
+    CircleMapper circleMapper;
+
+    @Autowired
+    UserCircleMapper userCircleMapper;
+
+    @Autowired
+    PostCircleMapper postCircleMapper;
+
     @Override
-    public ResponseVO searchPosts(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
+    public ResponseVO<PageInfo> searchPosts(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
         boolean login = false;
-        Integer userId;
+        Integer myId = null;
         if (jwtUtils.validateToken(token)) {
             login = true;
-            userId = jwtUtils.getIdFromToken(token);
+            myId = jwtUtils.getIdFromToken(token);
         }
         SearchRequest request = new SearchRequest("post");
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("name", keyWord);
-        sourceBuilder.query(termQueryBuilder);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(QueryBuilders.multiMatchQuery(keyWord, "body", "title", "pureText"));
+        // 分页
+        sourceBuilder.from((pageNum - 1) * pageSize);
+        sourceBuilder.size(pageSize);
+        // 构建高亮
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("body");
+        highlightBuilder.field("title");
+        highlightBuilder.field("pureText");
+        highlightBuilder.preTags("<span style='color: #F76B8A'>");
+        highlightBuilder.postTags("</span>");
+        sourceBuilder.highlighter(highlightBuilder);
+        // 开始查询
+        sourceBuilder.query(boolQueryBuilder);
 
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
-        gson.toJson(response.getHits());
-        return ResponseVO.success(gson.toJson(response.getHits()));
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            HighlightField body = highlightFields.get("body");
+            HighlightField title = highlightFields.get("title");
+            HighlightField pureText = highlightFields.get("pureText");
+            // 取出原来的结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            // 解析高亮的字段，并替换原来的字段
+            if (body != null) {
+                Text[] fragments = body.fragments();
+                StringBuilder highlightedTextBuilder = new StringBuilder();
+                for (Text text : fragments) {
+                    highlightedTextBuilder.append(text);
+                }
+                sourceAsMap.put("body", highlightedTextBuilder.toString());
+            }
+            if (title != null) {
+                Text[] fragments = title.fragments();
+                StringBuilder highlightedTextBuilder = new StringBuilder();
+                for (Text text : fragments) {
+                    highlightedTextBuilder.append(text);
+                }
+                sourceAsMap.put("title", highlightedTextBuilder.toString());
+            }
+            if (pureText != null) {
+                Text[] fragments = pureText.fragments();
+                StringBuilder highlightedTextBuilder = new StringBuilder();
+                for (Text text : fragments) {
+                    highlightedTextBuilder.append(text);
+                }
+                sourceAsMap.put("pureText", highlightedTextBuilder.toString());
+            }
+            list.add(sourceAsMap);
+        }
+        // 构建分页的VO list对象
+        List<PostVO> postVOList = new ArrayList<>();
+        for (Map<String, Object> postMap : list) {
+            Integer postId = (Integer) postMap.get("itemId");
+            Post post = postMapper.selectByPrimaryKey(postId);
+            // 如果不存在，说明ES与MySQL未同步
+            if (post == null) {
+                continue;
+            }
+            // 这部分代码和listAll的单个postVO的构建是一样的
+            Integer postType = post.getType();
+            PostVO postVO = new PostVO();
+            postVO.setType(postType);
+            if (PostTypeEnum.POST.getCode().equals(postType)) {
+                if (post.getPostMediaUrls() != null && !StringUtils.isEmpty(post.getPostMediaUrls())) {
+                    List<String> mediaUrlList;
+                    String[] mediaUrl = post.getPostMediaUrls().split(";");
+                    mediaUrlList = Arrays.asList(mediaUrl);
+                    postVO.setMediaUrls(mediaUrlList);
+                }
+            }
+            if (PostTypeEnum.ARTICLE.getCode().equals(postType)) {
+                postVO.setTitle((String) postMap.get("title"));
+                postVO.setPureText((String) postMap.get("pureText"));
+                postVO.setCover(post.getArticleCover());
+            }
+            postVO.setPostId(post.getId());
+            User author = userMapper.selectByPrimaryKey(post.getAuthorId());
+            postVO.setAuthorId(author.getId());
+            postVO.setAuthorName(author.getNickname());
+            postVO.setAuthorAvatar(author.getAvatarUrl());
+            postVO.setAuthorDescription(author.getDescription());
+            postVO.setAuthorLevel(author.getLevel());
+            if (PostTypeEnum.POST.getCode().equals((Integer) postMap.get("type"))) {
+                postVO.setBody((String) postMap.get("body"));
+            } else {
+                postVO.setBody(post.getBody());
+            }
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));
+            Integer likesNum = userPostMapper.countLikeByPostId(post.getId());
+            Integer favoritesNum = userPostMapper.countFavoriteByPostId(post.getId());
+            Integer coinsNum = userPostMapper.countCoinsByPostId(post.getId());
+            Integer commentsNum = commentMapper.countCommentsByPostId(post.getId());
+            postVO.setLikeNum(likesNum);
+            postVO.setFavoriteNum(favoritesNum);
+            postVO.setCoinsNum(coinsNum);
+            postVO.setCommentNum(commentsNum);
+            Boolean liked = false;
+            Boolean coined = false;
+            Boolean favorited = false;
+            if (login) {
+                UserPost userPost = userPostMapper.selectByUserIdAndPostId(myId, post.getId());
+                if (userPost != null) {
+                    liked = userPost.getLiked();
+                    coined = userPost.getCoined();
+                    favorited = userPost.getFavorited();
+                }
+            }
+            postVO.setLiked(liked);
+            postVO.setCoined(coined);
+            postVO.setFavorited(favorited);
+            Set<Integer> tagIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
+            if (tagIdSet.size() != 0) {
+                List<Tag> tagList = tagMapper.selectByIdSet(tagIdSet);
+                List<Map<String, Object>> tagMapList = new ArrayList<>();
+                for (Tag tag : tagList) {
+                    Map<String, Object> tagMap = new HashMap<>(2);
+                    tagMap.put("id", tag.getId());
+                    tagMap.put("name", tag.getName());
+                    tagMapList.add(tagMap);
+                }
+                postVO.setTags(tagMapList);
+            }
+            if (post.getAtIds() != null && !StringUtils.isEmpty(post.getAtIds())) {
+                List<Map<String, Object>> atMapList = new ArrayList<>();
+                String[] atIds = post.getAtIds().split(";");
+                for (String atId : atIds) {
+                    User user = userMapper.selectByPrimaryKey(Integer.parseInt(atId));
+                    Map<String, Object> atMap = new HashMap<>(2);
+                    atMap.put("id", user.getId());
+                    atMap.put("nickName", user.getNickname());
+                    atMapList.add(atMap);
+                }
+                postVO.setAts(atMapList);
+            }
+            postVOList.add(postVO);
+        }
+        // 构架分页对象
+        PageInfo pageInfo = new PageInfo<>();
+        pageInfo.setList(postVOList);
+        long total = response.getHits().getTotalHits().value;
+        pageInfo.setTotal(total);
+        pageInfo.setPageNum(pageNum);
+        pageInfo.setPageSize(pageSize);
+        pageInfo.setPages((int) (total / pageSize + 1));
+        pageInfo.setIsFirstPage(pageNum.equals(1));
+        pageInfo.setHasNextPage(total > pageNum * pageSize);
+        pageInfo.setIsLastPage(total <= pageNum * pageSize);
+        return ResponseVO.success(pageInfo);
     }
 
     @Override
-    public ResponseVO searchUsers(String keyWord, Integer pageNum, Integer pageSize, String token) {
-        return null;
+    public ResponseVO<PageInfo> searchUsers(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
+        boolean login = false;
+        Integer myId = null;
+        if (jwtUtils.validateToken(token)) {
+            login = true;
+            myId = jwtUtils.getIdFromToken(token);
+        }
+        SearchRequest request = new SearchRequest("user");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", keyWord));
+        // 分页
+        sourceBuilder.from((pageNum - 1) * pageSize);
+        sourceBuilder.size(pageSize);
+        // 开始查询
+        sourceBuilder.query(boolQueryBuilder);
+
+        request.source(sourceBuilder);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (SearchHit hit : response.getHits().getHits()) {
+            // 取出结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            list.add(sourceAsMap);
+        }
+        // 构建分页的list对象
+        List<UserVO> userVOList = new ArrayList<>();
+        for (Map<String, Object> userMap : list) {
+            Integer userId = (Integer) userMap.get("itemId");
+            User user = userMapper.selectByPrimaryKey(userId);
+            // 如果不存在，说明ES与MySQL未同步
+            if (user == null) {
+                continue;
+            }
+            // 这部分代码和关注/粉丝列表的VO构建一样
+            UserVO userVO = new UserVO();
+            userVO.setId(user.getId());
+            userVO.setAvatarUrl(user.getAvatarUrl());
+            userVO.setDescription(user.getDescription());
+            userVO.setNickName(user.getNickname());
+            userVO.setSelected(false);
+            if (login) {
+                userVO.setFollowed(followMapper.isFollowed(myId, user.getId()));
+            } else {
+                userVO.setFollowed(false);
+            }
+            userVOList.add(userVO);
+        }
+        PageInfo pageInfo = new PageInfo<>();
+        pageInfo.setList(userVOList);
+        long total = response.getHits().getTotalHits().value;
+        pageInfo.setTotal(total);
+        pageInfo.setPageNum(pageNum);
+        pageInfo.setPageSize(pageSize);
+        pageInfo.setPages((int) (total / pageSize + 1));
+        pageInfo.setIsFirstPage(pageNum.equals(1));
+        pageInfo.setHasNextPage(total > pageNum * pageSize);
+        pageInfo.setIsLastPage(total <= pageNum * pageSize);
+        return ResponseVO.success(pageInfo);
     }
 
     @Override
-    public ResponseVO searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) {
-        return null;
+    public ResponseVO<PageInfo> searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
+        SearchRequest request = new SearchRequest("circle");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", keyWord));
+        // 分页
+        sourceBuilder.from((pageNum - 1) * pageSize);
+        sourceBuilder.size(pageSize);
+        // 开始查询
+        sourceBuilder.query(boolQueryBuilder);
+
+        request.source(sourceBuilder);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (SearchHit hit : response.getHits().getHits()) {
+            // 取出结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            list.add(sourceAsMap);
+        }
+        // 构建分页的list对象
+        List<CircleInListVO> circleVOList = new ArrayList<>();
+        for (Map<String, Object> circleMap : list) {
+            Integer circleId = (Integer) circleMap.get("itemId");
+            Circle circle = circleMapper.selectByPrimaryKey(circleId);
+            // 如果不存在，说明ES与MySQL未同步
+            if (circle == null) {
+                continue;
+            }
+            CircleInListVO circleVO = new CircleInListVO();
+            circleVO.setId(circle.getId());
+            circleVO.setName(circle.getName());
+            circleVO.setAvatarUrl(circle.getAvatarUrl());
+            circleVO.setDescription(circle.getDescription());
+            Integer members = userCircleMapper.countMembers(circleId);
+            Integer topics = postCircleMapper.countPostsByCircleId(circleId);
+            circleVO.setMembers(members);
+            circleVO.setTopics(topics);
+            circleVO.setSelected(false);
+            circleVOList.add(circleVO);
+        }
+        PageInfo pageInfo = new PageInfo<>();
+        pageInfo.setList(circleVOList);
+        long total = response.getHits().getTotalHits().value;
+        pageInfo.setTotal(total);
+        pageInfo.setPageNum(pageNum);
+        pageInfo.setPageSize(pageSize);
+        pageInfo.setPages((int) (total / pageSize + 1));
+        pageInfo.setIsFirstPage(pageNum.equals(1));
+        pageInfo.setHasNextPage(total > pageNum * pageSize);
+        pageInfo.setIsLastPage(total <= pageNum * pageSize);
+        return ResponseVO.success(pageInfo);
     }
 }

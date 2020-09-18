@@ -1,5 +1,9 @@
 package com.allsparkstudio.zaixiyou.consumer;
 
+import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
+import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESCircle;
+import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESPost;
+import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESUser;
 import com.allsparkstudio.zaixiyou.pojo.po.Circle;
 import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
@@ -48,7 +52,16 @@ public class MySQL2ESConsumer {
     public void addPost(Post post) throws IOException {
         IndexRequest request = new IndexRequest("post");
         request.id(String.valueOf(post.getId()));
-        request.source(gson.toJson(post), XContentType.JSON);
+        ESPost esPost = new ESPost();
+        esPost.setItemId(post.getId());
+        esPost.setType(post.getType());
+        if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+            esPost.setBody(post.getBody());
+        }else {
+            esPost.setTitle(post.getArticleTitle());
+            esPost.setPureText(post.getArticleText());
+        }
+        request.source(gson.toJson(esPost), XContentType.JSON);
 
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
         log.debug("ES插入post数据 response:[{}]", response.toString());
@@ -65,7 +78,18 @@ public class MySQL2ESConsumer {
             )})
     public void updatePost(Post post) throws IOException {
         UpdateRequest request = new UpdateRequest("post", String.valueOf(post.getId()));
-        request.doc(gson.toJson(post), XContentType.JSON);
+        // 构建ES对应实体类对象
+        request.id(String.valueOf(post.getId()));
+        ESPost esPost = new ESPost();
+        esPost.setItemId(post.getId());
+        esPost.setType(post.getType());
+        if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+            esPost.setBody(post.getBody());
+        }else {
+            esPost.setTitle(post.getArticleTitle());
+            esPost.setPureText(post.getArticleText());
+        }
+        request.doc(gson.toJson(esPost), XContentType.JSON);
 
         UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
         log.debug("ES更新post数据 response:[{}]", response.toString());
@@ -81,7 +105,7 @@ public class MySQL2ESConsumer {
                     key = {"delete"}
             )})
     public void deletePost(Post post) throws IOException {
-        DeleteRequest request = new DeleteRequest("post",String.valueOf(post.getId()));
+        DeleteRequest request = new DeleteRequest("post", String.valueOf(post.getId()));
         DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
         log.debug("ES删除post数据 response:[{}]", response.toString());
     }
@@ -96,9 +120,12 @@ public class MySQL2ESConsumer {
                     key = {"add"}
             )})
     public void addUser(User user) throws IOException {
-        IndexRequest request = new IndexRequest("post");
+        IndexRequest request = new IndexRequest("user");
         request.id(String.valueOf(user.getId()));
-        request.source(gson.toJson(user), XContentType.JSON);
+        ESUser esUser = new ESUser();
+        esUser.setItemId(user.getId());
+        esUser.setName(user.getNickname());
+        request.source(gson.toJson(esUser), XContentType.JSON);
 
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
         log.debug("ES插入user数据 response:[{}]", response.toString());
@@ -114,8 +141,11 @@ public class MySQL2ESConsumer {
                     key = {"update"}
             )})
     public void updateUser(User user) throws IOException {
-        UpdateRequest request = new UpdateRequest("post", String.valueOf(user.getId()));
-        request.doc(gson.toJson(user), XContentType.JSON);
+        UpdateRequest request = new UpdateRequest("user", String.valueOf(user.getId()));
+        ESUser esUser = new ESUser();
+        esUser.setItemId(user.getId());
+        esUser.setName(user.getNickname());
+        request.doc(gson.toJson(esUser), XContentType.JSON);
 
         UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
         log.debug("ES更新user数据 response:[{}]", response.toString());
@@ -131,7 +161,7 @@ public class MySQL2ESConsumer {
                     key = {"delete"}
             )})
     public void deleteUser(User user) throws IOException {
-        DeleteRequest request = new DeleteRequest("post",String.valueOf(user.getId()));
+        DeleteRequest request = new DeleteRequest("user", String.valueOf(user.getId()));
         DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
         log.debug("ES删除user数据 response:[{}]", response.toString());
     }
@@ -146,9 +176,12 @@ public class MySQL2ESConsumer {
                     key = {"add"}
             )})
     public void addCircle(Circle circle) throws IOException {
-        IndexRequest request = new IndexRequest("post");
+        IndexRequest request = new IndexRequest("circle");
         request.id(String.valueOf(circle.getId()));
-        request.source(gson.toJson(circle), XContentType.JSON);
+        ESCircle esCircle = new ESCircle();
+        esCircle.setItemId(circle.getId());
+        esCircle.setName(circle.getName());
+        request.source(gson.toJson(esCircle), XContentType.JSON);
 
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
         log.debug("ES插入circle数据 response:[{}]", response.toString());
@@ -164,8 +197,11 @@ public class MySQL2ESConsumer {
                     key = {"update"}
             )})
     public void updateCircle(Circle circle) throws IOException {
-        UpdateRequest request = new UpdateRequest("post", String.valueOf(circle.getId()));
-        request.doc(gson.toJson(circle), XContentType.JSON);
+        UpdateRequest request = new UpdateRequest("circle", String.valueOf(circle.getId()));
+        ESCircle esCircle = new ESCircle();
+        esCircle.setItemId(circle.getId());
+        esCircle.setName(circle.getName());
+        request.doc(gson.toJson(esCircle), XContentType.JSON);
 
         UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
         log.debug("ES更新circle数据 response:[{}]", response.toString());
@@ -181,7 +217,7 @@ public class MySQL2ESConsumer {
                     key = {"delete"}
             )})
     public void deleteCircle(Circle circle) throws IOException {
-        DeleteRequest request = new DeleteRequest("post",String.valueOf(circle.getId()));
+        DeleteRequest request = new DeleteRequest("circle", String.valueOf(circle.getId()));
         DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
         log.debug("ES删除circle数据 response:[{}]", response.toString());
     }

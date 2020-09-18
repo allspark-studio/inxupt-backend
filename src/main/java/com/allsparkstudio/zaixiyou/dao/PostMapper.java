@@ -17,7 +17,7 @@ public interface PostMapper {
 
     int updateByPrimaryKey(Post record);
 
-    int countByAuthorIdAndType(Integer userId, Integer type);
+    Integer countByAuthorIdAndType(Integer authorId, Integer type);
 
     List<Post> selectAllByTime();
 

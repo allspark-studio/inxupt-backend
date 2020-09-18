@@ -1,5 +1,6 @@
 package com.allsparkstudio.zaixiyou.dao;
 
+import com.allsparkstudio.zaixiyou.pojo.po.Circle;
 import com.allsparkstudio.zaixiyou.pojo.po.CircleNotice;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface CircleNoticeMapper {
     CircleNotice selectFirstNotice(Integer circleId);
 
     CircleNotice selectSecondNotice(Integer circleId);
+
+    int updateState(CircleNotice record);
 }

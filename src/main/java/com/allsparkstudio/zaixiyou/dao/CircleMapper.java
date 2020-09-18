@@ -17,7 +17,7 @@ public interface CircleMapper {
 
     int updateByPrimaryKey(Circle record);
 
-    Boolean isNameExist(String name);
+    boolean isNameExist(String name);
 
     List<Circle> selectAll();
 }

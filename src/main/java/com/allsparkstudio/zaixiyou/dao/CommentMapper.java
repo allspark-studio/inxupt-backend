@@ -15,13 +15,15 @@ public interface CommentMapper {
 
     int updateByPrimaryKeySelective(Comment record);
 
-    int updateByPrimaryKeyWithBLOBs(Comment record);
-
     int updateByPrimaryKey(Comment record);
 
     List<Comment> selectByPostId(Integer postId);
 
-    int countCommentsByPostId(Integer postId);
+    Integer countCommentsByPostId(Integer postId);
 
-    void deleteByPostId(Integer postId);
+    int deleteByPostId(Integer postId);
+
+    List<Comment> selectSubComments(Integer rootId);
+
+    List<Integer> selectIdsByPostId(Integer postId);
 }

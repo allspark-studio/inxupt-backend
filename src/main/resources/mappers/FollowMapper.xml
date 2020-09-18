@@ -21,13 +21,13 @@
     delete from follow
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
     insert into follow (id, user_id, followed_user_id, 
       edit_time, status)
     values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{followedUserId,jdbcType=INTEGER}, 
       #{editTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
     insert into follow
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

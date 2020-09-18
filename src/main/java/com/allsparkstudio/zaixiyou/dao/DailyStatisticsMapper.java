@@ -15,5 +15,9 @@ public interface DailyStatisticsMapper {
 
     int updateByPrimaryKey(DailyStatistics record);
 
-    DailyStatistics selectByDate(String today);
+    DailyStatistics selectByDate(String date);
+
+    int updateActiveUserNum(DailyStatistics record);
+
+    int updateRegisterUserNum(DailyStatistics record);
 }

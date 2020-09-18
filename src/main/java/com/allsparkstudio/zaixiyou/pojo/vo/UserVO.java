@@ -3,7 +3,7 @@ package com.allsparkstudio.zaixiyou.pojo.vo;
 import lombok.Data;
 
 @Data
-public class FansVO {
+public class UserVO {
 
     private Integer id;
 

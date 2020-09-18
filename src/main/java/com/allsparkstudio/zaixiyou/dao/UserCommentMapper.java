@@ -1,6 +1,9 @@
 package com.allsparkstudio.zaixiyou.dao;
 
 import com.allsparkstudio.zaixiyou.pojo.po.UserComment;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface UserCommentMapper {
     int deleteByPrimaryKey(Integer id);
@@ -15,13 +18,15 @@ public interface UserCommentMapper {
 
     int updateByPrimaryKey(UserComment record);
 
-    int countLikeByUserId(Integer userId);
-
-    int countLikeByCommentId(Integer commentId);
-
-    int countCoinsByCommentId(Integer commentId);
-
     UserComment selectByUserIdAndCommentId(Integer userId, Integer commentId);
 
-    int updateState(UserComment userComment);
+    List<UserComment> selectByCommentId(Integer commentId);
+
+    Integer countLikeByCommentId(Integer commentId);
+
+    Integer countCoinsByCommentId(Integer commentId);
+
+    int updateState(UserComment record);
+
+    void deleteByCommentId(Integer commentId);
 }

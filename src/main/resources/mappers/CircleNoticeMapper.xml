@@ -24,7 +24,7 @@
     delete from circle_notice
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
     insert into circle_notice (id, circle_id, title, 
       body, author_id, media_urls, 
       state, create_time)
@@ -32,7 +32,7 @@
       #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, #{mediaUrls,jdbcType=VARCHAR}, 
       #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
     insert into circle_notice
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

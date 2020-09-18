@@ -14,10 +14,13 @@ import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.service.PostService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
+import com.allsparkstudio.zaixiyou.util.UserDailyStatisticsUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -64,7 +67,16 @@ public class PostServiceImpl implements PostService {
     private TagMapper tagMapper;
 
     @Autowired
+    private UserCommentMapper userCommentMapper;
+
+    @Autowired
     JWTUtils jwtUtils;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    UserDailyStatisticsUtils userDailyStatisticsUtils;
 
     @Override
     public ResponseVO<PageInfo> listAll(Integer categoryId, Integer userId, Integer circleId,
@@ -153,9 +165,9 @@ public class PostServiceImpl implements PostService {
             postVO.setLiked(liked);
             postVO.setCoined(coined);
             postVO.setFavorited(favorited);
-            Set<Integer> postIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
-            if (postIdSet.size() != 0) {
-                List<Tag> tagList = tagMapper.selectByIdSet(postIdSet);
+            Set<Integer> tagIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
+            if (tagIdSet.size() != 0) {
+                List<Tag> tagList = tagMapper.selectByIdSet(tagIdSet);
                 List<Map<String, Object>> tagMapList = new ArrayList<>();
                 for (Tag tag : tagList) {
                     Map<String, Object> tagMap = new HashMap<>(2);
@@ -217,11 +229,14 @@ public class PostServiceImpl implements PostService {
         if (!jwtUtils.validateToken(token)) {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         if ((addPostForm.getBody() == null || StringUtils.isEmpty(addPostForm.getBody())) &&
                 addPostForm.getMediaUrls() == null || StringUtils.isEmpty(addPostForm.getMediaUrls())) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "请填写内容");
         }
-        Integer userId = jwtUtils.getIdFromToken(token);
         Post post = new Post();
         post.setType(PostTypeEnum.POST.getCode());
         post.setAuthorId(userId);
@@ -251,6 +266,10 @@ public class PostServiceImpl implements PostService {
             log.error("新建文章时，数据库表'post'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日发帖子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
         // 绑定主标签（分类）和帖子
         for (Integer mainTagId : addPostForm.getMainTagIds()) {
             PostCategory postCategory = new PostCategory();
@@ -311,10 +330,13 @@ public class PostServiceImpl implements PostService {
         if (!jwtUtils.validateToken(token)) {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         if (addArticleForm.getTitle() == null || StringUtils.isEmpty(addArticleForm.getTitle())) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "请输入标题");
         }
-        Integer userId = jwtUtils.getIdFromToken(token);
         Post article = new Post();
         article.setType(PostTypeEnum.ARTICLE.getCode());
         article.setArticleCover(addArticleForm.getCover());
@@ -337,6 +359,10 @@ public class PostServiceImpl implements PostService {
             log.error("新建文章时，数据库表'post'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日发帖子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", article);
         // 绑定主标签（分类）和帖子
         for (Integer mainTagId : addArticleForm.getMainTagIds()) {
             PostCategory postCategory = new PostCategory();
@@ -394,6 +420,9 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
+        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
         if (role == null || role < UserCircleRoleEnum.FOLLOW.getCode()) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
@@ -417,6 +446,10 @@ public class PostServiceImpl implements PostService {
             log.error("圈子内发布帖子时出现错误,数据库表'post'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日发帖子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
         PostCircle postCircle = new PostCircle();
         postCircle.setCircleId(circleId);
         postCircle.setPostId(post.getId());
@@ -439,6 +472,9 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
+        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
         if (role == null || role < UserCircleRoleEnum.FOLLOW.getCode()) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
@@ -456,6 +492,10 @@ public class PostServiceImpl implements PostService {
             log.error("圈子内发布文章时出现错误,数据库表'post'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日发帖子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", article);
         PostCircle postCircle = new PostCircle();
         postCircle.setCircleId(circleId);
         postCircle.setPostId(article.getId());
@@ -577,7 +617,13 @@ public class PostServiceImpl implements PostService {
         }
         // 删除帖子
         postMapper.deleteByPrimaryKey(postId);
-        // 删除帖子全部评论
+        // 通过MQ同步删除ES数据
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "delete", post);
+        // 删除帖子全部评论和用户间的关系
+        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
+        for (Integer commentId : commentIdList) {
+            userCommentMapper.deleteByCommentId(commentId);
+        }
         commentMapper.deleteByPostId(postId);
         // 删除用户关联动作
         userPostMapper.deleteByPostId(postId);
@@ -649,7 +695,15 @@ public class PostServiceImpl implements PostService {
             log.error("更新帖子点赞/收藏/投币状态失败，数据库表'user_post'更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新经验
+        if (UserContentStateEnum.LIKE.equals(stateEnum) && state) {
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", post.getAuthorId());
+        } else if (UserContentStateEnum.FAVORITE.equals(stateEnum) && state) {
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFavorite", post.getAuthorId());
+        } else if (UserContentStateEnum.COIN.equals(stateEnum) && state) {
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "coin", userId);
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getCoin", post.getAuthorId());
+        }
         return ResponseVO.success();
     }
-
 }

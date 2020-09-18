@@ -20,13 +20,13 @@
     delete from user_circle
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserCircle">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserCircle">
     insert into user_circle (id, user_id, circle_id, 
       role)
     values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{circleId,jdbcType=INTEGER}, 
       #{role,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserCircle">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.UserCircle">
     insert into user_circle
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

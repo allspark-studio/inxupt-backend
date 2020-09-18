@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
     private DailyStatisticsMapper dailyStatisticsMapper;
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private SMSUtils smsUtils;
@@ -144,6 +144,8 @@ public class UserServiceImpl implements UserService {
             log.error("user表插入失败，phone:[{}]", validateForm.getPhone());
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "add", user);
         String token = jwtUtils.generateToken(user);
         log.info("用户注册成功，phone:[{}], token:[{}], userId:[{}]", validateForm.getPhone(), token, user.getId());
         // 使用MQ延迟更新当日注册量数
@@ -166,13 +168,13 @@ public class UserServiceImpl implements UserService {
     public ResponseVO getCode(String phone) {
         // 禁止一分钟内重复发送验证码
         String key = String.format(CODE_REDIS_KEY_TEMPLATE, phone);
-        if (redisTemplate.hasKey(key)) {
+        if (stringRedisTemplate.hasKey(key)) {
             return ResponseVO.error(ResponseEnum.CODE_SENT_FREQUENTLY);
         }
         String code = smsUtils.sendCode(phone);
         if (code != null) {
-            redisTemplate.opsForValue().set(key, code);
-            redisTemplate.expire(key, 1, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(key, code);
+            stringRedisTemplate.expire(key, 1, TimeUnit.MINUTES);
             log.info("已成功发送验证码，phone: [{}]", phone);
             return ResponseVO.success("验证码已发送");
         }
@@ -237,10 +239,7 @@ public class UserServiceImpl implements UserService {
         hisPageVO.setGrade(he.getGrade());
         hisPageVO.setMajor(he.getMajor());
         hisPageVO.setLevel(he.getLevel());
-        Integer postLikedNum = userPostMapper.countLikeByUserId(uid);
-        Integer commentLikedNum = userCommentMapper.countLikeByUserId(uid);
-        Integer likedNum = postLikedNum + commentLikedNum;
-        hisPageVO.setLikedNum(likedNum);
+        hisPageVO.setLikedNum(he.getLikeNum());
         Integer fansNum = followMapper.countByFollowedUserId(uid);
         hisPageVO.setFansNum(fansNum);
         Integer followNum = followMapper.countByUserId(uid);
@@ -307,6 +306,8 @@ public class UserServiceImpl implements UserService {
         if (result != 1) {
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // 通过MQ同步数据到ES
+        rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "update", user);
         return ResponseVO.success();
     }
 
@@ -318,11 +319,11 @@ public class UserServiceImpl implements UserService {
             myId = jwtUtils.getIdFromToken(token);
             login = true;
         }
-        List<FansVO> fansVOList = new ArrayList<>();
+        List<UserVO> fansVOList = new ArrayList<>();
         PageHelper.startPage(pageNum, pageSize);
         List<User> fansList = userMapper.selectFans(userId);
         for (User fan : fansList) {
-            FansVO fansVO = new FansVO();
+            UserVO fansVO = new UserVO();
             fansVO.setId(fan.getId());
             fansVO.setAvatarUrl(fan.getAvatarUrl());
             fansVO.setDescription(fan.getDescription());
@@ -348,11 +349,11 @@ public class UserServiceImpl implements UserService {
             myId = jwtUtils.getIdFromToken(token);
             login = true;
         }
-        List<FansVO> fansVOList = new ArrayList<>();
+        List<UserVO> fansVOList = new ArrayList<>();
         PageHelper.startPage(pageNum, pageSize);
         List<User> followersList = userMapper.selectFollowers(userId);
         for (User follower : followersList) {
-            FansVO fansVO = new FansVO();
+            UserVO fansVO = new UserVO();
             fansVO.setId(follower.getId());
             fansVO.setAvatarUrl(follower.getAvatarUrl());
             fansVO.setDescription(follower.getDescription());
@@ -434,6 +435,10 @@ public class UserServiceImpl implements UserService {
         int result = followMapper.updateFollow(follow);
         if (result == 0 || result > 2) {
             log.error("关注/取关用户时出现错误,'follower'表更新失败");
+        }
+        if (status) {
+            // MQ更新被关注者的经验
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFollow", userId);
         }
         return status ? ResponseVO.success("关注成功") : ResponseVO.success("取消关注成功");
     }

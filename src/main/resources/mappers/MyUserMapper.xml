@@ -25,4 +25,30 @@
         from user
         where id in (select user_id from user_circle where circle_id = #{circleId,jdbcType=INTEGER} and role &gt; 1)
     </select>
+    <update id="updateLastActiveTime" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set last_active_time = #{lastActiveTime,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateInsertableCoins" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set insertable_coins = #{insertableCoins,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateExchangeableCoins" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set exchangeable_coins = #{exchangeableCoins,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateLikeNum" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set like_num = #{likeNum,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateExpAndLv" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set experience = #{experience,jdbcType=INTEGER},
+            level = #{level,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
 </mapper>

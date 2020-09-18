@@ -41,7 +41,7 @@ public class JWTUtils {
     private Long expiration;
 
     @Autowired
-    private final StringRedisTemplate redisTemplate = new StringRedisTemplate();
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private UserMapper userMapper;
@@ -120,7 +120,7 @@ public class JWTUtils {
         }
         // MQ更新日活跃用户量
         // MQ更新用户最后登录时间
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange","userActive", user);
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange","userLogin", user);
         log.debug("生产者routerKey=userActive发送消息, user:[{}]", user.toString());
 
         return id.equals(user.getId()) && !isTokenExpired(token);

@@ -19,7 +19,7 @@ public interface TagMapper {
 
     int updateByPrimaryKey(Tag record);
 
-    List<Tag> selectByIdSet(@Param("idSet") Set<Integer> idSet);
+    List<Tag> selectByIdSet(@Param("idSet")Set<Integer> idSet);
 
     Tag selectByName(String name);
 }

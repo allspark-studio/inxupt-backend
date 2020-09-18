@@ -11,14 +11,14 @@
     <result column="type" jdbcType="INTEGER" property="type" />
     <result column="post_media_urls" jdbcType="VARCHAR" property="postMediaUrls" />
     <result column="article_title" jdbcType="VARCHAR" property="articleTitle" />
+    <result column="article_text" jdbcType="VARCHAR" property="articleText" />
     <result column="at_ids" jdbcType="VARCHAR" property="atIds" />
     <result column="visible_outside_circle" jdbcType="BIT" property="visibleOutsideCircle" />
-    <result column="article_text" jdbcType="VARCHAR" property="articleText" />
     <result column="article_cover" jdbcType="VARCHAR" property="articleCover" />
   </resultMap>
   <sql id="Base_Column_List">
     id, body, author_id, state, create_time, edit_time, type, post_media_urls, article_title, 
-    at_ids, visible_outside_circle, article_text, article_cover
+    article_text, at_ids, visible_outside_circle, article_cover
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -34,12 +34,12 @@
     insert into post (id, body, author_id, 
       state, create_time, edit_time, 
       type, post_media_urls, article_title, 
-      at_ids, visible_outside_circle, article_text, 
+      article_text, at_ids, visible_outside_circle, 
       article_cover)
     values (#{id,jdbcType=INTEGER}, #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, 
       #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{editTime,jdbcType=TIMESTAMP}, 
       #{type,jdbcType=INTEGER}, #{postMediaUrls,jdbcType=VARCHAR}, #{articleTitle,jdbcType=VARCHAR}, 
-      #{atIds,jdbcType=VARCHAR}, #{visibleOutsideCircle,jdbcType=BIT}, #{articleText,jdbcType=VARCHAR}, 
+      #{articleText,jdbcType=VARCHAR}, #{atIds,jdbcType=VARCHAR}, #{visibleOutsideCircle,jdbcType=BIT}, 
       #{articleCover,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
@@ -72,14 +72,14 @@
       <if test="articleTitle != null">
         article_title,
       </if>
+      <if test="articleText != null">
+        article_text,
+      </if>
       <if test="atIds != null">
         at_ids,
       </if>
       <if test="visibleOutsideCircle != null">
         visible_outside_circle,
-      </if>
-      <if test="articleText != null">
-        article_text,
       </if>
       <if test="articleCover != null">
         article_cover,
@@ -113,14 +113,14 @@
       <if test="articleTitle != null">
         #{articleTitle,jdbcType=VARCHAR},
       </if>
+      <if test="articleText != null">
+        #{articleText,jdbcType=VARCHAR},
+      </if>
       <if test="atIds != null">
         #{atIds,jdbcType=VARCHAR},
       </if>
       <if test="visibleOutsideCircle != null">
         #{visibleOutsideCircle,jdbcType=BIT},
-      </if>
-      <if test="articleText != null">
-        #{articleText,jdbcType=VARCHAR},
       </if>
       <if test="articleCover != null">
         #{articleCover,jdbcType=VARCHAR},
@@ -154,14 +154,14 @@
       <if test="articleTitle != null">
         article_title = #{articleTitle,jdbcType=VARCHAR},
       </if>
+      <if test="articleText != null">
+        article_text = #{articleText,jdbcType=VARCHAR},
+      </if>
       <if test="atIds != null">
         at_ids = #{atIds,jdbcType=VARCHAR},
       </if>
       <if test="visibleOutsideCircle != null">
         visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
-      </if>
-      <if test="articleText != null">
-        article_text = #{articleText,jdbcType=VARCHAR},
       </if>
       <if test="articleCover != null">
         article_cover = #{articleCover,jdbcType=VARCHAR},
@@ -179,9 +179,9 @@
       type = #{type,jdbcType=INTEGER},
       post_media_urls = #{postMediaUrls,jdbcType=VARCHAR},
       article_title = #{articleTitle,jdbcType=VARCHAR},
+      article_text = #{articleText,jdbcType=VARCHAR},
       at_ids = #{atIds,jdbcType=VARCHAR},
       visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
-      article_text = #{articleText,jdbcType=VARCHAR},
       article_cover = #{articleCover,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>

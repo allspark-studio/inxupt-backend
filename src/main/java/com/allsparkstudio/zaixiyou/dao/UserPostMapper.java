@@ -15,19 +15,17 @@ public interface UserPostMapper {
 
     int updateByPrimaryKey(UserPost record);
 
-    int countLikeByUserId(Integer userId);
-
-    int countFavoriteByUserId(Integer userId);
-
-    int countLikeByPostId(Integer postId);
-
-    int countFavoriteByPostId(Integer postId);
-
-    int countCoinsByPostId(Integer postId);
+    Integer countFavoriteByUserId(Integer userId);
 
     UserPost selectByUserIdAndPostId(Integer userId, Integer postId);
 
-    int updateState(UserPost userPost);
+    Integer countLikeByPostId(Integer postId);
 
-    void deleteByPostId(Integer postId);
+    Integer countFavoriteByPostId(Integer postId);
+
+    Integer countCoinsByPostId(Integer postId);
+
+    int updateState(UserPost record);
+
+    int deleteByPostId(Integer postId);
 }

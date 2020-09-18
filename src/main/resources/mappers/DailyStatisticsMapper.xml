@@ -20,13 +20,13 @@
     delete from daily_statistics
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
     insert into daily_statistics (id, date, register_user_num, 
       active_user_num)
     values (#{id,jdbcType=INTEGER}, #{date,jdbcType=VARCHAR}, #{registerUserNum,jdbcType=INTEGER}, 
       #{activeUserNum,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
     insert into daily_statistics
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

@@ -24,4 +24,9 @@
         order by create_time desc, state desc
         limit 1
     </select>
+    <update id="updateState" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
+        update circle_notice
+        set state = #{state,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
 </mapper>

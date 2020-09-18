@@ -10,7 +10,9 @@ import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.SubCommentVO;
 import com.allsparkstudio.zaixiyou.service.CommentService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
+import com.allsparkstudio.zaixiyou.util.UserDailyStatisticsUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -45,6 +47,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private JWTUtils jwtUtils;
+
+    @Autowired
+    private UserDailyStatisticsUtils userDailyStatisticsUtils;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public ResponseVO<List<CommentVO>> listAll(Integer postId, String token) {
@@ -159,6 +167,10 @@ public class CommentServiceImpl implements CommentService {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
         }
         Integer userId = jwtUtils.getIdFromToken(token);
+        // TODO: 检测发布数量
+//        if (userDailyStatisticsUtils.isCommentLimited(userId)) {
+//            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+//        }
         User user = userMapper.selectByPrimaryKey(userId);
         Comment comment = new Comment();
         comment.setRootId(addCommentForm.getRootId());
@@ -173,6 +185,9 @@ public class CommentServiceImpl implements CommentService {
             log.error("发表评论时出现错误，数据库表'comment'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户和经验值和当天发表评论数量
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addComment", userId);
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getComment", addCommentForm.getReplyUserId());
         CommentVO commentVO = new CommentVO();
         commentVO.setText(comment.getBody());
         // TODO: 下个版本加图片
@@ -212,17 +227,24 @@ public class CommentServiceImpl implements CommentService {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "评论不存在");
         }
         if (!userId.equals(comment.getAuthorId())) {
-            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION,"没有权限");
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "没有权限");
         }
         int result1 = commentMapper.deleteByPrimaryKey(commentId);
         if (result1 != 1) {
             log.error("删除评论失败, userId:[{}], commentId:[{}]", userId, commentId);
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        // 删除userComment，所以用户被点赞数可能会减少
-        UserComment userComment = userCommentMapper.selectByUserIdAndCommentId(userId, commentId);
-        if (userComment != null) {
+        List<UserComment> userCommentList = userCommentMapper.selectByCommentId(commentId);
+        for (UserComment userComment : userCommentList) {
             userCommentMapper.deleteByPrimaryKey(userComment.getId());
+        }
+        List<Comment> subCommentList = commentMapper.selectSubComments(comment.getRootId());
+        for (Comment subComment : subCommentList) {
+            commentMapper.deleteByPrimaryKey(subComment.getId());
+            List<UserComment> subUserCommentList = userCommentMapper.selectByCommentId(subComment.getId());
+            for (UserComment subUserComment : subUserCommentList) {
+                userCommentMapper.deleteByPrimaryKey(subUserComment.getId());
+            }
         }
         return ResponseVO.success();
     }
@@ -263,7 +285,7 @@ public class CommentServiceImpl implements CommentService {
         }
         if (UserContentStateEnum.LIKE.equals(stateEnum)) {
             userComment.setLiked(state);
-        }else if (UserContentStateEnum.COIN.equals(stateEnum)) {
+        } else if (UserContentStateEnum.COIN.equals(stateEnum)) {
             // 不能给自己投币
             if (userId.equals(comment.getAuthorId())) {
                 return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
@@ -280,18 +302,18 @@ public class CommentServiceImpl implements CommentService {
             if (state) {
                 user.setInsertableCoins(user.getInsertableCoins() - 1);
                 author.setExchangeableCoins(user.getExchangeableCoins() + 1);
-                int result1 = userMapper.updateByPrimaryKeySelective(user);
+                int result1 = userMapper.updateInsertableCoins(user);
                 if (result1 != 1) {
                     return ResponseVO.error(ResponseEnum.ERROR);
                 }
-                int result2 = userMapper.updateByPrimaryKeySelective(author);
+                int result2 = userMapper.updateExchangeableCoins(author);
                 if (result2 != 1) {
                     return ResponseVO.error(ResponseEnum.ERROR);
                 }
             }
             userComment.setCoined(state);
-        }else {
-            return ResponseVO.error(ResponseEnum.ERROR,"更新帖子状态失败");
+        } else {
+            return ResponseVO.error(ResponseEnum.ERROR, "更新帖子状态失败");
         }
         int result = userCommentMapper.updateState(userComment);
         if (result == 0 || result > 2) {

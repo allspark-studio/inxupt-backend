@@ -5,6 +5,16 @@
         select
         <include refid="Base_Column_List"/>
         from daily_statistics
-        where date = #{today,jdbcType=VARCHAR}
+        where date = #{date,jdbcType=VARCHAR}
     </select>
+    <update id="updateActiveUserNum" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
+        update daily_statistics
+        set active_user_num = #{activeUserNum,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateRegisterUserNum" parameterType="com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics">
+        update daily_statistics
+        set register_user_num = #{registerUserNum,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
 </mapper>

@@ -15,7 +15,7 @@ public interface PostCircleMapper {
 
     int updateByPrimaryKey(PostCircle record);
 
-    int countPostsByCircleId(Integer circleId);
+    Integer countPostsByCircleId(Integer circleId);
 
-    void deleteByPostId(Integer postId);
+    int deleteByPostId(Integer postId);
 }

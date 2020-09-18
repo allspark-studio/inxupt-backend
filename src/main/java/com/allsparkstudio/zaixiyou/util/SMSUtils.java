@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class SMSUtils {
 
     @Autowired
-    StringRedisTemplate redisTemplate;
+    StringRedisTemplate stringRedisTemplate;
 
     @Value("${aliyun.accessKeyId}")
     private String accessKeyId;
@@ -66,9 +66,9 @@ public class SMSUtils {
             CommonResponse response = client.getCommonResponse(request);
             JsonElement data = JsonParser.parseString(response.getData());
             if ("OK".equals(data.getAsJsonObject().get("Code").getAsString())) {
-                redisTemplate.opsForHash().put("code", phone, code);
+                stringRedisTemplate.opsForHash().put("code", phone, code);
                 // 验证码十分钟过期
-                redisTemplate.expire("code", 5, TimeUnit.MINUTES);
+                stringRedisTemplate.expire("code", 5, TimeUnit.MINUTES);
                 return code;
             }
             log.error("发送验证码错误：[{}]", response.getData());
@@ -91,8 +91,8 @@ public class SMSUtils {
     }
 
     public boolean validateCode(String phone, String code) {
-        if (code.equals(redisTemplate.opsForHash().get("code", phone))) {
-            redisTemplate.opsForHash().delete("code", phone);
+        if (code.equals(stringRedisTemplate.opsForHash().get("code", phone))) {
+            stringRedisTemplate.opsForHash().delete("code", phone);
             return true;
         }
         return false;

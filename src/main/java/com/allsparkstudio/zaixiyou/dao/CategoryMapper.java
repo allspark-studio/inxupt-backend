@@ -15,5 +15,5 @@ public interface CategoryMapper {
 
     int updateByPrimaryKey(Category record);
 
-    Category selectByName(String name);
+    Category selectByName (String name);
 }

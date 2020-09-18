@@ -22,11 +22,11 @@ public class Post implements Serializable {
 
     private String articleTitle;
 
+    private String articleText;
+
     private String atIds;
 
     private Boolean visibleOutsideCircle;
-
-    private String articleText;
 
     private String articleCover;
 
@@ -104,6 +104,14 @@ public class Post implements Serializable {
         this.articleTitle = articleTitle == null ? null : articleTitle.trim();
     }
 
+    public String getArticleText() {
+        return articleText;
+    }
+
+    public void setArticleText(String articleText) {
+        this.articleText = articleText == null ? null : articleText.trim();
+    }
+
     public String getAtIds() {
         return atIds;
     }
@@ -118,14 +126,6 @@ public class Post implements Serializable {
 
     public void setVisibleOutsideCircle(Boolean visibleOutsideCircle) {
         this.visibleOutsideCircle = visibleOutsideCircle;
-    }
-
-    public String getArticleText() {
-        return articleText;
-    }
-
-    public void setArticleText(String articleText) {
-        this.articleText = articleText == null ? null : articleText.trim();
     }
 
     public String getArticleCover() {
@@ -151,9 +151,9 @@ public class Post implements Serializable {
         sb.append(", type=").append(type);
         sb.append(", postMediaUrls=").append(postMediaUrls);
         sb.append(", articleTitle=").append(articleTitle);
+        sb.append(", articleText=").append(articleText);
         sb.append(", atIds=").append(atIds);
         sb.append(", visibleOutsideCircle=").append(visibleOutsideCircle);
-        sb.append(", articleText=").append(articleText);
         sb.append(", articleCover=").append(articleCover);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

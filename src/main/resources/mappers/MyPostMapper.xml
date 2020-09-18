@@ -4,7 +4,7 @@
     <select id="countByAuthorIdAndType" parameterType="java.lang.Integer" resultType="java.lang.Integer">
         select count(*)
         from post
-        where author_id = #{userId,jdbcType=INTEGER}
+        where author_id = #{authorId,jdbcType=INTEGER}
         and type = #{type,jdbcType=INTEGER}
         and visible_outside_circle = 1
     </select>

@@ -20,13 +20,13 @@
     delete from feedback
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Feedback">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Feedback">
     insert into feedback (id, body, contact, 
       create_time)
     values (#{id,jdbcType=INTEGER}, #{body,jdbcType=VARCHAR}, #{contact,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Feedback">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Feedback">
     insert into feedback
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

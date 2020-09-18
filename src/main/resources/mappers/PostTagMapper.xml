@@ -20,13 +20,13 @@
     delete from post_tag
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.PostTag">
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.PostTag">
     insert into post_tag (id, post_id, tag_id, 
       state)
     values (#{id,jdbcType=INTEGER}, #{postId,jdbcType=INTEGER}, #{tagId,jdbcType=INTEGER}, 
       #{state,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.PostTag">
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.PostTag">
     insert into post_tag
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

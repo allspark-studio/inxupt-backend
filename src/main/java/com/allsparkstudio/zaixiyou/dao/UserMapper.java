@@ -24,4 +24,14 @@ public interface UserMapper {
     List<User> selectFollowers(Integer userId);
 
     List<User> selectAllMembersByCircleId(Integer circleId);
+
+    int updateLastActiveTime(User user);
+
+    int updateInsertableCoins(User record);
+
+    int updateExchangeableCoins(User record);
+
+    int updateLikeNum(User record);
+
+    int updateExpAndLv(User record);
 }

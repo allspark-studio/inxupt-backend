@@ -40,6 +40,8 @@ public class User implements Serializable {
 
     private String lastActiveTime;
 
+    private Integer likeNum;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -186,6 +188,14 @@ public class User implements Serializable {
         this.lastActiveTime = lastActiveTime == null ? null : lastActiveTime.trim();
     }
 
+    public Integer getLikeNum() {
+        return likeNum;
+    }
+
+    public void setLikeNum(Integer likeNum) {
+        this.likeNum = likeNum;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -210,6 +220,7 @@ public class User implements Serializable {
         sb.append(", userpageBgImgUrl=").append(userpageBgImgUrl);
         sb.append(", customAppColor=").append(customAppColor);
         sb.append(", lastActiveTime=").append(lastActiveTime);
+        sb.append(", likeNum=").append(likeNum);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

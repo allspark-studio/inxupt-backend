@@ -1,5 +1,6 @@
 package com.allsparkstudio.zaixiyou.dao;
 
+import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.po.UserCircle;
 
 import java.util.List;
@@ -23,9 +24,9 @@ public interface UserCircleMapper {
 
     Integer selectRoleOrNull(Integer userId, Integer circleId);
 
-    int countMembers(Integer circleId);
-
-    int updateRole(Integer userId, Integer circleId, Integer role);
+    Integer countMembers(Integer circleId);
 
     List<UserCircle> select5Members(Integer circleId);
+
+    int updateRole(Integer userId, Integer circleId, Integer role);
 }

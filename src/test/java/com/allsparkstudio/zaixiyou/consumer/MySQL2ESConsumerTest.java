@@ -1,17 +1,15 @@
 package com.allsparkstudio.zaixiyou.consumer;
 
 import com.allsparkstudio.zaixiyou.ZaixiyouApplicationTests;
+import com.allsparkstudio.zaixiyou.dao.CircleMapper;
 import com.allsparkstudio.zaixiyou.dao.PostMapper;
 import com.allsparkstudio.zaixiyou.dao.UserMapper;
-import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.Date;
 
 @Slf4j
 public class MySQL2ESConsumerTest extends ZaixiyouApplicationTests {
@@ -22,12 +20,31 @@ public class MySQL2ESConsumerTest extends ZaixiyouApplicationTests {
     @Autowired
     PostMapper postMapper;
 
-    @Test
-    public void addPost() {
+    @Autowired
+    UserMapper userMapper;
 
-        // TODO: p14 21:01 批量插入数据到ES
-//        Post post = postMapper.selectByPrimaryKey(256);
-//        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
+
+    @Autowired
+    CircleMapper circleMapper;
+
+    @Test
+    public void
+    addPost() {
+//
+//        List<Post> postList = postMapper.selectAllByTime();
+//        for (Post post : postList) {
+//            rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
+//        }
+//
+        for (int i = 1;i<=12;i++) {
+            User user = userMapper.selectByPrimaryKey(i);
+            rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "update", user);
+        }
+//
+//        List<Circle> circleList = circleMapper.selectAll();
+//        for (Circle circle : circleList) {
+//            rabbitTemplate.convertAndSend("MySQL2ESCircleExchange", "add", circle);
+//        }
     }
 
     @Test
