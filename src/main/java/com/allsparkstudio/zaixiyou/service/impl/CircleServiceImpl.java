@@ -4,6 +4,7 @@ import com.allsparkstudio.zaixiyou.consts.DefaultSettingConsts;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.enums.UserCircleRoleEnum;
+import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleNoticeForm;
 import com.allsparkstudio.zaixiyou.pojo.po.Circle;
@@ -13,6 +14,7 @@ import com.allsparkstudio.zaixiyou.pojo.po.UserCircle;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.allsparkstudio.zaixiyou.service.CircleService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
+import com.allsparkstudio.zaixiyou.util.UserDailyStatisticsUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,9 @@ public class CircleServiceImpl implements CircleService {
     JWTUtils jwtUtils;
 
     @Autowired
+    UserDailyStatisticsUtils userDailyStatisticsUtils;
+
+    @Autowired
     RabbitTemplate rabbitTemplate;
 
     @Override
@@ -70,6 +75,13 @@ public class CircleServiceImpl implements CircleService {
             return ResponseVO.error(ResponseEnum.CIRCLE_NAME_EXISTS);
         }
         int userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        }
+        if (userDailyStatisticsUtils.isAddCircleLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         Circle circle = new Circle();
         circle.setName(addCircleForm.getName());
         if (addCircleForm.getAvatarUrl() == null || StringUtils.isEmpty(addCircleForm.getAvatarUrl())) {
@@ -92,6 +104,8 @@ public class CircleServiceImpl implements CircleService {
             log.error("新建圈子时出现错误,数据库表'circle'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日创建圈子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addCircle", userId);
         // 通过MQ同步数据到ES
         rabbitTemplate.convertAndSend("MySQL2ESCircleExchange", "add", circle);
         UserCircle userCircle = new UserCircle();
@@ -110,21 +124,16 @@ public class CircleServiceImpl implements CircleService {
 
     @Override
     public ResponseVO<List<CircleInListVO>> listCircles(Integer userId, String token) {
-        List<Integer> circleIdList = userCircleMapper.selectCircleIdsByUserId(userId);
+        List<Circle> circleList = circleMapper.selectCirclesByUserId(userId);
         List<CircleInListVO> circleVOList = new ArrayList<>();
-        for (Integer circleId : circleIdList) {
-            Circle circle = circleMapper.selectByPrimaryKey(circleId);
-            if (circle == null) {
-                log.error("列出用户圈子表时，'circle'表查询失败");
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
+        for (Circle circle : circleList) {
             CircleInListVO circleInListVO = new CircleInListVO();
             circleInListVO.setId(circle.getId());
             circleInListVO.setName(circle.getName());
             circleInListVO.setAvatarUrl(circle.getAvatarUrl());
             circleInListVO.setDescription(circle.getDescription());
-            Integer members = userCircleMapper.countMembers(circleId);
-            Integer topics = postCircleMapper.countPostsByCircleId(circleId);
+            Integer members = userCircleMapper.countMembers(circle.getId());
+            Integer topics = postCircleMapper.countPostsByCircleId(circle.getId());
             circleInListVO.setMembers(members);
             circleInListVO.setTopics(topics);
             circleInListVO.setSelected(false);
@@ -142,6 +151,13 @@ public class CircleServiceImpl implements CircleService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         int userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        }
+        if (userDailyStatisticsUtils.isAddCircleNoticeLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         Circle circle = circleMapper.selectByPrimaryKey(circleId);
         if (circle == null) {
             log.error("请求的圈子不存在, circleId:[{}]", circleId);
@@ -171,6 +187,8 @@ public class CircleServiceImpl implements CircleService {
             log.error("发布公告是出现错误,数据库表'circle_notice'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        // MQ更新用户当日发帖子数量，更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addCircleNotice", userId);
         return ResponseVO.success();
     }
 

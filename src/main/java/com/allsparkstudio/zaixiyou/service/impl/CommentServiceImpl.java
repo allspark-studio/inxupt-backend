@@ -2,7 +2,9 @@ package com.allsparkstudio.zaixiyou.service.impl;
 
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
+import com.allsparkstudio.zaixiyou.enums.SortTypeEnum;
 import com.allsparkstudio.zaixiyou.enums.UserContentStateEnum;
+import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCommentForm;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
 import com.allsparkstudio.zaixiyou.pojo.vo.CommentVO;
@@ -55,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
     private RabbitTemplate rabbitTemplate;
 
     @Override
-    public ResponseVO<List<CommentVO>> listAll(Integer postId, String token) {
+    public ResponseVO<List<CommentVO>> listAll(Integer postId, String token, Integer sortedBy) {
         Integer userId = null;
         boolean login = false;
         if (!StringUtils.isEmpty(token) && jwtUtils.validateToken(token)) {
@@ -63,7 +65,12 @@ public class CommentServiceImpl implements CommentService {
             login = true;
         }
         // TODO:分页查询
-        List<Comment> commentsList = commentMapper.selectByPostId(postId);
+        List<Comment> commentsList = new ArrayList<>();
+        if (SortTypeEnum.TIME.getCode().equals(sortedBy)) {
+            commentsList = commentMapper.selectByPostIdSortedByTime(postId);
+        }else {
+            commentsList = commentMapper.selectByPostIdSortedByHeat(postId);
+        }
         List<CommentVO> commentVOList = new ArrayList<>();
         for (Comment comment : commentsList) {
             if (comment.getRootId() != 0) {
@@ -167,11 +174,13 @@ public class CommentServiceImpl implements CommentService {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        // TODO: 检测发布数量
-//        if (userDailyStatisticsUtils.isCommentLimited(userId)) {
-//            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
-//        }
         User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        }
+        if (userDailyStatisticsUtils.isAddCommentLimited(userId)) {
+            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
+        }
         Comment comment = new Comment();
         comment.setRootId(addCommentForm.getRootId());
         comment.setParentId(addCommentForm.getParentId());
@@ -187,7 +196,9 @@ public class CommentServiceImpl implements CommentService {
         }
         // MQ更新用户和经验值和当天发表评论数量
         rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addComment", userId);
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getComment", addCommentForm.getReplyUserId());
+        if (addCommentForm.getReplyUserId() != null) {
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getComment", addCommentForm.getReplyUserId());
+        }
         CommentVO commentVO = new CommentVO();
         commentVO.setText(comment.getBody());
         // TODO: 下个版本加图片
@@ -234,17 +245,19 @@ public class CommentServiceImpl implements CommentService {
             log.error("删除评论失败, userId:[{}], commentId:[{}]", userId, commentId);
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        List<UserComment> userCommentList = userCommentMapper.selectByCommentId(commentId);
-        for (UserComment userComment : userCommentList) {
-            userCommentMapper.deleteByPrimaryKey(userComment.getId());
-        }
-        List<Comment> subCommentList = commentMapper.selectSubComments(comment.getRootId());
+        // 删评论不删用户-评论关系表：这样用户被点赞数不会减只会加
+//        List<UserComment> userCommentList = userCommentMapper.selectByCommentId(commentId);
+//        for (UserComment userComment : userCommentList) {
+//            userCommentMapper.deleteByPrimaryKey(userComment.getId());
+//        }
+        List<Comment> subCommentList = commentMapper.selectSubComments(commentId);
         for (Comment subComment : subCommentList) {
             commentMapper.deleteByPrimaryKey(subComment.getId());
-            List<UserComment> subUserCommentList = userCommentMapper.selectByCommentId(subComment.getId());
-            for (UserComment subUserComment : subUserCommentList) {
-                userCommentMapper.deleteByPrimaryKey(subUserComment.getId());
-            }
+            // 删评论不删用户-评论关系表：这样用户被点赞数不会减只会加
+//            List<UserComment> subUserCommentList = userCommentMapper.selectByCommentId(subComment.getId());
+//            for (UserComment subUserComment : subUserCommentList) {
+//                userCommentMapper.deleteByPrimaryKey(subUserComment.getId());
+//            }
         }
         return ResponseVO.success();
     }

@@ -29,4 +29,6 @@ public interface UserCircleMapper {
     List<UserCircle> select5Members(Integer circleId);
 
     int updateRole(Integer userId, Integer circleId, Integer role);
+
+    Integer selectOwnerId(Integer circleId);
 }

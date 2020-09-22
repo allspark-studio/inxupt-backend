@@ -62,7 +62,7 @@ public class MetaServiceImpl implements MetaService {
         }
         VersionVO versionVO = new VersionVO();
         versionVO.setVersion(latestVersion.getVersion());
-        versionVO.setDescription(latestVersion.getVersion());
+        versionVO.setDescription(latestVersion.getDescription());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         versionVO.setPublishTime(simpleDateFormat.format(latestVersion.getPublishTime()));

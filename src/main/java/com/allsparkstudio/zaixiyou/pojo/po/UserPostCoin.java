@@ -2,12 +2,12 @@ package com.allsparkstudio.zaixiyou.pojo.po;
 
 import java.io.Serializable;
 
-public class PostTag implements Serializable {
+public class UserPostCoin implements Serializable {
     private Integer id;
 
-    private Integer postId;
+    private Integer userId;
 
-    private Integer tagId;
+    private Integer postId;
 
     private Integer state;
 
@@ -21,20 +21,20 @@ public class PostTag implements Serializable {
         this.id = id;
     }
 
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
     public Integer getPostId() {
         return postId;
     }
 
     public void setPostId(Integer postId) {
         this.postId = postId;
-    }
-
-    public Integer getTagId() {
-        return tagId;
-    }
-
-    public void setTagId(Integer tagId) {
-        this.tagId = tagId;
     }
 
     public Integer getState() {
@@ -52,8 +52,8 @@ public class PostTag implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
+        sb.append(", userId=").append(userId);
         sb.append(", postId=").append(postId);
-        sb.append(", tagId=").append(tagId);
         sb.append(", state=").append(state);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");

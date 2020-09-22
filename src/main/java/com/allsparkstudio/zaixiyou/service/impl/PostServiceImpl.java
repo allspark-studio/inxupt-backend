@@ -1,10 +1,7 @@
 package com.allsparkstudio.zaixiyou.service.impl;
 
 import com.allsparkstudio.zaixiyou.dao.*;
-import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
-import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
-import com.allsparkstudio.zaixiyou.enums.UserCircleRoleEnum;
-import com.allsparkstudio.zaixiyou.enums.UserContentStateEnum;
+import com.allsparkstudio.zaixiyou.enums.*;
 import com.allsparkstudio.zaixiyou.pojo.form.AddArticleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleArticleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCirclePostForm;
@@ -20,7 +17,6 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -49,9 +45,6 @@ public class PostServiceImpl implements PostService {
     private PostMapper postMapper;
 
     @Autowired
-    private PostTagMapper postTagMapper;
-
-    @Autowired
     private CommentMapper commentMapper;
 
     @Autowired
@@ -64,10 +57,10 @@ public class PostServiceImpl implements PostService {
     private PostCircleMapper postCircleMapper;
 
     @Autowired
-    private TagMapper tagMapper;
+    private UserPostLikeMapper userPostLikeMapper;
 
     @Autowired
-    private UserCommentMapper userCommentMapper;
+    private UserPostFavoriteMapper userPostFavoriteMapper;
 
     @Autowired
     JWTUtils jwtUtils;
@@ -81,7 +74,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public ResponseVO<PageInfo> listAll(Integer categoryId, Integer userId, Integer circleId,
                                         Integer type, UserContentStateEnum stateEnum,
-                                        String token, Integer pageNum, Integer pageSize) {
+                                        String token, Integer pageNum, Integer pageSize,
+                                        Integer sortedBy) {
         Integer myId = null;
         boolean login = false;
         if (!StringUtils.isEmpty(token)) {
@@ -93,27 +87,42 @@ public class PostServiceImpl implements PostService {
         List<Post> postList;
         if (categoryId != null) {
             // 根据分类来列出帖子
-            PageHelper.startPage(pageNum, pageSize);
-            postList = postMapper.selectPostsByCategoryId(categoryId);
+            if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectPostsByCategoryIdSortedByHeat(categoryId);
+            } else {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectPostsByCategoryIdSortedByTime(categoryId);
+            }
         } else if (userId != null && type != null) {
             // 根据作者和帖子类型来列出帖子
             PageHelper.startPage(pageNum, pageSize);
             postList = postMapper.selectByUserIdAndType(userId, type);
         } else if (stateEnum == UserContentStateEnum.FAVORITE && type != null) {
             // 根据用户点赞/投币/收藏来列出帖子
-            PageHelper.startPage(pageNum, pageSize);
             if (!login) {
                 return ResponseVO.error(ResponseEnum.NEED_LOGIN);
             }
+            PageHelper.startPage(pageNum, pageSize);
             postList = postMapper.selectFavoritesPostsByUserIdAndType(myId, type);
         } else if (circleId != null) {
             // 根据圈子来列出帖子
-            PageHelper.startPage(pageNum, pageSize);
-            postList = postMapper.selectPostsByCircleId(circleId);
+            if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectPostsByCircleIdSortedByHeat(circleId);
+            } else {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectPostsByCircleIdSortedByTime(circleId);
+            }
         } else {
             // 列出全部帖子
-            PageHelper.startPage(pageNum, pageSize);
-            postList = postMapper.selectAllByTime();
+            if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectAllByHeat();
+            }else {
+                PageHelper.startPage(pageNum, pageSize);
+                postList = postMapper.selectAllByTime();
+            }
         }
         List<PostVO> postVOList = new ArrayList<>();
         for (Post post : postList) {
@@ -165,18 +174,8 @@ public class PostServiceImpl implements PostService {
             postVO.setLiked(liked);
             postVO.setCoined(coined);
             postVO.setFavorited(favorited);
-            Set<Integer> tagIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
-            if (tagIdSet.size() != 0) {
-                List<Tag> tagList = tagMapper.selectByIdSet(tagIdSet);
-                List<Map<String, Object>> tagMapList = new ArrayList<>();
-                for (Tag tag : tagList) {
-                    Map<String, Object> tagMap = new HashMap<>(2);
-                    tagMap.put("id", tag.getId());
-                    tagMap.put("name", tag.getName());
-                    tagMapList.add(tagMap);
-                }
-                postVO.setTags(tagMapList);
-            }
+
+            // 设置@的用户
             if (post.getAtIds() != null && !StringUtils.isEmpty(post.getAtIds())) {
                 List<Map<String, Object>> atMapList = new ArrayList<>();
                 String[] atIds = post.getAtIds().split(";");
@@ -189,6 +188,21 @@ public class PostServiceImpl implements PostService {
                 }
                 postVO.setAts(atMapList);
             }
+
+            // 设置自定义标签
+            if (post.getTags() != null && !StringUtils.isEmpty(post.getTags())) {
+                List<String> tagList;
+                String[] tags = post.getTags().split(";");
+                tagList = Arrays.asList(tags);
+                // 历史遗留原因导致要用map存
+                List<Map<String, String>> tagMapList = new ArrayList<>();
+                for (String tag : tagList) {
+                    Map<String, String> tagMap = new HashMap<>(2);
+                    tagMap.put("name", tag);
+                    tagMapList.add(tagMap);
+                }
+                postVO.setTags(tagMapList);
+            }
             postVOList.add(postVO);
         }
         PageInfo pageInfo = new PageInfo<>(postList);
@@ -198,22 +212,144 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseVO like(Integer postId, String token) {
-        return updateUserPostState(postId, token, UserContentStateEnum.LIKE, true);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            log.error("请求的帖子不存在, postId:[{}]", postId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(userId, postId);
+        if (userPostLike == null) {
+            userPostLike = new UserPostLike();
+            userPostLike.setUserId(userId);
+            userPostLike.setPostId(postId);
+            userPostLike.setState(1);
+            int result = userPostLikeMapper.insertSelective(userPostLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // MQ增加经验值
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", post.getAuthorId());
+            // TODO: MQ通知作者内容被点赞
+        }else {
+            userPostLike.setState(1);
+            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        return ResponseVO.success();
     }
 
     @Override
     public ResponseVO dislike(Integer postId, String token) {
-        return updateUserPostState(postId, token, UserContentStateEnum.LIKE, false);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            log.error("请求的帖子不存在, postId:[{}]", postId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(userId, postId);
+        if (userPostLike == null) {
+            userPostLike = new UserPostLike();
+            userPostLike.setUserId(userId);
+            userPostLike.setPostId(postId);
+            userPostLike.setState(0);
+            int result = userPostLikeMapper.insertSelective(userPostLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }else {
+            userPostLike.setState(0);
+            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        return ResponseVO.success();
     }
 
     @Override
     public ResponseVO favorite(Integer postId, String token) {
-        return updateUserPostState(postId, token, UserContentStateEnum.FAVORITE, true);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            log.error("请求的帖子不存在, postId:[{}]", postId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        UserPostFavorite userPostFavorite = userPostFavoriteMapper.selectByUserIdAndPostId(userId, postId);
+        if (userPostFavorite == null) {
+            userPostFavorite = new UserPostFavorite();
+            userPostFavorite.setUserId(userId);
+            userPostFavorite.setPostId(postId);
+            userPostFavorite.setState(1);
+            int result = userPostFavoriteMapper.insertSelective(userPostFavorite);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // MQ增加经验值
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFavorite", post.getAuthorId());
+            // TODO: MQ通知作者内容被收藏
+        }else {
+            userPostFavorite.setState(1);
+            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostFavorite);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        return ResponseVO.success();
     }
 
     @Override
     public ResponseVO disFavorite(Integer postId, String token) {
-        return updateUserPostState(postId, token, UserContentStateEnum.FAVORITE, false);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            log.error("请求的帖子不存在, postId:[{}]", postId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        UserPostFavorite userPostFavorite = userPostFavoriteMapper.selectByUserIdAndPostId(userId, postId);
+        if (userPostFavorite == null) {
+            userPostFavorite = new UserPostFavorite();
+            userPostFavorite.setUserId(userId);
+            userPostFavorite.setPostId(postId);
+            userPostFavorite.setState(0);
+            int result = userPostFavoriteMapper.insertSelective(userPostFavorite);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }else {
+            userPostFavorite.setState(0);
+            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostFavorite);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        return ResponseVO.success();
     }
 
     @Override
@@ -230,7 +366,11 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        }
+        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         if ((addPostForm.getBody() == null || StringUtils.isEmpty(addPostForm.getBody())) &&
@@ -261,6 +401,16 @@ public class PostServiceImpl implements PostService {
             String atIds = stringBuilder1.substring(0, stringBuilder1.length() - 1);
             post.setAtIds(atIds);
         }
+        // 设置帖子的自定义标签
+        if (addPostForm.getCustomTags() != null && addPostForm.getCustomTags().size() != 0) {
+            StringBuilder stringBuilder1 = new StringBuilder();
+            for (String tag : addPostForm.getCustomTags()) {
+                stringBuilder1.append(tag);
+                stringBuilder1.append(";");
+            }
+            String tags = stringBuilder1.substring(0, stringBuilder1.length() - 1);
+            post.setTags(tags);
+        }
         int result = postMapper.insertSelective(post);
         if (result != 1) {
             log.error("新建文章时，数据库表'post'插入失败");
@@ -278,31 +428,6 @@ public class PostServiceImpl implements PostService {
             int result1 = postCategoryMapper.insertSelective(postCategory);
             if (result1 != 1) {
                 log.error("新建文章时，数据库表'post_category'插入失败");
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
-        }
-        // 绑定自定义标签（分类）和帖子
-        for (String customTag : addPostForm.getCustomTags()) {
-            // 跳过空字符串
-            if (StringUtils.isEmpty(customTag)) {
-                continue;
-            }
-            Tag tag = tagMapper.selectByName(customTag);
-            if (tag == null) {
-                tag = new Tag();
-                tag.setName(customTag);
-                int result2 = tagMapper.insertSelective(tag);
-                if (result2 != 1) {
-                    log.error("新建文章时，数据库表'tag'插入失败");
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-            }
-            PostTag postTag = new PostTag();
-            postTag.setPostId(post.getId());
-            postTag.setTagId(tag.getId());
-            int result2 = postTagMapper.insertSelective(postTag);
-            if (result2 != 1) {
-                log.error("新建文章时，数据库表'post_tag'插入失败");
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
@@ -331,7 +456,11 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        }
+        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         if (addArticleForm.getTitle() == null || StringUtils.isEmpty(addArticleForm.getTitle())) {
@@ -354,6 +483,16 @@ public class PostServiceImpl implements PostService {
             String atIds = stringBuilder.substring(0, stringBuilder.length() - 1);
             article.setAtIds(atIds);
         }
+        // 设置文章的自定义标签
+        if (addArticleForm.getCustomTags() != null && addArticleForm.getCustomTags().size() != 0) {
+            StringBuilder stringBuilder1 = new StringBuilder();
+            for (String tag : addArticleForm.getCustomTags()) {
+                stringBuilder1.append(tag);
+                stringBuilder1.append(";");
+            }
+            String tags = stringBuilder1.substring(0, stringBuilder1.length() - 1);
+            article.setTags(tags);
+        }
         int result = postMapper.insertSelective(article);
         if (result != 1) {
             log.error("新建文章时，数据库表'post'插入失败");
@@ -371,27 +510,6 @@ public class PostServiceImpl implements PostService {
             int result1 = postCategoryMapper.insertSelective(postCategory);
             if (result1 != 1) {
                 log.error("新建文章时，数据库表'post_category'插入失败");
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
-        }
-        // 绑定自定义标签（分类）和帖子
-        for (String customTag : addArticleForm.getCustomTags()) {
-            Tag tag = tagMapper.selectByName(customTag);
-            if (tag == null) {
-                tag = new Tag();
-                tag.setName(customTag);
-                int result2 = tagMapper.insertSelective(tag);
-                if (result2 != 1) {
-                    log.error("新建文章时，数据库表'tag'插入失败");
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-            }
-            PostTag postTag = new PostTag();
-            postTag.setPostId(article.getId());
-            postTag.setTagId(tag.getId());
-            int result2 = postTagMapper.insertSelective(postTag);
-            if (result2 != 1) {
-                log.error("新建文章时，数据库表'post_tag'插入失败");
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
@@ -420,7 +538,11 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        }
+        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
@@ -472,7 +594,11 @@ public class PostServiceImpl implements PostService {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        if (userDailyStatisticsUtils.isPostLimited(userId)) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        }
+        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
@@ -571,19 +697,8 @@ public class PostServiceImpl implements PostService {
         postVO.setLiked(liked);
         postVO.setCoined(coined);
         postVO.setFavorited(favorited);
-        Set<Integer> tagIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
-        if (tagIdSet.size() != 0) {
-            List<Tag> tagList = tagMapper.selectByIdSet(tagIdSet);
-            List<Map<String, Object>> mapList = new ArrayList<>();
-            for (Tag tag : tagList) {
-                Map<String, Object> tagMap = new HashMap<>(2);
-                tagMap.put("id", tag.getId());
-                tagMap.put("name", tag.getName());
-                mapList.add(tagMap);
-            }
-            postVO.setTags(mapList);
-        }
 
+        // 设置@的用户列表
         if (post.getAtIds() != null && !StringUtils.isEmpty(post.getAtIds())) {
             List<Map<String, Object>> atMapList = new ArrayList<>();
             String[] atIds = post.getAtIds().split(";");
@@ -595,6 +710,21 @@ public class PostServiceImpl implements PostService {
                 atMapList.add(atMap);
             }
             postVO.setAts(atMapList);
+        }
+
+        // 设置自定义标签
+        if (post.getTags() != null && !StringUtils.isEmpty(post.getTags())) {
+            List<String> tagList;
+            String[] tags = post.getTags().split(";");
+            tagList = Arrays.asList(tags);
+            // 历史遗留原因导致要用map存
+            List<Map<String, String>> tagMapList = new ArrayList<>();
+            for (String tag : tagList) {
+                Map<String, String> tagMap = new HashMap<>(2);
+                tagMap.put("name", tag);
+                tagMapList.add(tagMap);
+            }
+            postVO.setTags(tagMapList);
         }
         return ResponseVO.success(postVO);
     }
@@ -619,20 +749,18 @@ public class PostServiceImpl implements PostService {
         postMapper.deleteByPrimaryKey(postId);
         // 通过MQ同步删除ES数据
         rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "delete", post);
-        // 删除帖子全部评论和用户间的关系
-        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
-        for (Integer commentId : commentIdList) {
-            userCommentMapper.deleteByCommentId(commentId);
-        }
+        // 删除帖子下面的评论，但不删除用户-评论关系表，这样用户被点赞数不会减只会加
+//        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
+//        for (Integer commentId : commentIdList) {
+//            userCommentMapper.deleteByCommentId(commentId);
+//        }
         commentMapper.deleteByPostId(postId);
-        // 删除用户关联动作
+        // 不删除用户-帖子关联动作，这样用户被点赞数不会减只会加
         userPostMapper.deleteByPostId(postId);
         // 删除帖子和分类的关系
         postCategoryMapper.deleteByPostId(postId);
         // 删除帖子和圈子的关系
         postCircleMapper.deleteByPostId(postId);
-        // 删除帖子和自定义标签的关系
-        postTagMapper.deleteByPostId(postId);
         return ResponseVO.success();
     }
 
@@ -701,7 +829,7 @@ public class PostServiceImpl implements PostService {
         } else if (UserContentStateEnum.FAVORITE.equals(stateEnum) && state) {
             rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFavorite", post.getAuthorId());
         } else if (UserContentStateEnum.COIN.equals(stateEnum) && state) {
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "coin", userId);
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "insertCoin", userId);
             rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getCoin", post.getAuthorId());
         }
         return ResponseVO.success();

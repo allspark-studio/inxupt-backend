@@ -72,6 +72,7 @@ public class UserController {
 
     /**
      * 注册
+     *
      * @param validateForm 客户端填写的注册表单
      */
     @ApiOperation("注册时验证手机号和验证码")
@@ -100,6 +101,7 @@ public class UserController {
 
     /**
      * 其他用户的个人主页
+     *
      * @param userId 该用户的id
      */
     @ApiOperation("查看别人的主页")
@@ -139,9 +141,9 @@ public class UserController {
     @GetMapping("/user/{userId}/fans")
     @ApiOperation("用户粉丝列表")
     public ResponseVO<PageInfo> listFans(@PathVariable("userId") Integer userId,
-                                             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                             @RequestHeader(value = "token", required = false) String token) {
+                                         @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                         @RequestHeader(value = "token", required = false) String token) {
         return userService.listFans(userId, pageNum, pageSize, token);
     }
 
@@ -150,7 +152,7 @@ public class UserController {
     public ResponseVO<PageInfo> listFollows(@PathVariable("userId") Integer userId,
                                             @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                                @RequestHeader(value = "token", required = false) String token) {
+                                            @RequestHeader(value = "token", required = false) String token) {
         return userService.listFollows(userId, pageNum, pageSize, token);
     }
 
@@ -159,33 +161,37 @@ public class UserController {
     public ResponseVO<PageInfo> listPosts(@PathVariable("userId") Integer userId,
                                           @RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                           @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                          @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                           @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null,userId, null, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize);
+        return postService.listAll(null, userId, null, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/{userId}/articles")
     @ApiOperation("用户文章")
     public ResponseVO<PageInfo> listArticles(@PathVariable("userId") Integer userId,
-                              @RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                              @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                   @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null,userId, null, PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize);
+                                             @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+                                             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                             @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
+                                             @RequestHeader(value = "token", required = false) String token) {
+        return postService.listAll(null, userId, null, PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/posts")
     @ApiOperation("用户收藏的帖子")
     public ResponseVO<PageInfo> listFavoritePosts(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                              @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                              @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize);
+                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                                  @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
+                                                  @RequestHeader(value = "token", required = false) String token) {
+        return postService.listAll(null, null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/articles")
     @ApiOperation("用户收藏的文章")
     public ResponseVO<PageInfo> listFavoriteArticles(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                              @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                              @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize);
+                                                     @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                                     @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
+                                                     @RequestHeader(value = "token", required = false) String token) {
+        return postService.listAll(null, null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
 }

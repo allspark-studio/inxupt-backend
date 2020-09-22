@@ -38,4 +38,10 @@
             circle_id = #{circleId,jdbcType=INTEGER},
             role = #{role,jdbcType=INTEGER}
     </update>
+    <select id="selectOwnerId" parameterType="java.lang.Integer" resultType="Integer">
+        select user_id
+        from user_circle
+        where circle_id = #{circleId,jdbcType=INTEGER}
+        and role = 4
+    </select>
 </mapper>

@@ -61,7 +61,8 @@ public class CommentController {
     @GetMapping("/post/{postId}/comments")
     @ApiOperation("获取帖子下面的全部评论")
     public ResponseVO listComments(@PathVariable("postId") Integer postId,
+                                   @RequestParam(required = false, defaultValue = "2") Integer sortedBy,
                                    @RequestHeader(value = "token", required = false) String token) {
-        return commentService.listAll(postId, token);
+        return commentService.listAll(postId, token, sortedBy);
     }
 }

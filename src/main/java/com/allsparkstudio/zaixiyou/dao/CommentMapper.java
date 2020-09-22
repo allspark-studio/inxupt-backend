@@ -17,7 +17,9 @@ public interface CommentMapper {
 
     int updateByPrimaryKey(Comment record);
 
-    List<Comment> selectByPostId(Integer postId);
+    List<Comment> selectByPostIdSortedByTime(Integer postId);
+
+    List<Comment> selectByPostIdSortedByHeat(Integer postId);
 
     Integer countCommentsByPostId(Integer postId);
 
@@ -26,4 +28,12 @@ public interface CommentMapper {
     List<Comment> selectSubComments(Integer rootId);
 
     List<Integer> selectIdsByPostId(Integer postId);
+
+    List<Comment> selectAllByAuthorId(Integer userId);
+
+    List<Comment> selectAll();
+
+    Integer countSubCommentsByCommentId(Integer commentId);
+
+    void updateHeat(Comment comment);
 }

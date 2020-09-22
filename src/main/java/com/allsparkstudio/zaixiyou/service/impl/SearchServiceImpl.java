@@ -11,8 +11,6 @@ import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.service.SearchService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
 import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -20,6 +18,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -37,9 +37,6 @@ import java.util.*;
 @Service
 @Slf4j
 public class SearchServiceImpl implements SearchService {
-
-
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").setPrettyPrinting().create();
 
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -61,12 +58,6 @@ public class SearchServiceImpl implements SearchService {
 
     @Autowired
     CommentMapper commentMapper;
-
-    @Autowired
-    TagMapper tagMapper;
-
-    @Autowired
-    PostTagMapper postTagMapper;
 
     @Autowired
     FollowMapper followMapper;
@@ -205,18 +196,8 @@ public class SearchServiceImpl implements SearchService {
             postVO.setLiked(liked);
             postVO.setCoined(coined);
             postVO.setFavorited(favorited);
-            Set<Integer> tagIdSet = postTagMapper.selectTagIdsByPostId(post.getId());
-            if (tagIdSet.size() != 0) {
-                List<Tag> tagList = tagMapper.selectByIdSet(tagIdSet);
-                List<Map<String, Object>> tagMapList = new ArrayList<>();
-                for (Tag tag : tagList) {
-                    Map<String, Object> tagMap = new HashMap<>(2);
-                    tagMap.put("id", tag.getId());
-                    tagMap.put("name", tag.getName());
-                    tagMapList.add(tagMap);
-                }
-                postVO.setTags(tagMapList);
-            }
+
+            // 设置@的用户
             if (post.getAtIds() != null && !StringUtils.isEmpty(post.getAtIds())) {
                 List<Map<String, Object>> atMapList = new ArrayList<>();
                 String[] atIds = post.getAtIds().split(";");
@@ -229,6 +210,22 @@ public class SearchServiceImpl implements SearchService {
                 }
                 postVO.setAts(atMapList);
             }
+
+            // 设置自定义标签
+            if (post.getTags() != null && !StringUtils.isEmpty(post.getTags())) {
+                List<String> tagList;
+                String[] tags = post.getTags().split(";");
+                tagList = Arrays.asList(tags);
+                // 历史遗留原因导致要用map存
+                List<Map<String, String>> tagMapList = new ArrayList<>();
+                for (String tag : tagList) {
+                    Map<String, String> tagMap = new HashMap<>(2);
+                    tagMap.put("name", tag);
+                    tagMapList.add(tagMap);
+                }
+                postVO.setTags(tagMapList);
+            }
+
             postVOList.add(postVO);
         }
         // 构架分页对象
@@ -255,12 +252,12 @@ public class SearchServiceImpl implements SearchService {
         }
         SearchRequest request = new SearchRequest("user");
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", keyWord));
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery("name", keyWord);
         // 分页
         sourceBuilder.from((pageNum - 1) * pageSize);
         sourceBuilder.size(pageSize);
         // 开始查询
-        sourceBuilder.query(boolQueryBuilder);
+        sourceBuilder.query(queryBuilder);
 
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
@@ -311,12 +308,12 @@ public class SearchServiceImpl implements SearchService {
     public ResponseVO<PageInfo> searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
         SearchRequest request = new SearchRequest("circle");
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", keyWord));
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery("name", keyWord);
         // 分页
         sourceBuilder.from((pageNum - 1) * pageSize);
         sourceBuilder.size(pageSize);
         // 开始查询
-        sourceBuilder.query(boolQueryBuilder);
+        sourceBuilder.query(queryBuilder);
 
         request.source(sourceBuilder);
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);

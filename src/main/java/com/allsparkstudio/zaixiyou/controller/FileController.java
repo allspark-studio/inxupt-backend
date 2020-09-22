@@ -1,5 +1,6 @@
 package com.allsparkstudio.zaixiyou.controller;
 
+import com.allsparkstudio.zaixiyou.ZaixiyouApplication;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
@@ -59,7 +60,7 @@ public class FileController {
             }
             String filename = file.getOriginalFilename();
             if (!"".equals(filename.trim())) {
-                File newFile = new File(filename);
+                File newFile = new File( filename);
                 FileOutputStream os = new FileOutputStream(newFile);
                 os.write(file.getBytes());
                 os.close();
@@ -70,7 +71,7 @@ public class FileController {
                     log.info("文件上传成功，url: [{}]", uploadUrl);
                     return ResponseVO.success(0, "上传成功", uploadUrl);
                 } catch (Exception e) {
-                    log.error("上传文件失败");
+                    log.error("上传文件失败: [{}]", e.getMessage());
                     return ResponseVO.error(ResponseEnum.ERROR, "文件上传失败");
                 }
             }

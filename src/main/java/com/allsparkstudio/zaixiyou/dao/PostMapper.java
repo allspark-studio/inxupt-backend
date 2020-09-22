@@ -21,11 +21,21 @@ public interface PostMapper {
 
     List<Post> selectAllByTime();
 
+    List<Post> selectAllByHeat();
+
+    List<Post> selectAllByAuthorId(Integer authorId);
+
     List<Post> selectByUserIdAndType(Integer authorId, Integer type);
 
-    List<Post> selectPostsByCategoryId(Integer categoryId);
+    List<Post> selectPostsByCircleIdSortedByTime(Integer circleId);
 
-    List<Post> selectPostsByCircleId(Integer circleId);
+    List<Post> selectPostsByCircleIdSortedByHeat(Integer circleId);
+
+    List<Post> selectPostsByCategoryIdSortedByTime(Integer categoryId);
+
+    List<Post> selectPostsByCategoryIdSortedByHeat(Integer categoryId);
 
     List<Post> selectFavoritesPostsByUserIdAndType(Integer userId, Integer type);
+
+    void updateHeat(Post post);
 }

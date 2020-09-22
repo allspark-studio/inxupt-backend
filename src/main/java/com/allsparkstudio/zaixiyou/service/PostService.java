@@ -30,7 +30,8 @@ public interface PostService {
      */
     ResponseVO<PageInfo> listAll(Integer categoryId, Integer userId, Integer circleId,
                                  Integer type, UserContentStateEnum stateEnum,
-                                 String token, Integer pageNum, Integer pageSize);
+                                 String token, Integer pageNum, Integer pageSize,
+                                 Integer sortedBy);
 
     /**
      * 给文章点赞

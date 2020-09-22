@@ -30,4 +30,22 @@ public class UserDailyStatistics {
      */
     private Integer commentNum;
 
+    /**
+     * 创建圈子次数
+     */
+    private Integer circleNum;
+
+    /**
+     * 发布公告次数
+     */
+    private Integer circleNoticeNum;
+
+    public UserDailyStatistics() {
+        this.exp = 0;
+        this.login = 0;
+        this.postNum = 0;
+        this.commentNum = 0;
+        this.circleNum = 0;
+        this.circleNoticeNum = 0;
+    }
 }

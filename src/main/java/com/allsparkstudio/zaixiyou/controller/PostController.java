@@ -34,17 +34,19 @@ public class PostController {
     @ApiOperation("展示全部帖子")
     public ResponseVO<PageInfo> listAll(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                         @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                        @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                         @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, null, null, token, pageNum, pageSize);
+        return postService.listAll(null, null, null, null, null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/category/{categoryId}/posts")
     @ApiOperation("根据主标签展示全部帖子")
     public ResponseVO<PageInfo> listByCategory(@PathVariable("categoryId") Integer categoryId,
-                                     @RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                     @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                     @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(categoryId, null, null, null, null, token, pageNum, pageSize);
+                                               @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+                                               @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                               @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
+                                               @RequestHeader(value = "token", required = false) String token) {
+        return postService.listAll(categoryId, null, null, null, null, token, pageNum, pageSize, sortedBy);
     }
 
     @PostMapping("/article")
@@ -111,5 +113,4 @@ public class PostController {
                                       @RequestHeader(value = "token", required = false) String token) {
         return postService.getPost(postId, token);
     }
-
 }

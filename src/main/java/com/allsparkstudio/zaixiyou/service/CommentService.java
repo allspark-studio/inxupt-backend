@@ -17,7 +17,7 @@ public interface CommentService {
      * @param postId 帖子的id
      * @param token token
      */
-    ResponseVO<List<CommentVO>> listAll(Integer postId, String token);
+    ResponseVO<List<CommentVO>> listAll(Integer postId, String token, Integer sortedBy);
 
     /**
      * 发表评论

@@ -8,9 +8,13 @@ public enum UserDailyLimitEnum {
 
     LOGIN(1),
 
-    POST_NUM(10),
+    POST_NUM(30),
 
-    COMMENT_NUM(50);
+    COMMENT_NUM(100),
+
+    CIRCLE_NUM(20),
+
+    CIRCLE_NOTICE_NUM(30);
 
     Integer limit;
 

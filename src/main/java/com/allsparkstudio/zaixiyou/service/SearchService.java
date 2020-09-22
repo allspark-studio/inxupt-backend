@@ -1,10 +1,5 @@
 package com.allsparkstudio.zaixiyou.service;
 
-import com.allsparkstudio.zaixiyou.pojo.po.Circle;
-import com.allsparkstudio.zaixiyou.pojo.po.Post;
-import com.allsparkstudio.zaixiyou.pojo.po.User;
-import com.allsparkstudio.zaixiyou.pojo.vo.MyPageInfo;
-import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.github.pagehelper.PageInfo;
 

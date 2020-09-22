@@ -17,14 +17,6 @@ PostMapper:
 PostStatisticMapper:
     PostStatistics selectByPostId(Integer postId);
 
-PostTagMapper:
-    Set<Integer> selectTagIdsByPostId(Integer postId);
-
-TagMapper:
-    List<Tag> selectByIdSet(@Param("idSet")Set<Integer> idSet);
-    Tag selectByName(String name);
-    useGeneratedKeys="true" keyProperty="id"
-
 CategoryMapper:
     Category selectByName(String name);
 

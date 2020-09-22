@@ -32,6 +32,9 @@ public enum ResponseEnum {
 
     REACH_PUBLISH_LIMIT(113, "已达今日发布数量上限"),
 
+    DISABLE_SEND_MESSAGE(114, "您已被禁言"),
+    BANNED(115, "您的账号已被限制登录"),
+
     HAVE_NOT_PERMISSION(301, "没有权限"),
     CIRCLE_NAME_EXISTS(302, "圈子名字已存在"),
 

@@ -1,11 +1,11 @@
 package com.allsparkstudio.zaixiyou.consumer;
 
 import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
-import com.allsparkstudio.zaixiyou.dao.DailyStatisticsMapper;
-import com.allsparkstudio.zaixiyou.dao.UserMapper;
+import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.AddExpEnum;
-import com.allsparkstudio.zaixiyou.enums.UserContentStateEnum;
+import com.allsparkstudio.zaixiyou.pojo.po.Comment;
 import com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics;
+import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.util.UserDailyStatisticsUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -14,14 +14,10 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Random;
-import java.util.TimeZone;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -35,6 +31,18 @@ public class DailyStatisticsConsumers {
 
     @Autowired
     private DailyStatisticsMapper dailyStatisticsMapper;
+
+    @Autowired
+    private PostMapper postMapper;
+
+    @Autowired
+    private UserPostMapper userPostMapper;
+
+    @Autowired
+    private CommentMapper commentMapper;
+
+    @Autowired
+    private UserCommentMapper userCommentMapper;
 
     /**
      * MQ延迟处理jwt验证成功后更新日活数据和更新用户最后登录时间
@@ -127,11 +135,21 @@ public class DailyStatisticsConsumers {
                     key = {"getLike"}
             )})
     public void getLiked(Integer userId) {
-        User user = userMapper.selectByPrimaryKey(userId);
-        user.setLikeNum(user.getLikeNum() + 1);
-        userMapper.updateLikeNum(user);
-        addExp(userId, AddExpEnum.GET_LIKE.getExp());
-
+        synchronized (this) {
+            User user = userMapper.selectByPrimaryKey(userId);
+            Integer likeNum = 0;
+            List<Post> postList = postMapper.selectAllByAuthorId(userId);
+            List<Comment> commentList = commentMapper.selectAllByAuthorId(userId);
+            for (Post post : postList) {
+                likeNum += userPostMapper.countLikeByPostId(post.getId());
+            }
+            for (Comment comment : commentList) {
+                likeNum += userCommentMapper.countLikeByCommentId(comment.getId());
+            }
+            user.setLikeNum(likeNum);
+            userMapper.updateLikeNum(user);
+            addExp(userId, AddExpEnum.GET_LIKE.getExp());
+        }
     }
 
     @RabbitListener(bindings = {
@@ -185,7 +203,7 @@ public class DailyStatisticsConsumers {
             )})
     public void addPost(Integer userId) {
         userDailyStatisticsUtils.updatePostNum(userId);
-        addExp(userId, AddExpEnum.POST.getExp());
+        addExp(userId, AddExpEnum.ADD_POST.getExp());
     }
 
     @RabbitListener(bindings = {
@@ -199,7 +217,7 @@ public class DailyStatisticsConsumers {
             )})
     public void addComment(Integer userId) {
         userDailyStatisticsUtils.updateCommentNum(userId);
-        addExp(userId, AddExpEnum.COMMENT.getExp());
+        addExp(userId, AddExpEnum.ADD_COMMENT.getExp());
     }
 
     @RabbitListener(bindings = {
@@ -222,16 +240,45 @@ public class DailyStatisticsConsumers {
                     // 指定交换机
                     exchange = @Exchange(name = "dailyStatisticsExchange"),
                     //
-                    key = {"coin"}
+                    key = {"insertCoin"}
             )})
     public void coin(Integer userId) {
-        addExp(userId, AddExpEnum.COIN.getExp());
+        addExp(userId, AddExpEnum.INSERT_COIN.getExp());
     }
 
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    // 创建临时队列
+                    value = @Queue(),
+                    // 指定交换机
+                    exchange = @Exchange(name = "dailyStatisticsExchange"),
+                    //
+                    key = {"addCircle"}
+            )})
+    public void addCircle(Integer userId) {
+        addExp(userId, AddExpEnum.ADD_CIRCLE.getExp());
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    // 创建临时队列
+                    value = @Queue(),
+                    // 指定交换机
+                    exchange = @Exchange(name = "dailyStatisticsExchange"),
+                    //
+                    key = {"addCircleNotice"}
+            )})
+    public void addCircleNotice(Integer userId) {
+        addExp(userId, AddExpEnum.ADD_CIRCLE_NOTICE.getExp());
+    }
+
+    /**
+     * 工具方法：加经验值
+     */
     private void addExp(Integer userId, Integer exp) {
         synchronized (this) {
             User user = userMapper.selectByPrimaryKey(userId);
-            if (!userDailyStatisticsUtils.isExpLimited(user.getId())) {
+            if (!userDailyStatisticsUtils.isAddExpLimited(user.getId())) {
                 userDailyStatisticsUtils.updateExp(userId, exp);
                 user.setExperience(user.getExperience() + exp);
                 if (user.getExperience() >= ExperienceConst.getExpByLv(user.getLevel())) {
@@ -242,11 +289,14 @@ public class DailyStatisticsConsumers {
         }
     }
 
+    /**
+     * 工具方法：加硬币
+     */
     private void addCoin(Integer userId, Integer coinNum) {
         synchronized (this) {
             User user = userMapper.selectByPrimaryKey(userId);
             user.setInsertableCoins(user.getInsertableCoins() + coinNum);
-            userMapper.updateExpAndLv(user);
+            userMapper.updateInsertableCoins(user);
         }
     }
 }

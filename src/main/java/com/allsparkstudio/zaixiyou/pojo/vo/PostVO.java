@@ -56,7 +56,7 @@ public class PostVO {
 
     private String createTime;
 
-    private List<Map<String, Object>> tags;
+    private List<Map<String, String>> tags;
 
     private Integer likeNum;
 

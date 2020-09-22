@@ -39,8 +39,9 @@ public class CircleController {
     public ResponseVO<PageInfo> listPosts(@PathVariable("circleId") Integer circleId,
                                           @RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                           @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                          @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                           @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, circleId, null, null, token, pageNum, pageSize);
+        return postService.listAll(null, null, circleId, null, null, token, pageNum, pageSize, sortedBy);
     }
 
     @PostMapping("/circle")

@@ -4,7 +4,6 @@ import com.allsparkstudio.zaixiyou.ZaixiyouApplicationTests;
 import com.allsparkstudio.zaixiyou.dao.CircleMapper;
 import com.allsparkstudio.zaixiyou.dao.PostMapper;
 import com.allsparkstudio.zaixiyou.dao.UserMapper;
-import com.allsparkstudio.zaixiyou.pojo.po.User;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -36,10 +35,10 @@ public class MySQL2ESConsumerTest extends ZaixiyouApplicationTests {
 //            rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
 //        }
 //
-        for (int i = 1;i<=12;i++) {
-            User user = userMapper.selectByPrimaryKey(i);
-            rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "update", user);
-        }
+//        for (int i = 1;i<=12;i++) {
+//            User user = userMapper.selectByPrimaryKey(i);
+//            rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "update", user);
+//        }
 //
 //        List<Circle> circleList = circleMapper.selectAll();
 //        for (Circle circle : circleList) {

@@ -26,6 +26,8 @@ public class Comment implements Serializable {
 
     private Date createTime;
 
+    private Integer heat;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -116,6 +118,14 @@ public class Comment implements Serializable {
         this.createTime = createTime;
     }
 
+    public Integer getHeat() {
+        return heat;
+    }
+
+    public void setHeat(Integer heat) {
+        this.heat = heat;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -133,6 +143,7 @@ public class Comment implements Serializable {
         sb.append(", privately=").append(privately);
         sb.append(", state=").append(state);
         sb.append(", createTime=").append(createTime);
+        sb.append(", heat=").append(heat);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

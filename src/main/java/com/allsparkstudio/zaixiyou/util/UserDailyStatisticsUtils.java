@@ -31,7 +31,7 @@ public class UserDailyStatisticsUtils {
         return UserDailyLimitEnum.LOGIN.getLimit().equals(userDailyStatistics.getLogin());
     }
 
-    public boolean isExpLimited(Integer userId) {
+    public boolean isAddExpLimited(Integer userId) {
         UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
         if (userDailyStatistics == null) {
             return false;
@@ -39,7 +39,7 @@ public class UserDailyStatisticsUtils {
         return userDailyStatistics.getExp() >= UserDailyLimitEnum.EXP.getLimit();
     }
 
-    public boolean isPostLimited(Integer userId) {
+    public boolean isAddPostLimited(Integer userId) {
         UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
         if (userDailyStatistics == null) {
             return false;
@@ -47,7 +47,7 @@ public class UserDailyStatisticsUtils {
         return userDailyStatistics.getPostNum() >= UserDailyLimitEnum.POST_NUM.getLimit();
     }
 
-    public boolean isCommentLimited(Integer userId) {
+    public boolean isAddCommentLimited(Integer userId) {
         UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
         if (userDailyStatistics == null) {
             return false;
@@ -55,31 +55,34 @@ public class UserDailyStatisticsUtils {
         return userDailyStatistics.getCommentNum() >= UserDailyLimitEnum.COMMENT_NUM.getLimit();
     }
 
+    public boolean isAddCircleLimited(int userId) {
+        UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
+        if (userDailyStatistics == null) {
+            return false;
+        }
+        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.CIRCLE_NUM.getLimit();
+    }
+
+    public boolean isAddCircleNoticeLimited(int userId) {
+        UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
+        if (userDailyStatistics == null) {
+            return false;
+        }
+        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.CIRCLE_NOTICE_NUM.getLimit();
+    }
+
     public void updateLogin(Integer userId) {
         synchronized (this) {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
                 userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setExp(0);
                 userDailyStatistics.setLogin(1);
-                userDailyStatistics.setCommentNum(0);
-                userDailyStatistics.setPostNum(0);
             } else {
                 userDailyStatistics.setLogin(1);
             }
             redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
             redisTemplate.expireAt(KEY, getMidnight());
         }
-    }
-
-    private Date getMidnight() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        return calendar.getTime();
     }
 
     public void updatePostNum(Integer userId) {
@@ -89,9 +92,6 @@ public class UserDailyStatisticsUtils {
             if (userDailyStatistics == null) {
                 userDailyStatistics = new UserDailyStatistics();
                 userDailyStatistics.setPostNum(1);
-                userDailyStatistics.setLogin(0);
-                userDailyStatistics.setCommentNum(0);
-                userDailyStatistics.setExp(0);
             } else {
                 userDailyStatistics.setPostNum(userDailyStatistics.getPostNum() + 1);
             }
@@ -105,10 +105,7 @@ public class UserDailyStatisticsUtils {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
                 userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setPostNum(0);
-                userDailyStatistics.setLogin(0);
                 userDailyStatistics.setCommentNum(1);
-                userDailyStatistics.setExp(0);
             } else {
                 userDailyStatistics.setCommentNum(userDailyStatistics.getCommentNum() + 1);
             }
@@ -122,9 +119,6 @@ public class UserDailyStatisticsUtils {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
                 userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setPostNum(0);
-                userDailyStatistics.setLogin(0);
-                userDailyStatistics.setCommentNum(1);
                 userDailyStatistics.setExp(exp);
             } else {
                 userDailyStatistics.setExp(userDailyStatistics.getExp() + exp);
@@ -132,5 +126,47 @@ public class UserDailyStatisticsUtils {
             redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
             redisTemplate.expireAt(KEY, getMidnight());
         }
+    }
+
+    public void updateCircle(Integer userId) {
+        synchronized (this) {
+            UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
+            if (userDailyStatistics == null) {
+                userDailyStatistics = new UserDailyStatistics();
+                userDailyStatistics.setCircleNum(1);
+            } else {
+                userDailyStatistics.setCircleNum(userDailyStatistics.getCircleNum() + 1);
+            }
+            redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
+            redisTemplate.expireAt(KEY, getMidnight());
+        }
+    }
+
+    public void updateCircleNotice(Integer userId) {
+        synchronized (this) {
+            UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
+            if (userDailyStatistics == null) {
+                userDailyStatistics = new UserDailyStatistics();
+                userDailyStatistics.setCircleNoticeNum(1);
+            } else {
+                userDailyStatistics.setCircleNoticeNum(userDailyStatistics.getCircleNoticeNum() + 1);
+            }
+            redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
+            redisTemplate.expireAt(KEY, getMidnight());
+        }
+    }
+
+
+    /**
+     * 工具方法，生成当天晚上23:59:59的时间对象
+     */
+    private Date getMidnight() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        return calendar.getTime();
     }
 }

@@ -14,7 +14,23 @@
         from post
         where state = 0
         and visible_outside_circle = 1
-        order by create_time desc
+        order by id desc
+    </select>
+    <select id="selectAllByHeat" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from post
+        where state = 0
+        and visible_outside_circle = 1
+        order by heat desc
+    </select>
+    <select id="selectAllByAuthorId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from post
+        where state = 0
+        and author_id = #{authorId,jdbcType=INTEGER}
+        order by id desc
     </select>
     <select id="selectByUserIdAndType" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
@@ -24,28 +40,48 @@
         and author_id = #{authorId,jdbcType=INTEGER}
         and type = #{type,jdbcType=INTEGER}
         and visible_outside_circle = 1
-        order by create_time desc
+        order by id desc
     </select>
-    <select id="selectPostsByCategoryId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <select id="selectPostsByCategoryIdSortedByTime" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />
         from post
         where id in (select post_id from post_category where category_id = #{categoryId,jdbcType=INTEGER})
         and visible_outside_circle = 1
-        order by create_time desc
+        order by id desc
     </select>
-    <select id="selectPostsByCircleId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <select id="selectPostsByCircleIdSortedByTime" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select *
         from post
         where id in (select post_id from post_circle where circle_id = #{circleId,jdbcType=INTEGER})
         and visible_outside_circle = 0
-        order by create_time desc
+        order by id desc
+    </select>
+    <select id="selectPostsByCircleIdSortedByHeat" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select *
+        from post
+        where id in (select post_id from post_circle where circle_id = #{circleId,jdbcType=INTEGER})
+          and visible_outside_circle = 0
+        order by heat desc
     </select>
     <select id="selectFavoritesPostsByUserIdAndType" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select *
         from post
         where type = #{type,jdbcType=INTEGER}
         and id in (select post_id from user_post where user_id = #{userId,jdbcType=INTEGER} and favorited = 1)
-        order by create_time desc
+        order by id desc
+    </select>
+    <update id="updateHeat" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+        update post
+        set heat = #{heat,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <select id="selectPostsByCategoryIdSortedByHeat" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from post
+        where id in (select post_id from post_category where category_id = #{categoryId,jdbcType=INTEGER})
+        and visible_outside_circle = 1
+        order by heat desc
     </select>
 </mapper>

@@ -20,4 +20,8 @@ public interface CircleMapper {
     boolean isNameExist(String name);
 
     List<Circle> selectAll();
+
+    List<Circle> selectCirclesByUserId(Integer userId);
+
+    void updateHeat(Circle circle);
 }

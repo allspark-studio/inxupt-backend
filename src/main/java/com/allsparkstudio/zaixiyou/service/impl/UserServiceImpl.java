@@ -5,6 +5,7 @@ import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
+import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.ValidateForm;
 import com.allsparkstudio.zaixiyou.pojo.form.PasswordForm;
 import com.allsparkstudio.zaixiyou.pojo.form.UpdateUserForm;
@@ -83,6 +84,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return ResponseVO.error(ResponseEnum.USERNAME_OR_PASSWORD_ERROR);
         }
+        if (UserStateEnum.BANNED.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.BANNED);
+        }
         if (StringUtils.isEmpty(user.getPassword())) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PASSWORD);
         }
@@ -104,7 +108,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return ResponseVO.error(ResponseEnum.USER_NOT_REGISTER);
         }
-
+        if (UserStateEnum.BANNED.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.BANNED);
+        }
         if (!smsUtils.validateCode(phone, code)) {
             return ResponseVO.error(ResponseEnum.CODE_NOT_MATCH);
         }
@@ -259,7 +265,6 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 关注
-     *
      * @param userId 被关注的用户id
      * @param token  客户端传入的token
      */

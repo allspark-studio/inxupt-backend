@@ -30,6 +30,10 @@ public class Post implements Serializable {
 
     private String articleCover;
 
+    private String tags;
+
+    private Integer heat;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -136,6 +140,22 @@ public class Post implements Serializable {
         this.articleCover = articleCover == null ? null : articleCover.trim();
     }
 
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags == null ? null : tags.trim();
+    }
+
+    public Integer getHeat() {
+        return heat;
+    }
+
+    public void setHeat(Integer heat) {
+        this.heat = heat;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -155,6 +175,8 @@ public class Post implements Serializable {
         sb.append(", atIds=").append(atIds);
         sb.append(", visibleOutsideCircle=").append(visibleOutsideCircle);
         sb.append(", articleCover=").append(articleCover);
+        sb.append(", tags=").append(tags);
+        sb.append(", heat=").append(heat);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
