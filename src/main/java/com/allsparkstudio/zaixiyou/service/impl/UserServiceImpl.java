@@ -4,11 +4,13 @@ import com.allsparkstudio.zaixiyou.consts.DefaultSettingConsts;
 import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
+import com.allsparkstudio.zaixiyou.enums.RemindActionEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.ValidateForm;
 import com.allsparkstudio.zaixiyou.pojo.form.PasswordForm;
 import com.allsparkstudio.zaixiyou.pojo.form.UpdateUserForm;
+import com.allsparkstudio.zaixiyou.pojo.po.EventRemind;
 import com.allsparkstudio.zaixiyou.pojo.po.Follow;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
@@ -52,16 +54,10 @@ public class UserServiceImpl implements UserService {
     private PostMapper postMapper;
 
     @Autowired
-    private UserPostMapper userPostMapper;
-
-    @Autowired
-    private UserCommentMapper userCommentMapper;
-
-    @Autowired
     private FollowMapper followMapper;
 
     @Autowired
-    private DailyStatisticsMapper dailyStatisticsMapper;
+    private UserPostFavoriteMapper userPostFavoriteMapper;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -217,7 +213,7 @@ public class UserServiceImpl implements UserService {
         myPageVO.setNewsNum(newsNum);
         myPageVO.setFansNum(followMapper.countByFollowedUserId(uid));
         myPageVO.setFollowNum(followMapper.countByUserId(uid));
-        Integer favoriteNum = userPostMapper.countFavoriteByUserId(uid);
+        Integer favoriteNum = userPostFavoriteMapper.countByUserId(uid);
         myPageVO.setFavoriteNum(favoriteNum);
 
         return ResponseVO.success(myPageVO);
@@ -270,7 +266,43 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public ResponseVO follow(Integer userId, String token) {
-        return toggleFollow(userId, token, true);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED, "身份校验失败");
+        }
+        Integer myId = jwtUtils.getIdFromToken(token);
+        if (myId.equals(userId)) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "不能关注自己哦");
+        }
+        Follow follow = followMapper.selectBy2UserId(myId, userId);
+        if (follow == null) {
+            follow = new Follow();
+            follow.setUserId(myId);
+            follow.setFollowedUserId(userId);
+            follow.setStatus(true);
+            int result = followMapper.insertSelective(follow);
+            if (result != 1) {
+                log.error("关注用户时出现错误,'follower'表更新失败");
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        follow.setFollowedUserId(userId);
+        follow.setStatus(true);
+        int result = followMapper.updateByPrimaryKeySelective(follow);
+        if (result != 1) {
+            log.error("关注用户时出现错误,'follower'表更新失败");
+        }
+        // MQ更新用户经验
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFollowed", userId);
+        // MQ通知用户被关注
+        EventRemind remind = new EventRemind();
+        remind.setAction(RemindActionEnum.FOLLOW.getCode());
+        remind.setSenderId(myId);
+        remind.setReceiveId(userId);
+        rabbitTemplate.convertAndSend("eventRemind", remind);
+        return ResponseVO.success();
     }
 
     /**
@@ -282,7 +314,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseVO disFollow(Integer userId, String token) {
 
-        return toggleFollow(userId, token, false);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED, "身份校验失败");
+        }
+        Integer myId = jwtUtils.getIdFromToken(token);
+        if (myId.equals(userId)) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "不能取关自己哦");
+        }
+        Follow follow = followMapper.selectBy2UserId(myId, userId);
+        if (follow == null) {
+            follow = new Follow();
+            follow.setUserId(myId);
+            follow.setFollowedUserId(userId);
+            follow.setStatus(false);
+            int result = followMapper.insertSelective(follow);
+            if (result != 1) {
+                log.error("取消关注用户时出现错误,'follower'表更新失败");
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        follow.setFollowedUserId(userId);
+        follow.setStatus(false);
+        int result = followMapper.updateByPrimaryKeySelective(follow);
+        if (result != 1) {
+            log.error("取消关注用户时出现错误,'follower'表更新失败");
+        }
+        return ResponseVO.success();
     }
 
     /**
@@ -416,35 +476,5 @@ public class UserServiceImpl implements UserService {
         userLoginVO.setToken(token);
         userLoginVO.setUserId(user.getId());
         return ResponseVO.success(userLoginVO);
-    }
-
-    /**
-     * 切换关注状态
-     */
-    private ResponseVO toggleFollow(Integer userId, String token, Boolean status) {
-        if (StringUtils.isEmpty(token)) {
-            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
-        }
-        if (!jwtUtils.validateToken(token)) {
-            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED, "身份校验失败");
-        }
-        Integer myId = jwtUtils.getIdFromToken(token);
-        if (status && myId.equals(userId)) {
-            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "不能关注自己哦");
-        }
-        User me = userMapper.selectByPrimaryKey(myId);
-        Follow follow = new Follow();
-        follow.setUserId(me.getId());
-        follow.setFollowedUserId(userId);
-        follow.setStatus(status);
-        int result = followMapper.updateFollow(follow);
-        if (result == 0 || result > 2) {
-            log.error("关注/取关用户时出现错误,'follower'表更新失败");
-        }
-        if (status) {
-            // MQ更新被关注者的经验
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFollow", userId);
-        }
-        return status ? ResponseVO.success("关注成功") : ResponseVO.success("取消关注成功");
     }
 }

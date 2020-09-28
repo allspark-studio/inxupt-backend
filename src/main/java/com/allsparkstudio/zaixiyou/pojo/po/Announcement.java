@@ -3,7 +3,7 @@ package com.allsparkstudio.zaixiyou.pojo.po;
 import java.io.Serializable;
 import java.util.Date;
 
-public class CircleNotice implements Serializable {
+public class Announcement implements Serializable {
     private Integer id;
 
     private Integer circleId;

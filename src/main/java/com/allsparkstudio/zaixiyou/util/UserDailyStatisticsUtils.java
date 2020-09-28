@@ -2,7 +2,6 @@ package com.allsparkstudio.zaixiyou.util;
 
 import com.allsparkstudio.zaixiyou.enums.UserDailyLimitEnum;
 import com.allsparkstudio.zaixiyou.pojo.RedisEntity.UserDailyStatistics;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,8 +17,6 @@ public class UserDailyStatisticsUtils {
 
     @Resource
     RedisTemplate<String, Object> redisTemplate;
-
-    private static final Gson gson = new Gson();
 
     private static final String KEY = "userDailyStatistics";
 
@@ -63,12 +60,12 @@ public class UserDailyStatisticsUtils {
         return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.CIRCLE_NUM.getLimit();
     }
 
-    public boolean isAddCircleNoticeLimited(int userId) {
+    public boolean isAddAnnouncementLimited(int userId) {
         UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
         if (userDailyStatistics == null) {
             return false;
         }
-        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.CIRCLE_NOTICE_NUM.getLimit();
+        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.ANNOUNCEMENT_NUM.getLimit();
     }
 
     public void updateLogin(Integer userId) {
@@ -86,7 +83,6 @@ public class UserDailyStatisticsUtils {
     }
 
     public void updatePostNum(Integer userId) {
-        //
         synchronized (this) {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
@@ -128,7 +124,7 @@ public class UserDailyStatisticsUtils {
         }
     }
 
-    public void updateCircle(Integer userId) {
+    public void updateCircleNum(Integer userId) {
         synchronized (this) {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
@@ -142,14 +138,14 @@ public class UserDailyStatisticsUtils {
         }
     }
 
-    public void updateCircleNotice(Integer userId) {
+    public void updateAnnouncementNum(Integer userId) {
         synchronized (this) {
             UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
             if (userDailyStatistics == null) {
                 userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setCircleNoticeNum(1);
+                userDailyStatistics.setAnnouncementNum(1);
             } else {
-                userDailyStatistics.setCircleNoticeNum(userDailyStatistics.getCircleNoticeNum() + 1);
+                userDailyStatistics.setAnnouncementNum(userDailyStatistics.getAnnouncementNum() + 1);
             }
             redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
             redisTemplate.expireAt(KEY, getMidnight());

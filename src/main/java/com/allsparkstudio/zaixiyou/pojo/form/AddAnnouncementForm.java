@@ -13,7 +13,7 @@ import java.util.List;
 
 @Data
 @ApiModel("发布圈子公告")
-public class AddCircleNoticeForm {
+public class AddAnnouncementForm {
 
     @ApiModelProperty("标题")
     private String title;

@@ -16,4 +16,8 @@ public interface UserCommentCoinMapper {
     int updateByPrimaryKey(UserCommentCoin record);
 
     UserCommentCoin selectByUserIdAndCommentId(Integer userId, Integer commentId);
+
+    int countByCommentId(Integer commentId);
+
+    void deleteByCommentId(Integer commentId);
 }

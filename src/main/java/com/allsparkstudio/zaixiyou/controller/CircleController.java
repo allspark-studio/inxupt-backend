@@ -2,7 +2,7 @@ package com.allsparkstudio.zaixiyou.controller;
 
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleArticleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleForm;
-import com.allsparkstudio.zaixiyou.pojo.form.AddCircleNoticeForm;
+import com.allsparkstudio.zaixiyou.pojo.form.AddAnnouncementForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCirclePostForm;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.allsparkstudio.zaixiyou.service.CircleService;
@@ -65,47 +65,47 @@ public class CircleController {
         return circleService.listCircles(userId, token);
     }
 
-    @PostMapping("/circle/{circleId}/notice")
+    @PostMapping("/circle/{circleId}/announcement")
     @ApiOperation("发布公告")
-    public ResponseVO addNotice(@PathVariable("circleId") Integer circleId,
-                                @RequestBody AddCircleNoticeForm form,
-                                @RequestHeader(value = "token", required = false) String token) {
-        return circleService.addNotice(circleId, form, token);
+    public ResponseVO addAnnouncement(@PathVariable("circleId") Integer circleId,
+                                      @RequestBody AddAnnouncementForm form,
+                                      @RequestHeader(value = "token", required = false) String token) {
+        return circleService.addAnnouncement(circleId, form, token);
     }
 
-    @PostMapping("/notice/{noticeId}/top")
+    @PostMapping("/announcement/{announcementId}/top")
     @ApiOperation("置顶公告")
-    public ResponseVO setTopNotice(@PathVariable("noticeId") Integer noticeId,
-                                   @RequestHeader(value = "token", required = false) String token) {
-        return circleService.toggleTopNotice(noticeId, true, token);
+    public ResponseVO setTopAnnouncement(@PathVariable("announcementId") Integer announcementId,
+                                         @RequestHeader(value = "token", required = false) String token) {
+        return circleService.toggleTopAnnouncement(announcementId, true, token);
     }
 
-    @DeleteMapping("/notice/{noticeId}/top")
+    @DeleteMapping("/announcement/{announcementId}/top")
     @ApiOperation("取消置顶公告")
-    public ResponseVO unsetTopNotice(@PathVariable("noticeId") Integer noticeId,
+    public ResponseVO unsetTopAnnouncement(@PathVariable("announcementId") Integer announcementId,
                                    @RequestHeader(value = "token", required = false) String token) {
-        return circleService.toggleTopNotice(noticeId, false, token);
+        return circleService.toggleTopAnnouncement(announcementId, false, token);
     }
 
-    @DeleteMapping("/notice/{noticeId}")
+    @DeleteMapping("/announcement/{announcementId}")
     @ApiOperation("删除公告")
-    public ResponseVO deleteNotice(@PathVariable("noticeId") Integer noticeId,
+    public ResponseVO deleteAnnouncement(@PathVariable("announcementId") Integer announcementId,
                                    @RequestHeader(value = "token", required = false) String token) {
-        return circleService.deleteNotice(noticeId, token);
+        return circleService.deleteAnnouncement(announcementId, token);
     }
 
 
-    @GetMapping("/circle/{circleId}/notices/")
+    @GetMapping("/circle/{circleId}/announcements/")
     @ApiOperation("公告列表")
-    public ResponseVO<List<NoticeInListVO>> listNotices(@PathVariable("circleId") Integer circleId,
-                                                        @RequestHeader(value = "token", required = false) String token) {
-        return circleService.listNotices(circleId, token);
+    public ResponseVO<List<AnnouncementInListVO>> listAnnouncements(@PathVariable("circleId") Integer circleId,
+                                                              @RequestHeader(value = "token", required = false) String token) {
+        return circleService.listAnnouncements(circleId, token);
     }
 
-    @GetMapping("/circle/notice/{noticeId}")
+    @GetMapping("/circle/announcement/{announcementId}")
     @ApiOperation("公告详情")
-    public ResponseVO<NoticeVO> getNotice(@PathVariable("noticeId") Integer noticeId) {
-        return circleService.getNotice(noticeId);
+    public ResponseVO<AnnouncementVO> getAnnouncement(@PathVariable("announcementId") Integer announcementId) {
+        return circleService.getAnnouncement(announcementId);
     }
 
     @GetMapping("/circle/{circleId}")

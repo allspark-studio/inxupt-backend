@@ -6,9 +6,9 @@ import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.enums.UserCircleRoleEnum;
 import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleForm;
-import com.allsparkstudio.zaixiyou.pojo.form.AddCircleNoticeForm;
+import com.allsparkstudio.zaixiyou.pojo.form.AddAnnouncementForm;
 import com.allsparkstudio.zaixiyou.pojo.po.Circle;
-import com.allsparkstudio.zaixiyou.pojo.po.CircleNotice;
+import com.allsparkstudio.zaixiyou.pojo.po.Announcement;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.po.UserCircle;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
@@ -52,7 +52,7 @@ public class CircleServiceImpl implements CircleService {
     PostCircleMapper postCircleMapper;
 
     @Autowired
-    CircleNoticeMapper circleNoticeMapper;
+    AnnouncementMapper announcementMapper;
 
     @Autowired
     JWTUtils jwtUtils;
@@ -76,8 +76,8 @@ public class CircleServiceImpl implements CircleService {
         }
         int userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE, "您已被禁言");
         }
         if (userDailyStatisticsUtils.isAddCircleLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -143,7 +143,7 @@ public class CircleServiceImpl implements CircleService {
     }
 
     @Override
-    public ResponseVO addNotice(Integer circleId, AddCircleNoticeForm form, String token) {
+    public ResponseVO addAnnouncement(Integer circleId, AddAnnouncementForm form, String token) {
         if (StringUtils.isEmpty(token)) {
             return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
@@ -152,10 +152,10 @@ public class CircleServiceImpl implements CircleService {
         }
         int userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE, "您已被禁言");
         }
-        if (userDailyStatisticsUtils.isAddCircleNoticeLimited(userId)) {
+        if (userDailyStatisticsUtils.isAddAnnouncementLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         Circle circle = circleMapper.selectByPrimaryKey(circleId);
@@ -167,12 +167,12 @@ public class CircleServiceImpl implements CircleService {
         if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
         }
-        CircleNotice notice = new CircleNotice();
-        notice.setCircleId(circleId);
-        notice.setTitle(form.getTitle());
-        notice.setBody(form.getBody());
-        notice.setAuthorId(userId);
-        notice.setState(form.getTop() ? 1 : 0);
+        Announcement announcement = new Announcement();
+        announcement.setCircleId(circleId);
+        announcement.setTitle(form.getTitle());
+        announcement.setBody(form.getBody());
+        announcement.setAuthorId(userId);
+        announcement.setState(form.getTop() ? 1 : 0);
         if (form.getMediaUrls() != null && form.getMediaUrls().size() != 0) {
             StringBuilder mediaUrlsBuilder = new StringBuilder();
             for (String mediaUrl : form.getMediaUrls()) {
@@ -180,15 +180,15 @@ public class CircleServiceImpl implements CircleService {
                 mediaUrlsBuilder.append(";");
             }
             String mediaUrls = mediaUrlsBuilder.substring(0, mediaUrlsBuilder.length() - 1);
-            notice.setMediaUrls(mediaUrls);
+            announcement.setMediaUrls(mediaUrls);
         }
-        int result = circleNoticeMapper.insertSelective(notice);
+        int result = announcementMapper.insertSelective(announcement);
         if (result != 1) {
-            log.error("发布公告是出现错误,数据库表'circle_notice'插入失败");
+            log.error("发布公告是出现错误,数据库表'announcement'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
         // MQ更新用户当日发帖子数量，更新用户经验
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addCircleNotice", userId);
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addAnnouncement", userId);
         return ResponseVO.success();
     }
 
@@ -229,33 +229,33 @@ public class CircleServiceImpl implements CircleService {
             memberList.add(memberVO);
         }
         circleDetailVO.setMemberList(memberList);
-        CircleNotice firstNotice = circleNoticeMapper.selectFirstNotice(circleId);
-        List<Map<String, Object>> notices = new ArrayList<>();
-        Map<String, Object> firstNoticeMap = new HashMap<>(3);
-        if (firstNotice != null) {
-            firstNoticeMap.put("id", firstNotice.getId());
-            firstNoticeMap.put("title", firstNotice.getTitle());
-            if (firstNotice.getState() == 0) {
-                firstNoticeMap.put("top", false);
-            } else if (firstNotice.getState() == 1) {
-                firstNoticeMap.put("top", true);
+        Announcement firstAnnouncement = announcementMapper.selectFirstAnnouncement(circleId);
+        List<Map<String, Object>> announcements = new ArrayList<>();
+        Map<String, Object> firstAnnouncementMap = new HashMap<>(3);
+        if (firstAnnouncement != null) {
+            firstAnnouncementMap.put("id", firstAnnouncement.getId());
+            firstAnnouncementMap.put("title", firstAnnouncement.getTitle());
+            if (firstAnnouncement.getState() == 0) {
+                firstAnnouncementMap.put("top", false);
+            } else if (firstAnnouncement.getState() == 1) {
+                firstAnnouncementMap.put("top", true);
             }
-            notices.add(firstNoticeMap);
+            announcements.add(firstAnnouncementMap);
         }
 
-        CircleNotice secondNotice = circleNoticeMapper.selectSecondNotice(circleId);
-        if (secondNotice != null) {
-            Map<String, Object> secondNoticeMap = new HashMap<>(3);
-            secondNoticeMap.put("id", secondNotice.getId());
-            secondNoticeMap.put("title", secondNotice.getTitle());
-            if (secondNotice.getState() == 0) {
-                secondNoticeMap.put("top", false);
-            } else if (secondNotice.getState() == 1) {
-                secondNoticeMap.put("top", true);
+        Announcement secondAnnouncement = announcementMapper.selectSecondAnnouncement(circleId);
+        if (secondAnnouncement != null) {
+            Map<String, Object> secondAnnouncementMap = new HashMap<>(3);
+            secondAnnouncementMap.put("id", secondAnnouncement.getId());
+            secondAnnouncementMap.put("title", secondAnnouncement.getTitle());
+            if (secondAnnouncement.getState() == 0) {
+                secondAnnouncementMap.put("top", false);
+            } else if (secondAnnouncement.getState() == 1) {
+                secondAnnouncementMap.put("top", true);
             }
-            notices.add(secondNoticeMap);
+            announcements.add(secondAnnouncementMap);
         }
-        circleDetailVO.setNotices(notices);
+        circleDetailVO.setAnnouncements(announcements);
         if (login) {
             Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
             if (role == null) {
@@ -295,6 +295,7 @@ public class CircleServiceImpl implements CircleService {
                     log.error("关注圈子时出现错误，数据库表'user_circle'更新失败");
                     return ResponseVO.error(ResponseEnum.ERROR);
                 }
+                rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
                 return ResponseVO.success();
             }
         }
@@ -308,6 +309,7 @@ public class CircleServiceImpl implements CircleService {
                     log.error("取消关注圈子时出现错误，数据库表'user_circle'更新失败");
                     return ResponseVO.error(ResponseEnum.ERROR);
                 }
+                rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
                 return ResponseVO.success();
             }
             // 圈主取消关注，提醒不能取消
@@ -344,28 +346,28 @@ public class CircleServiceImpl implements CircleService {
     }
 
     @Override
-    public ResponseVO<List<NoticeInListVO>> listNotices(Integer circleId, String token) {
-        List<CircleNotice> noticeList = circleNoticeMapper.selectAll(circleId);
-        List<NoticeInListVO> noticeVOList = new ArrayList<>();
-        for (CircleNotice notice : noticeList) {
-            NoticeInListVO noticeInListVO = new NoticeInListVO();
-            noticeInListVO.setId(notice.getId());
-            noticeInListVO.setTitle(notice.getTitle());
+    public ResponseVO<List<AnnouncementInListVO>> listAnnouncements(Integer circleId, String token) {
+        List<Announcement> announcementList = announcementMapper.selectAll(circleId);
+        List<AnnouncementInListVO> announcementVOList = new ArrayList<>();
+        for (Announcement announcement : announcementList) {
+            AnnouncementInListVO announcementInListVO = new AnnouncementInListVO();
+            announcementInListVO.setId(announcement.getId());
+            announcementInListVO.setTitle(announcement.getTitle());
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-            noticeInListVO.setPublishTime(simpleDateFormat.format(notice.getCreateTime()));
-            noticeInListVO.setBody(notice.getBody());
-            noticeInListVO.setAuthorId(notice.getAuthorId());
-            User author = userMapper.selectByPrimaryKey(notice.getAuthorId());
+            announcementInListVO.setPublishTime(simpleDateFormat.format(announcement.getCreateTime()));
+            announcementInListVO.setBody(announcement.getBody());
+            announcementInListVO.setAuthorId(announcement.getAuthorId());
+            User author = userMapper.selectByPrimaryKey(announcement.getAuthorId());
             if (author == null) {
-                noticeInListVO.setAuthorName("用户不存在");
+                announcementInListVO.setAuthorName("用户不存在");
             } else {
-                noticeInListVO.setAuthorName(author.getNickname());
+                announcementInListVO.setAuthorName(author.getNickname());
             }
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-            noticeInListVO.setTop(notice.getState() == 1);
-            noticeVOList.add(noticeInListVO);
+            announcementInListVO.setTop(announcement.getState() == 1);
+            announcementVOList.add(announcementInListVO);
         }
-        return ResponseVO.success(noticeVOList);
+        return ResponseVO.success(announcementVOList);
     }
 
     @Override
@@ -404,42 +406,42 @@ public class CircleServiceImpl implements CircleService {
     }
 
     @Override
-    public ResponseVO<NoticeVO> getNotice(Integer noticeId) {
-        CircleNotice notice = circleNoticeMapper.selectByPrimaryKey(noticeId);
-        if (notice == null) {
+    public ResponseVO<AnnouncementVO> getAnnouncement(Integer announcementId) {
+        Announcement announcement = announcementMapper.selectByPrimaryKey(announcementId);
+        if (announcement == null) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "公告不存在");
         }
-        NoticeVO noticeVO = new NoticeVO();
-        noticeVO.setTitle(notice.getTitle());
-        noticeVO.setBody(notice.getBody());
-        if (notice.getMediaUrls() != null && !StringUtils.isEmpty(notice.getMediaUrls())) {
+        AnnouncementVO announcementVO = new AnnouncementVO();
+        announcementVO.setTitle(announcement.getTitle());
+        announcementVO.setBody(announcement.getBody());
+        if (announcement.getMediaUrls() != null && !StringUtils.isEmpty(announcement.getMediaUrls())) {
             List<String> mediaUrlList;
-            String[] mediaUrl = notice.getMediaUrls().split(";");
+            String[] mediaUrl = announcement.getMediaUrls().split(";");
             mediaUrlList = Arrays.asList(mediaUrl);
-            noticeVO.setMediaUrls(mediaUrlList);
+            announcementVO.setMediaUrls(mediaUrlList);
         }
-        noticeVO.setTop(notice.getState() == 1);
-        return ResponseVO.success(noticeVO);
+        announcementVO.setTop(announcement.getState() == 1);
+        return ResponseVO.success(announcementVO);
     }
 
     @Override
-    public ResponseVO deleteNotice(Integer noticeId, String token) {
+    public ResponseVO deleteAnnouncement(Integer announcementId, String token) {
         if (StringUtils.isEmpty(token)) {
             return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
         if (!jwtUtils.validateToken(token)) {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
-        CircleNotice notice = circleNoticeMapper.selectByPrimaryKey(noticeId);
-        if (notice == null) {
+        Announcement announcement = announcementMapper.selectByPrimaryKey(announcementId);
+        if (announcement == null) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "公告不存在");
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        Integer role = userCircleMapper.selectRoleOrNull(userId, notice.getCircleId());
+        Integer role = userCircleMapper.selectRoleOrNull(userId, announcement.getCircleId());
         if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "没有权限");
         }
-        int result = circleNoticeMapper.deleteByPrimaryKey(noticeId);
+        int result = announcementMapper.deleteByPrimaryKey(announcementId);
         if (result != 1) {
             return ResponseVO.error(ResponseEnum.ERROR);
         }
@@ -447,24 +449,24 @@ public class CircleServiceImpl implements CircleService {
     }
 
     @Override
-    public ResponseVO toggleTopNotice(Integer noticeId, Boolean top, String token) {
+    public ResponseVO toggleTopAnnouncement(Integer announcementId, Boolean top, String token) {
         if (StringUtils.isEmpty(token)) {
             return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
         if (!jwtUtils.validateToken(token)) {
             return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
         }
-        CircleNotice notice = circleNoticeMapper.selectByPrimaryKey(noticeId);
-        if (notice == null) {
+        Announcement announcement = announcementMapper.selectByPrimaryKey(announcementId);
+        if (announcement == null) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "公告不存在");
         }
         Integer userId = jwtUtils.getIdFromToken(token);
-        Integer role = userCircleMapper.selectRoleOrNull(userId, notice.getCircleId());
+        Integer role = userCircleMapper.selectRoleOrNull(userId, announcement.getCircleId());
         if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "没有权限");
         }
-        notice.setState(top ? 1 : 0);
-        int result = circleNoticeMapper.updateState(notice);
+        announcement.setState(top ? 1 : 0);
+        int result = announcementMapper.updateState(announcement);
         if (result != 1) {
             return ResponseVO.error(ResponseEnum.ERROR);
         }

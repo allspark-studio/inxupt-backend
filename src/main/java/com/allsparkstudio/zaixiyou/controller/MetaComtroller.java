@@ -1,9 +1,12 @@
 package com.allsparkstudio.zaixiyou.controller;
 
 
+import com.allsparkstudio.zaixiyou.pojo.form.CheckVersionForm;
 import com.allsparkstudio.zaixiyou.pojo.form.FeedbackForm;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
+import com.allsparkstudio.zaixiyou.pojo.vo.VersionVO;
 import com.allsparkstudio.zaixiyou.service.MetaService;
+import com.allsparkstudio.zaixiyou.service.VersionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -24,15 +27,18 @@ public class MetaComtroller {
     @Autowired
     MetaService metaService;
 
+    @Autowired
+    VersionService versionService;
+
     @PostMapping("/feedback")
     @ApiOperation("反馈")
     public ResponseVO feedback(@RequestBody FeedbackForm form) {
         return metaService.feedback(form);
     }
 
-    @GetMapping("/version")
+    @PostMapping("/version")
     @ApiOperation("检测版本号")
-    public ResponseVO getVersion() {
-        return metaService.getVersion();
+    public VersionVO getVersion(@RequestBody CheckVersionForm form) {
+        return versionService.checkVersion(form);
     }
 }

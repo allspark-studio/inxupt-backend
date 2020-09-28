@@ -23,9 +23,9 @@ public interface FollowMapper {
 
     boolean isFollowed(Integer myId, Integer hisId);
 
-    int updateFollow(Follow record);
-
     List<Integer> selectFansIdList(Integer userId);
 
     List<Integer> selectFollowsIdList(Integer userId);
+
+    Follow selectBy2UserId(Integer userId, Integer followedUserId);
 }

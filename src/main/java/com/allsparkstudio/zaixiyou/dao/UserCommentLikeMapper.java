@@ -16,4 +16,8 @@ public interface UserCommentLikeMapper {
     int updateByPrimaryKey(UserCommentLike record);
 
     UserCommentLike selectByUserIdAndCommentId(Integer userId, Integer commentId);
+
+    int countByCommentId(Integer commentId);
+
+    void deleteByCommentId(Integer commentId);
 }

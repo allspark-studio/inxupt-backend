@@ -29,6 +29,6 @@ public class CircleDetailVO {
 
     private List<CircleMemberVO> memberList;
 
-    private List<Map<String, Object>> notices;
+    private List<Map<String, Object>> announcements;
 
 }

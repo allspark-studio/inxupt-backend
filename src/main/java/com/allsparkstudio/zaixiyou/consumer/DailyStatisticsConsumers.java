@@ -3,9 +3,7 @@ package com.allsparkstudio.zaixiyou.consumer;
 import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.AddExpEnum;
-import com.allsparkstudio.zaixiyou.pojo.po.Comment;
 import com.allsparkstudio.zaixiyou.pojo.po.DailyStatistics;
-import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.util.UserDailyStatisticsUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -32,18 +30,6 @@ public class DailyStatisticsConsumers {
     @Autowired
     private DailyStatisticsMapper dailyStatisticsMapper;
 
-    @Autowired
-    private PostMapper postMapper;
-
-    @Autowired
-    private UserPostMapper userPostMapper;
-
-    @Autowired
-    private CommentMapper commentMapper;
-
-    @Autowired
-    private UserCommentMapper userCommentMapper;
-
     /**
      * MQ延迟处理jwt验证成功后更新日活数据和更新用户最后登录时间
      *
@@ -65,7 +51,7 @@ public class DailyStatisticsConsumers {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         user.setLastActiveTime(simpleDateFormat.format(new Date()));
         userMapper.updateLastActiveTime(user);
-        // 加锁下面操作，防止多插入
+        // 加锁下面操作，防止多插入a
         synchronized (this) {
             if (!userDailyStatisticsUtils.isLogin(user.getId())) {
                 simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -137,16 +123,7 @@ public class DailyStatisticsConsumers {
     public void getLiked(Integer userId) {
         synchronized (this) {
             User user = userMapper.selectByPrimaryKey(userId);
-            Integer likeNum = 0;
-            List<Post> postList = postMapper.selectAllByAuthorId(userId);
-            List<Comment> commentList = commentMapper.selectAllByAuthorId(userId);
-            for (Post post : postList) {
-                likeNum += userPostMapper.countLikeByPostId(post.getId());
-            }
-            for (Comment comment : commentList) {
-                likeNum += userCommentMapper.countLikeByCommentId(comment.getId());
-            }
-            user.setLikeNum(likeNum);
+            user.setLikeNum(user.getLikeNum() + 1);
             userMapper.updateLikeNum(user);
             addExp(userId, AddExpEnum.GET_LIKE.getExp());
         }
@@ -172,7 +149,7 @@ public class DailyStatisticsConsumers {
                     // 指定交换机
                     exchange = @Exchange(name = "dailyStatisticsExchange"),
                     //
-                    key = {"getFollow"}
+                    key = {"getFollowd"}
             )})
     public void getFollow(Integer userId) {
         addExp(userId, AddExpEnum.GET_FOLLOWED.getExp());
@@ -256,6 +233,7 @@ public class DailyStatisticsConsumers {
                     key = {"addCircle"}
             )})
     public void addCircle(Integer userId) {
+        userDailyStatisticsUtils.updateCircleNum(userId);
         addExp(userId, AddExpEnum.ADD_CIRCLE.getExp());
     }
 
@@ -266,10 +244,11 @@ public class DailyStatisticsConsumers {
                     // 指定交换机
                     exchange = @Exchange(name = "dailyStatisticsExchange"),
                     //
-                    key = {"addCircleNotice"}
+                    key = {"addAnnouncement"}
             )})
-    public void addCircleNotice(Integer userId) {
-        addExp(userId, AddExpEnum.ADD_CIRCLE_NOTICE.getExp());
+    public void addAnnouncement(Integer userId) {
+        userDailyStatisticsUtils.updateAnnouncementNum(userId);
+        addExp(userId, AddExpEnum.ADD_ANNOUNCEMENT.getExp());
     }
 
     /**

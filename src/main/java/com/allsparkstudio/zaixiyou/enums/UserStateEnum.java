@@ -10,7 +10,7 @@ public enum UserStateEnum {
      */
     NORMAL(0),
 
-    DISABLE_SEND_MESSAGE(1),
+    MUTE(1),
 
     BANNED(2);
 

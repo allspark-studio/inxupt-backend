@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NoticeVO {
+public class AnnouncementVO {
 
     private String title;
 

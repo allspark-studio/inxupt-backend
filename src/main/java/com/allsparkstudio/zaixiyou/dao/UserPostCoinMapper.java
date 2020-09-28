@@ -16,4 +16,8 @@ public interface UserPostCoinMapper {
     int updateByPrimaryKey(UserPostCoin record);
 
     UserPostCoin selectByUserIdAndPostId(Integer userId, Integer postId);
+
+    int countByPostId(Integer postId);
+
+    void deleteByPostId(Integer postId);
 }

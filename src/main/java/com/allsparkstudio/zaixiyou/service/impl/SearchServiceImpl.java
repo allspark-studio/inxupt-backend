@@ -2,7 +2,6 @@ package com.allsparkstudio.zaixiyou.service.impl;
 
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
-import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
 import com.allsparkstudio.zaixiyou.pojo.vo.CircleInListVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.UserVO;
@@ -54,7 +53,13 @@ public class SearchServiceImpl implements SearchService {
     UserMapper userMapper;
 
     @Autowired
-    UserPostMapper userPostMapper;
+    UserPostLikeMapper userPostLikeMapper;
+
+    @Autowired
+    UserPostFavoriteMapper userPostFavoriteMapper;
+
+    @Autowired
+    UserPostCoinMapper userPostCoinMapper;
 
     @Autowired
     CommentMapper commentMapper;
@@ -174,23 +179,29 @@ public class SearchServiceImpl implements SearchService {
             }
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));
-            Integer likesNum = userPostMapper.countLikeByPostId(post.getId());
-            Integer favoritesNum = userPostMapper.countFavoriteByPostId(post.getId());
-            Integer coinsNum = userPostMapper.countCoinsByPostId(post.getId());
+            Integer likesNum = userPostLikeMapper.countByPostId(post.getId());
+            Integer favoritesNum = userPostFavoriteMapper.countByPostId(post.getId());
+            Integer coinsNum = userPostCoinMapper.countByPostId(post.getId());
             Integer commentsNum = commentMapper.countCommentsByPostId(post.getId());
             postVO.setLikeNum(likesNum);
             postVO.setFavoriteNum(favoritesNum);
             postVO.setCoinsNum(coinsNum);
             postVO.setCommentNum(commentsNum);
-            Boolean liked = false;
-            Boolean coined = false;
-            Boolean favorited = false;
+            boolean liked = false;
+            boolean coined = false;
+            boolean favorited = false;
             if (login) {
-                UserPost userPost = userPostMapper.selectByUserIdAndPostId(myId, post.getId());
-                if (userPost != null) {
-                    liked = userPost.getLiked();
-                    coined = userPost.getCoined();
-                    favorited = userPost.getFavorited();
+                UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(myId, post.getId());
+                UserPostFavorite userPostFavorite = userPostFavoriteMapper.selectByUserIdAndPostId(myId, post.getId());
+                UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(myId, post.getId());
+                if (userPostLike != null && userPostLike.getState().equals(1)) {
+                    liked = true;
+                }
+                if (userPostFavorite != null && userPostFavorite.getState().equals(1)) {
+                    favorited = true;
+                }
+                if (userPostCoin != null && userPostCoin.getState().equals(1)) {
+                    coined = true;
                 }
             }
             postVO.setLiked(liked);

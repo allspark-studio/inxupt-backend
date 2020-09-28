@@ -20,12 +20,6 @@
           and followed_user_id = #{hisId, jdbcType=INTEGER}
           and status = 1
     </select>
-    <update id="updateFollow" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
-        replace into follow
-        set followed_user_id = #{followedUserId,jdbcType=INTEGER},
-            user_id          = #{userId,jdbcType=INTEGER},
-            status           = #{status,jdbcType=BIT}
-    </update>
     <select id="selectFansIdList" parameterType="java.lang.Integer" resultType="java.lang.Integer">
         select followed_user_id
         from follow
@@ -37,5 +31,12 @@
         from follow
         where followed_user_id = #{userId, jdbcType=INTEGER}
           and status = 1
+    </select>
+    <select id="selectBy2UserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from follow
+        where user_id = #{userId,jdbcType=INTEGER}
+        and followed_user_id = #{followedUserId,jdbcType=INTEGER}
     </select>
 </mapper>

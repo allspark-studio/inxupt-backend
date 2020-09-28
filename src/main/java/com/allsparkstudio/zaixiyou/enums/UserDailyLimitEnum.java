@@ -14,7 +14,7 @@ public enum UserDailyLimitEnum {
 
     CIRCLE_NUM(20),
 
-    CIRCLE_NOTICE_NUM(30);
+    ANNOUNCEMENT_NUM(30);
 
     Integer limit;
 

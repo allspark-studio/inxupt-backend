@@ -8,4 +8,20 @@
         where user_id = #{userId,jdbcType=INTEGER}
         and post_id = #{postId,jdbcType=INTEGER}
     </select>
+    <select id="countByPostId" parameterType="java.lang.Integer" resultType="int">
+        select count(*)
+        from user_post_favorite
+        where post_id = #{postId,jdbcType=INTEGER}
+          and state = 1
+    </select>
+    <select id="countByUserId" parameterType="java.lang.Integer" resultType="int">
+        select count(*)
+        from user_post_favorite
+        where user_id = #{userId,jdbcType=INTEGER}
+          and state = 1
+    </select>
+    <delete id="deleteByPostId" parameterType="java.lang.Integer">
+        delete from user_post_favorite
+        where post_id = #{postId,jdbcType=INTEGER}
+    </delete>
 </mapper>

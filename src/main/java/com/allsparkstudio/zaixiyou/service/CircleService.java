@@ -1,7 +1,7 @@
 package com.allsparkstudio.zaixiyou.service;
 
 import com.allsparkstudio.zaixiyou.pojo.form.AddCircleForm;
-import com.allsparkstudio.zaixiyou.pojo.form.AddCircleNoticeForm;
+import com.allsparkstudio.zaixiyou.pojo.form.AddAnnouncementForm;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.github.pagehelper.PageInfo;
 
@@ -21,14 +21,14 @@ public interface CircleService {
 
 
     /**
-     * 根据id展示用的的圈子列表
+     * 根据id展示用户的圈子列表
      */
     ResponseVO<List<CircleInListVO>> listCircles(Integer userId, String token);
 
     /**
      * 发布公告
      */
-    ResponseVO<Map<String, Integer>> addNotice(Integer circleId, AddCircleNoticeForm form, String token);
+    ResponseVO<Map<String, Integer>> addAnnouncement(Integer circleId, AddAnnouncementForm form, String token);
 
     /**
      * 圈子详情页
@@ -51,7 +51,7 @@ public interface CircleService {
     /**
      * 获取圈子的全部公告列表
      */
-    ResponseVO<List<NoticeInListVO>> listNotices(Integer circleId, String token);
+    ResponseVO<List<AnnouncementInListVO>> listAnnouncements(Integer circleId, String token);
 
     /**
      * 列出圈子成员列表
@@ -61,15 +61,15 @@ public interface CircleService {
     /**
      * 公告详情
      */
-    ResponseVO<NoticeVO> getNotice(Integer noticeId);
+    ResponseVO<AnnouncementVO> getAnnouncement(Integer announcementId);
 
     /**
      * 删除公告
      */
-    ResponseVO deleteNotice(Integer noticeId, String token);
+    ResponseVO deleteAnnouncement(Integer announcementId, String token);
 
     /**
      * 修改公告置顶状态
      */
-    ResponseVO toggleTopNotice(Integer noticeId, Boolean top, String token);
+    ResponseVO toggleTopAnnouncement(Integer announcementId, Boolean top, String token);
 }

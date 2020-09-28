@@ -38,7 +38,7 @@ public class UserDailyStatistics {
     /**
      * 发布公告次数
      */
-    private Integer circleNoticeNum;
+    private Integer announcementNum;
 
     public UserDailyStatistics() {
         this.exp = 0;
@@ -46,6 +46,6 @@ public class UserDailyStatistics {
         this.postNum = 0;
         this.commentNum = 0;
         this.circleNum = 0;
-        this.circleNoticeNum = 0;
+        this.announcementNum = 0;
     }
 }

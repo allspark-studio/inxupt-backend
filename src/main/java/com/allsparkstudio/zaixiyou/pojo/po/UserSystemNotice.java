@@ -1,17 +1,18 @@
 package com.allsparkstudio.zaixiyou.pojo.po;
 
 import java.io.Serializable;
+import java.util.Date;
 
-public class UserComment implements Serializable {
+public class UserSystemNotice implements Serializable {
     private Integer id;
 
     private Integer userId;
 
-    private Integer commentId;
+    private Integer noticeId;
 
-    private Boolean liked;
+    private Integer state;
 
-    private Boolean coined;
+    private Date pullTime;
 
     private static final long serialVersionUID = 1L;
 
@@ -31,28 +32,28 @@ public class UserComment implements Serializable {
         this.userId = userId;
     }
 
-    public Integer getCommentId() {
-        return commentId;
+    public Integer getNoticeId() {
+        return noticeId;
     }
 
-    public void setCommentId(Integer commentId) {
-        this.commentId = commentId;
+    public void setNoticeId(Integer noticeId) {
+        this.noticeId = noticeId;
     }
 
-    public Boolean getLiked() {
-        return liked;
+    public Integer getState() {
+        return state;
     }
 
-    public void setLiked(Boolean liked) {
-        this.liked = liked;
+    public void setState(Integer state) {
+        this.state = state;
     }
 
-    public Boolean getCoined() {
-        return coined;
+    public Date getPullTime() {
+        return pullTime;
     }
 
-    public void setCoined(Boolean coined) {
-        this.coined = coined;
+    public void setPullTime(Date pullTime) {
+        this.pullTime = pullTime;
     }
 
     @Override
@@ -63,9 +64,9 @@ public class UserComment implements Serializable {
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
         sb.append(", userId=").append(userId);
-        sb.append(", commentId=").append(commentId);
-        sb.append(", liked=").append(liked);
-        sb.append(", coined=").append(coined);
+        sb.append(", noticeId=").append(noticeId);
+        sb.append(", state=").append(state);
+        sb.append(", pullTime=").append(pullTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

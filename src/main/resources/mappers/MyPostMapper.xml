@@ -54,7 +54,6 @@
         select *
         from post
         where id in (select post_id from post_circle where circle_id = #{circleId,jdbcType=INTEGER})
-        and visible_outside_circle = 0
         order by id desc
     </select>
     <select id="selectPostsByCircleIdSortedByHeat" parameterType="java.lang.Integer" resultMap="BaseResultMap">
@@ -65,10 +64,10 @@
         order by heat desc
     </select>
     <select id="selectFavoritesPostsByUserIdAndType" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-        select *
+        select <include refid="Base_Column_List" />
         from post
         where type = #{type,jdbcType=INTEGER}
-        and id in (select post_id from user_post where user_id = #{userId,jdbcType=INTEGER} and favorited = 1)
+        and id in (select post_id from user_post_favorite where user_id = #{userId,jdbcType=INTEGER} and state = 1)
         order by id desc
     </select>
     <update id="updateHeat" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">

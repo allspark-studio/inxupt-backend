@@ -1,10 +1,7 @@
 package com.allsparkstudio.zaixiyou.service.impl;
 
 import com.allsparkstudio.zaixiyou.dao.*;
-import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
-import com.allsparkstudio.zaixiyou.enums.SortTypeEnum;
-import com.allsparkstudio.zaixiyou.enums.UserContentStateEnum;
-import com.allsparkstudio.zaixiyou.enums.UserStateEnum;
+import com.allsparkstudio.zaixiyou.enums.*;
 import com.allsparkstudio.zaixiyou.pojo.form.AddCommentForm;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
 import com.allsparkstudio.zaixiyou.pojo.vo.CommentVO;
@@ -45,7 +42,10 @@ public class CommentServiceImpl implements CommentService {
     private PostMapper postMapper;
 
     @Autowired
-    private UserCommentMapper userCommentMapper;
+    private UserCommentLikeMapper userCommentLikeMapper;
+
+    @Autowired
+    private UserCommentCoinMapper userCommentCoinMapper;
 
     @Autowired
     private JWTUtils jwtUtils;
@@ -68,7 +68,7 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> commentsList = new ArrayList<>();
         if (SortTypeEnum.TIME.getCode().equals(sortedBy)) {
             commentsList = commentMapper.selectByPostIdSortedByTime(postId);
-        }else {
+        } else {
             commentsList = commentMapper.selectByPostIdSortedByHeat(postId);
         }
         List<CommentVO> commentVOList = new ArrayList<>();
@@ -91,17 +91,20 @@ public class CommentServiceImpl implements CommentService {
             // TODO: 一次查询全部聚合结果
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             commentVO.setCreateTime(simpleDateFormat.format(comment.getCreateTime()));
-            Integer likeNum = userCommentMapper.countLikeByCommentId(comment.getId());
-            Integer coinsNum = userCommentMapper.countCoinsByCommentId(comment.getId());
+            Integer likeNum = userCommentLikeMapper.countByCommentId(comment.getId());
+            Integer coinsNum = userCommentCoinMapper.countByCommentId(comment.getId());
             commentVO.setLikeNum(likeNum);
             commentVO.setCoinsNum(coinsNum);
-            Boolean liked = false;
-            Boolean coined = false;
+            boolean liked = false;
+            boolean coined = false;
             if (login) {
-                UserComment userComment = userCommentMapper.selectByUserIdAndCommentId(userId, comment.getId());
-                if (userComment != null) {
-                    liked = userComment.getLiked();
-                    coined = userComment.getCoined();
+                UserCommentLike userCommentLike = userCommentLikeMapper.selectByUserIdAndCommentId(userId, comment.getId());
+                UserCommentCoin userCommentCoin = userCommentCoinMapper.selectByUserIdAndCommentId(userId, comment.getId());
+                if (userCommentLike != null && userCommentLike.getState().equals(1)) {
+                    liked = true;
+                }
+                if (userCommentCoin != null && userCommentCoin.getState().equals(1)) {
+                    coined = true;
                 }
             }
             commentVO.setLiked(liked);
@@ -135,17 +138,20 @@ public class CommentServiceImpl implements CommentService {
                 subCommentVO.setAuthorLevel(subAuthor.getLevel());
                 simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
                 subCommentVO.setCreateTime(simpleDateFormat.format(subComment.getCreateTime()));
-                Integer subLikeNum = userCommentMapper.countLikeByCommentId(comment.getId());
-                Integer subCoinsNum = userCommentMapper.countCoinsByCommentId(comment.getId());
+                Integer subLikeNum = userCommentLikeMapper.countByCommentId(comment.getId());
+                Integer subCoinsNum = userCommentCoinMapper.countByCommentId(comment.getId());
                 subCommentVO.setLikeNum(subLikeNum);
                 subCommentVO.setCoinsNum(subCoinsNum);
-                Boolean subLiked = false;
-                Boolean subCoined = false;
+                boolean subLiked = false;
+                boolean subCoined = false;
                 if (login) {
-                    UserComment userComment = userCommentMapper.selectByUserIdAndCommentId(userId, subComment.getId());
-                    if (userComment != null) {
-                        subLiked = userComment.getLiked();
-                        subCoined = userComment.getCoined();
+                    UserCommentLike userCommentLike = userCommentLikeMapper.selectByUserIdAndCommentId(userId, comment.getId());
+                    UserCommentCoin userCommentCoin = userCommentCoinMapper.selectByUserIdAndCommentId(userId, comment.getId());
+                    if (userCommentLike != null && userCommentLike.getState().equals(1)) {
+                        subLiked = true;
+                    }
+                    if (userCommentCoin != null && userCommentCoin.getState().equals(1)) {
+                        subCoined = true;
                     }
                 }
                 subCommentVO.setLiked(subLiked);
@@ -175,8 +181,8 @@ public class CommentServiceImpl implements CommentService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.ERROR, "您已被禁言");
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE, "您已被禁言");
         }
         if (userDailyStatisticsUtils.isAddCommentLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -196,8 +202,44 @@ public class CommentServiceImpl implements CommentService {
         }
         // MQ更新用户和经验值和当天发表评论数量
         rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addComment", userId);
-        if (addCommentForm.getReplyUserId() != null) {
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getComment", addCommentForm.getReplyUserId());
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getComment", addCommentForm.getReplyUserId());
+
+        // 构建事件提醒对象
+        EventRemind remind = new EventRemind();
+        remind.setSourceId(postId);
+        remind.setSenderId(userId);
+        remind.setReceiveId(post.getAuthorId());
+        remind.setReplyContent(addCommentForm.getBody().length() > 20 ? addCommentForm.getBody().substring(0, 20) + "..." : addCommentForm.getBody());
+        if (addCommentForm.getRootId().equals(0)) {
+            if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+                StringBuilder sourceContentBuilder = new StringBuilder();
+                if (post.getBody() != null) {
+                    sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
+                }
+                if (post.getPostMediaUrls() != null) {
+                    for (int i = 0; i < post.getPostMediaUrls().split(";").length; i++) {
+                        sourceContentBuilder.append("[图片]");
+                    }
+                }
+                remind.setSourceContent(sourceContentBuilder.toString());
+            } else {
+                remind.setSourceContent(post.getArticleTitle());
+            }
+            // MQ通知用户帖子被回复
+            remind.setAction(RemindActionEnum.REPLY_POST.getCode());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+            // MQ更新帖子热度
+            rabbitTemplate.convertAndSend("updateHeat", "post", postId);
+        } else {
+            // MQ更新评论热度
+            rabbitTemplate.convertAndSend("updateHeat", "comment", addCommentForm.getRootId());
+            // MQ通知用户帖子被回复
+            remind.setAction(RemindActionEnum.REPLY_COMMENT.getCode());
+            Comment rootComment = commentMapper.selectByPrimaryKey(addCommentForm.getRootId());
+            if (rootComment.getBody() != null) {
+                remind.setSourceContent(rootComment.getBody().length() > 20 ? rootComment.getBody().substring(0, 20) + "..." : rootComment.getBody());
+            }
+            rabbitTemplate.convertAndSend("eventRemind", remind);
         }
         CommentVO commentVO = new CommentVO();
         commentVO.setText(comment.getBody());
@@ -245,39 +287,70 @@ public class CommentServiceImpl implements CommentService {
             log.error("删除评论失败, userId:[{}], commentId:[{}]", userId, commentId);
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        // 删评论不删用户-评论关系表：这样用户被点赞数不会减只会加
-//        List<UserComment> userCommentList = userCommentMapper.selectByCommentId(commentId);
-//        for (UserComment userComment : userCommentList) {
-//            userCommentMapper.deleteByPrimaryKey(userComment.getId());
-//        }
+        // 删用户-评论-点赞表
+        userCommentLikeMapper.deleteByCommentId(commentId);
+        // 删用户-评论-投币表
+        userCommentCoinMapper.deleteByCommentId(commentId);
         List<Comment> subCommentList = commentMapper.selectSubComments(commentId);
         for (Comment subComment : subCommentList) {
+            // 删用户-评论-点赞表
+            userCommentLikeMapper.deleteByCommentId(subComment.getId());
+            // 删用户-评论-投币表
+            userCommentCoinMapper.deleteByCommentId(subComment.getId());
             commentMapper.deleteByPrimaryKey(subComment.getId());
-            // 删评论不删用户-评论关系表：这样用户被点赞数不会减只会加
-//            List<UserComment> subUserCommentList = userCommentMapper.selectByCommentId(subComment.getId());
-//            for (UserComment subUserComment : subUserCommentList) {
-//                userCommentMapper.deleteByPrimaryKey(subUserComment.getId());
-//            }
         }
         return ResponseVO.success();
     }
 
     @Override
     public ResponseVO like(Integer commentId, String token) {
-        return updateUserCommentState(commentId, token, UserContentStateEnum.LIKE, true);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Comment comment = commentMapper.selectByPrimaryKey(commentId);
+        if (comment == null) {
+            log.error("请求的评论不存在, commentId:[{}]", commentId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "评论不存在");
+        }
+        UserCommentLike userCommentLike = userCommentLikeMapper.selectByUserIdAndCommentId(userId, commentId);
+        if (userCommentLike == null) {
+            userCommentLike = new UserCommentLike();
+            userCommentLike.setUserId(userId);
+            userCommentLike.setCommentId(commentId);
+            userCommentLike.setState(1);
+            int result = userCommentLikeMapper.insertSelective(userCommentLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // MQ增加经验值
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", comment.getAuthorId());
+            // MQ通知作者内容被点赞
+            EventRemind remind = new EventRemind();
+            remind.setAction(RemindActionEnum.LIKE_COMMENT.getCode());
+            if (comment.getBody() != null) {
+                remind.setSourceContent(comment.getBody().length() > 20 ? comment.getBody().substring(0, 20) + "..." : comment.getBody());
+            }
+            remind.setSourceId(commentId);
+            remind.setSenderId(userId);
+            remind.setReceiveId(comment.getAuthorId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        } else {
+            userCommentLike.setState(1);
+            int result = userCommentLikeMapper.updateByPrimaryKeySelective(userCommentLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        rabbitTemplate.convertAndSend("updateHeat", "comment", commentId);
+        return ResponseVO.success();
     }
 
     @Override
     public ResponseVO dislike(Integer commentId, String token) {
-        return updateUserCommentState(commentId, token, UserContentStateEnum.LIKE, false);
-    }
-
-    @Override
-    public ResponseVO coin(Integer commentId, String token) {
-        return updateUserCommentState(commentId, token, UserContentStateEnum.COIN, true);
-    }
-
-    ResponseVO updateUserCommentState(Integer commentId, String token, UserContentStateEnum stateEnum, Boolean state) {
         if (StringUtils.isEmpty(token)) {
             return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
@@ -290,49 +363,82 @@ public class CommentServiceImpl implements CommentService {
             log.error("请求的评论不存在, postId:[{}]", commentId);
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "评论不存在");
         }
-        UserComment userComment = userCommentMapper.selectByUserIdAndCommentId(userId, commentId);
-        if (userComment == null) {
-            userComment = new UserComment();
-            userComment.setUserId(userId);
-            userComment.setCommentId(commentId);
-        }
-        if (UserContentStateEnum.LIKE.equals(stateEnum)) {
-            userComment.setLiked(state);
-        } else if (UserContentStateEnum.COIN.equals(stateEnum)) {
-            // 不能给自己投币
-            if (userId.equals(comment.getAuthorId())) {
-                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
-            }
-            // 如果用户可投币数量小于1，提示硬币不足。
-            User user = userMapper.selectByPrimaryKey(userId);
-            if (user == null) {
+        UserCommentLike userCommentLike = userCommentLikeMapper.selectByUserIdAndCommentId(userId, commentId);
+        if (userCommentLike == null) {
+            userCommentLike = new UserCommentLike();
+            userCommentLike.setUserId(userId);
+            userCommentLike.setCommentId(commentId);
+            userCommentLike.setState(0);
+            int result = userCommentLikeMapper.insertSelective(userCommentLike);
+            if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
-            User author = userMapper.selectByPrimaryKey(comment.getAuthorId());
-            if (user.getInsertableCoins() < 1) {
-                return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
-            }
-            if (state) {
-                user.setInsertableCoins(user.getInsertableCoins() - 1);
-                author.setExchangeableCoins(user.getExchangeableCoins() + 1);
-                int result1 = userMapper.updateInsertableCoins(user);
-                if (result1 != 1) {
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-                int result2 = userMapper.updateExchangeableCoins(author);
-                if (result2 != 1) {
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-            }
-            userComment.setCoined(state);
         } else {
-            return ResponseVO.error(ResponseEnum.ERROR, "更新帖子状态失败");
+            userCommentLike.setState(0);
+            int result = userCommentLikeMapper.updateByPrimaryKeySelective(userCommentLike);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
         }
-        int result = userCommentMapper.updateState(userComment);
-        if (result == 0 || result > 2) {
-            log.error("更新帖子点赞/收藏/投币状态失败，数据库表'user_post'更新失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
+        return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO coin(Integer commentId, String token) {
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Comment comment = commentMapper.selectByPrimaryKey(commentId);
+        if (comment == null) {
+            log.error("请求的评论不存在, commentId:[{}]", commentId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "评论不存在");
+        }
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (userId.equals(comment.getAuthorId())) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
+        }
+        if (user.getInsertableCoins() <= 0) {
+            return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
+        }
+
+        user.setInsertableCoins(user.getInsertableCoins() - 1);
+        User author = userMapper.selectByPrimaryKey(comment.getAuthorId());
+        author.setExchangeableCoins(author.getExchangeableCoins());
+        userMapper.updateInsertableCoins(user);
+        userMapper.updateExchangeableCoins(user);
+
+        UserCommentCoin userCommentCoin = userCommentCoinMapper.selectByUserIdAndCommentId(userId, commentId);
+        if (userCommentCoin == null) {
+            userCommentCoin = new UserCommentCoin();
+            userCommentCoin.setUserId(userId);
+            userCommentCoin.setCommentId(commentId);
+            userCommentCoin.setState(1);
+            int result = userCommentCoinMapper.insertSelective(userCommentCoin);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // MQ增加经验值
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", comment.getAuthorId());
+            // MQ通知作者内容被投币
+            EventRemind remind = new EventRemind();
+            remind.setAction(RemindActionEnum.COIN_COMMENT.getCode());
+            remind.setSourceContent(comment.getBody().length() > 20 ? comment.getBody().substring(0, 20) + "..." : comment.getBody());
+            remind.setSourceId(commentId);
+            remind.setSenderId(userId);
+            remind.setReceiveId(comment.getAuthorId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        } else {
+            userCommentCoin.setState(1);
+            int result = userCommentCoinMapper.updateByPrimaryKeySelective(userCommentCoin);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        rabbitTemplate.convertAndSend("updateHeat", "comment", commentId);
         return ResponseVO.success();
     }
 }

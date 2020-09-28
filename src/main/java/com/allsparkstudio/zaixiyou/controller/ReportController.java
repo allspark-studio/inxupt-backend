@@ -8,6 +8,7 @@ import com.allsparkstudio.zaixiyou.pojo.form.ReportForm;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
+import com.allsparkstudio.zaixiyou.util.MailUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,9 @@ public class ReportController {
 
     @Autowired
     ReportMapper reportMapper;
+
+    @Autowired
+    MailUtils mailUtils;
 
     @PostMapping("/post/{postId}/report")
     @ApiOperation("举报帖子")
@@ -71,6 +75,7 @@ public class ReportController {
             log.error("举报帖子/文章时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        mailUtils.sendHtmlMail("362774405@qq.com", "举报帖子", "有新的举报内容");
         return ResponseVO.success();
     }
 
@@ -107,6 +112,7 @@ public class ReportController {
             log.error("举报评论时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        mailUtils.sendHtmlMail("362774405@qq.com", "举报评论", "有新的举报内容");
         return ResponseVO.success();
     }
 
@@ -138,6 +144,7 @@ public class ReportController {
             log.error("举报用户时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        mailUtils.sendHtmlMail("362774405@qq.com", "举报用户", "有新的举报内容");
         return ResponseVO.success();
     }
 
@@ -175,6 +182,7 @@ public class ReportController {
             log.error("举报圈子时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        mailUtils.sendHtmlMail("362774405@qq.com", "举报圈子", "有新的举报内容");
         return ResponseVO.success();
     }
 }

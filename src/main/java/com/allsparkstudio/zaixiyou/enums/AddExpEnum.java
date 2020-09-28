@@ -13,7 +13,7 @@ public enum AddExpEnum {
     ADD_POST(3),
     ADD_COMMENT(2),
     ADD_CIRCLE(5),
-    ADD_CIRCLE_NOTICE(3),
+    ADD_ANNOUNCEMENT(3),
     INSERT_COIN(3);
 
     Integer exp;

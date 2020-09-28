@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2020/9/1
  */
 @Data
-public class NoticeInListVO {
+public class AnnouncementInListVO {
 
     private Integer id;
 

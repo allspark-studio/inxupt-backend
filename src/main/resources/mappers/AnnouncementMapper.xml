@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.allsparkstudio.zaixiyou.dao.CircleNoticeMapper">
-  <resultMap id="BaseResultMap" type="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.AnnouncementMapper">
+  <resultMap id="BaseResultMap" type="com.allsparkstudio.zaixiyou.pojo.po.Announcement">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="circle_id" jdbcType="INTEGER" property="circleId" />
     <result column="title" jdbcType="VARCHAR" property="title" />
@@ -17,23 +17,23 @@
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    from circle_notice
+    from announcement
     where id = #{id,jdbcType=INTEGER}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from circle_notice
+    delete from announcement
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
-    insert into circle_notice (id, circle_id, title, 
+  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Announcement">
+    insert into announcement (id, circle_id, title, 
       body, author_id, media_urls, 
       state, create_time)
     values (#{id,jdbcType=INTEGER}, #{circleId,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, 
       #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, #{mediaUrls,jdbcType=VARCHAR}, 
       #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
-    insert into circle_notice
+  <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Announcement">
+    insert into announcement
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
         id,
@@ -87,8 +87,8 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
-    update circle_notice
+  <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Announcement">
+    update announcement
     <set>
       <if test="circleId != null">
         circle_id = #{circleId,jdbcType=INTEGER},
@@ -114,8 +114,8 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.allsparkstudio.zaixiyou.pojo.po.CircleNotice">
-    update circle_notice
+  <update id="updateByPrimaryKey" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Announcement">
+    update announcement
     set circle_id = #{circleId,jdbcType=INTEGER},
       title = #{title,jdbcType=VARCHAR},
       body = #{body,jdbcType=VARCHAR},

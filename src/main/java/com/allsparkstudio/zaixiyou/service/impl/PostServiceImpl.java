@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -37,9 +36,6 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private UserPostMapper userPostMapper;
 
     @Autowired
     private PostMapper postMapper;
@@ -61,6 +57,15 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private UserPostFavoriteMapper userPostFavoriteMapper;
+
+    @Autowired
+    private UserPostCoinMapper userPostCoinMapper;
+
+    @Autowired
+    private UserCommentLikeMapper userCommentLikeMapper;
+
+    @Autowired
+    private UserCommentCoinMapper userCommentCoinMapper;
 
     @Autowired
     JWTUtils jwtUtils;
@@ -119,7 +124,7 @@ public class PostServiceImpl implements PostService {
             if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
                 PageHelper.startPage(pageNum, pageSize);
                 postList = postMapper.selectAllByHeat();
-            }else {
+            } else {
                 PageHelper.startPage(pageNum, pageSize);
                 postList = postMapper.selectAllByTime();
             }
@@ -152,23 +157,29 @@ public class PostServiceImpl implements PostService {
             postVO.setBody(post.getBody());
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));
-            Integer likesNum = userPostMapper.countLikeByPostId(post.getId());
-            Integer favoritesNum = userPostMapper.countFavoriteByPostId(post.getId());
-            Integer coinsNum = userPostMapper.countCoinsByPostId(post.getId());
+            Integer likesNum = userPostLikeMapper.countByPostId(post.getId());
+            Integer favoritesNum = userPostFavoriteMapper.countByPostId(post.getId());
+            Integer coinsNum = userPostCoinMapper.countByPostId(post.getId());
             Integer commentsNum = commentMapper.countCommentsByPostId(post.getId());
             postVO.setLikeNum(likesNum);
             postVO.setFavoriteNum(favoritesNum);
             postVO.setCoinsNum(coinsNum);
             postVO.setCommentNum(commentsNum);
-            Boolean liked = false;
-            Boolean coined = false;
-            Boolean favorited = false;
+            boolean liked = false;
+            boolean coined = false;
+            boolean favorited = false;
             if (login) {
-                UserPost userPost = userPostMapper.selectByUserIdAndPostId(myId, post.getId());
-                if (userPost != null) {
-                    liked = userPost.getLiked();
-                    coined = userPost.getCoined();
-                    favorited = userPost.getFavorited();
+                UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(myId, post.getId());
+                UserPostFavorite userPostFavorite = userPostFavoriteMapper.selectByUserIdAndPostId(myId, post.getId());
+                UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(myId, post.getId());
+                if (userPostLike != null && userPostLike.getState().equals(1)) {
+                    liked = true;
+                }
+                if (userPostFavorite != null && userPostFavorite.getState().equals(1)) {
+                    favorited = true;
+                }
+                if (userPostCoin != null && userPostCoin.getState().equals(1)) {
+                    coined = true;
                 }
             }
             postVO.setLiked(liked);
@@ -205,6 +216,7 @@ public class PostServiceImpl implements PostService {
             }
             postVOList.add(postVO);
         }
+
         PageInfo pageInfo = new PageInfo<>(postList);
         pageInfo.setList(postVOList);
         return ResponseVO.success(pageInfo);
@@ -236,14 +248,35 @@ public class PostServiceImpl implements PostService {
             }
             // MQ增加经验值
             rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", post.getAuthorId());
-            // TODO: MQ通知作者内容被点赞
-        }else {
+            // MQ通知作者内容被点赞
+            EventRemind remind = new EventRemind();
+            remind.setAction(RemindActionEnum.LIKE_POST.getCode());
+            if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+                StringBuilder sourceContentBuilder = new StringBuilder();
+                if (post.getBody() != null) {
+                    sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
+                }
+                if (post.getPostMediaUrls() != null) {
+                    for (int i = 0; i < post.getPostMediaUrls().split(";").length; i++) {
+                        sourceContentBuilder.append("[图片]");
+                    }
+                }
+                remind.setSourceContent(sourceContentBuilder.toString());
+            } else {
+                remind.setSourceContent(post.getArticleTitle());
+            }
+            remind.setSourceId(postId);
+            remind.setSenderId(userId);
+            remind.setReceiveId(post.getAuthorId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        } else {
             userPostLike.setState(1);
             int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostLike);
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
+        rabbitTemplate.convertAndSend("updateHeat", "post", postId);
         return ResponseVO.success();
     }
 
@@ -271,7 +304,7 @@ public class PostServiceImpl implements PostService {
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
-        }else {
+        } else {
             userPostLike.setState(0);
             int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostLike);
             if (result != 1) {
@@ -307,14 +340,35 @@ public class PostServiceImpl implements PostService {
             }
             // MQ增加经验值
             rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFavorite", post.getAuthorId());
-            // TODO: MQ通知作者内容被收藏
-        }else {
+            // MQ通知作者内容被收藏
+            EventRemind remind = new EventRemind();
+            remind.setAction(RemindActionEnum.FAVORITE_POST.getCode());
+            if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+                StringBuilder sourceContentBuilder = new StringBuilder();
+                if (post.getBody() != null) {
+                    sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
+                }
+                if (post.getPostMediaUrls() != null) {
+                    for (int i = 0; i < post.getPostMediaUrls().split(";").length; i++) {
+                        sourceContentBuilder.append("[图片]");
+                    }
+                }
+                remind.setSourceContent(sourceContentBuilder.toString());
+            } else {
+                remind.setSourceContent(post.getArticleTitle());
+            }
+            remind.setSourceId(postId);
+            remind.setSenderId(userId);
+            remind.setReceiveId(post.getAuthorId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        } else {
             userPostFavorite.setState(1);
-            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostFavorite);
+            int result = userPostFavoriteMapper.updateByPrimaryKeySelective(userPostFavorite);
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
+        rabbitTemplate.convertAndSend("updateHeat", "post", postId);
         return ResponseVO.success();
     }
 
@@ -342,9 +396,9 @@ public class PostServiceImpl implements PostService {
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
-        }else {
+        } else {
             userPostFavorite.setState(0);
-            int result = userPostLikeMapper.updateByPrimaryKeySelective(userPostFavorite);
+            int result = userPostFavoriteMapper.updateByPrimaryKeySelective(userPostFavorite);
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
@@ -354,7 +408,75 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponseVO coin(Integer postId, String token) {
-        return updateUserPostState(postId, token, UserContentStateEnum.COIN, true);
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            log.error("请求的帖子不存在, postId:[{}]", postId);
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (userId.equals(post.getAuthorId())) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
+        }
+        if (user.getInsertableCoins() <= 0) {
+            return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
+        }
+        user.setInsertableCoins(user.getInsertableCoins() - 1);
+        User author = userMapper.selectByPrimaryKey(post.getAuthorId());
+        author.setExchangeableCoins(author.getExchangeableCoins());
+        userMapper.updateInsertableCoins(user);
+        userMapper.updateExchangeableCoins(user);
+
+        UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(userId, postId);
+        if (userPostCoin == null) {
+            userPostCoin = new UserPostCoin();
+            userPostCoin.setUserId(userId);
+            userPostCoin.setPostId(postId);
+            userPostCoin.setState(1);
+            int result = userPostCoinMapper.insertSelective(userPostCoin);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // MQ增加经验值
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "insertCoin", userId);
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getCoin", post.getAuthorId());
+
+            // MQ通知作者内容被投币
+            EventRemind remind = new EventRemind();
+            remind.setAction(RemindActionEnum.COIN_POST.getCode());
+            if (PostTypeEnum.POST.getCode().equals(post.getType())) {
+                StringBuilder sourceContentBuilder = new StringBuilder();
+                if (post.getBody() != null) {
+                    sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
+                }
+                if (post.getPostMediaUrls() != null) {
+                    for (int i = 0; i < post.getPostMediaUrls().split(";").length; i++) {
+                        sourceContentBuilder.append("[图片]");
+                    }
+                }
+                remind.setSourceContent(sourceContentBuilder.toString());
+            } else {
+                remind.setSourceContent(post.getArticleTitle());
+            }
+            remind.setSourceId(postId);
+            remind.setSenderId(userId);
+            remind.setReceiveId(post.getAuthorId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        } else {
+            userPostCoin.setState(1);
+            int result = userPostCoinMapper.updateByPrimaryKeySelective(userPostCoin);
+            if (result != 1) {
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+        }
+        rabbitTemplate.convertAndSend("updateHeat", "post", postId);
+        return ResponseVO.success();
     }
 
     @Override
@@ -367,8 +489,8 @@ public class PostServiceImpl implements PostService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE);
         }
         if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -420,6 +542,25 @@ public class PostServiceImpl implements PostService {
         rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
         // 通过MQ同步数据到ES
         rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
+        // 通过MQ通知被@的用户
+        for (Integer atId : addPostForm.getAtIds()) {
+            EventRemind remind = new EventRemind();
+            remind.setSenderId(userId);
+            StringBuilder sourceContentBuilder = new StringBuilder();
+            if (post.getBody() != null) {
+                sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
+            }
+            if (post.getPostMediaUrls() != null) {
+                for (int i = 0; i < post.getPostMediaUrls().split(";").length; i++) {
+                    sourceContentBuilder.append("[图片]");
+                }
+            }
+            remind.setSourceContent(sourceContentBuilder.toString());
+            remind.setReceiveId(atId);
+            remind.setSourceId(post.getId());
+            remind.setAction(RemindActionEnum.AT.getCode());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        }
         // 绑定主标签（分类）和帖子
         for (Integer mainTagId : addPostForm.getMainTagIds()) {
             PostCategory postCategory = new PostCategory();
@@ -457,8 +598,8 @@ public class PostServiceImpl implements PostService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE);
         }
         if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -502,6 +643,17 @@ public class PostServiceImpl implements PostService {
         rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
         // 通过MQ同步数据到ES
         rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", article);
+        // MQ通知被@的用户
+        for (Integer atId : addArticleForm.getAtIds()) {
+            EventRemind remind = new EventRemind();
+            remind.setSourceContent(article.getArticleTitle());
+            remind.setAction(RemindActionEnum.AT.getCode());
+            remind.setSenderId(userId);
+            remind.setReceiveId(atId);
+            remind.setSourceId(article.getId());
+            rabbitTemplate.convertAndSend("eventRemind", remind);
+        }
+
         // 绑定主标签（分类）和帖子
         for (Integer mainTagId : addArticleForm.getMainTagIds()) {
             PostCategory postCategory = new PostCategory();
@@ -539,8 +691,8 @@ public class PostServiceImpl implements PostService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE);
         }
         if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -580,8 +732,10 @@ public class PostServiceImpl implements PostService {
             log.error("圈子内发布帖子时出现错误,数据库表'post_circle'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
         Map<String, Integer> map = new HashMap<>(1);
         map.put("postId", post.getId());
+
         return ResponseVO.success(map);
     }
 
@@ -595,8 +749,8 @@ public class PostServiceImpl implements PostService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.DISABLE_SEND_MESSAGE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.DISABLE_SEND_MESSAGE);
+        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
+            return ResponseVO.error(ResponseEnum.MUTE);
         }
         if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
@@ -630,6 +784,7 @@ public class PostServiceImpl implements PostService {
             log.error("圈子内发布文章时出现错误,数据库表'post_circle'插入失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
+        rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
         Map<String, Integer> map = new HashMap<>(1);
         map.put("postId", article.getId());
         return ResponseVO.success(map);
@@ -675,23 +830,29 @@ public class PostServiceImpl implements PostService {
         postVO.setBody(post.getBody());
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));
-        Integer likesNum = userPostMapper.countLikeByPostId(postId);
-        Integer favoritesNum = userPostMapper.countFavoriteByPostId(postId);
-        Integer coinsNum = userPostMapper.countCoinsByPostId(postId);
+        Integer likesNum = userPostLikeMapper.countByPostId(postId);
+        Integer favoritesNum = userPostFavoriteMapper.countByPostId(postId);
+        Integer coinsNum = userPostCoinMapper.countByPostId(postId);
         Integer commentsNum = commentMapper.countCommentsByPostId(postId);
         postVO.setLikeNum(likesNum);
         postVO.setFavoriteNum(favoritesNum);
         postVO.setCoinsNum(coinsNum);
         postVO.setCommentNum(commentsNum);
-        Boolean liked = false;
-        Boolean coined = false;
-        Boolean favorited = false;
+        boolean liked = false;
+        boolean coined = false;
+        boolean favorited = false;
         if (login) {
-            UserPost userPost = userPostMapper.selectByUserIdAndPostId(myId, post.getId());
-            if (userPost != null) {
-                liked = userPost.getLiked();
-                coined = userPost.getCoined();
-                favorited = userPost.getFavorited();
+            UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(myId, post.getId());
+            UserPostFavorite userPostFavorite = userPostFavoriteMapper.selectByUserIdAndPostId(myId, post.getId());
+            UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(myId, post.getId());
+            if (userPostLike != null && userPostLike.getState().equals(1)) {
+                liked = true;
+            }
+            if (userPostFavorite != null && userPostFavorite.getState().equals(1)) {
+                favorited = true;
+            }
+            if (userPostCoin != null && userPostCoin.getState().equals(1)) {
+                coined = true;
             }
         }
         postVO.setLiked(liked);
@@ -749,14 +910,19 @@ public class PostServiceImpl implements PostService {
         postMapper.deleteByPrimaryKey(postId);
         // 通过MQ同步删除ES数据
         rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "delete", post);
-        // 删除帖子下面的评论，但不删除用户-评论关系表，这样用户被点赞数不会减只会加
-//        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
-//        for (Integer commentId : commentIdList) {
-//            userCommentMapper.deleteByCommentId(commentId);
-//        }
+        // 删除帖子下面的评论对应的用户-评论关系表，这样用户被点赞数不会减只会加
+        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
+        for (Integer commentId : commentIdList) {
+            userCommentLikeMapper.deleteByCommentId(commentId);
+            userCommentCoinMapper.deleteByCommentId(commentId);
+        }
         commentMapper.deleteByPostId(postId);
-        // 不删除用户-帖子关联动作，这样用户被点赞数不会减只会加
-        userPostMapper.deleteByPostId(postId);
+        // 删除用户-帖子-点赞关联动作
+        userPostLikeMapper.deleteByPostId(postId);
+        // 删除用户-帖子-收藏关联动作
+        userPostFavoriteMapper.deleteByPostId(postId);
+        // 删除用户-帖子-投币关联动作
+        userPostCoinMapper.deleteByPostId(postId);
         // 删除帖子和分类的关系
         postCategoryMapper.deleteByPostId(postId);
         // 删除帖子和圈子的关系
@@ -764,74 +930,4 @@ public class PostServiceImpl implements PostService {
         return ResponseVO.success();
     }
 
-    @Transactional
-    ResponseVO updateUserPostState(Integer postId, String token, UserContentStateEnum stateEnum, Boolean state) {
-        if (StringUtils.isEmpty(token)) {
-            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
-        }
-        if (!jwtUtils.validateToken(token)) {
-            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
-        }
-        Integer userId = jwtUtils.getIdFromToken(token);
-        Post post = postMapper.selectByPrimaryKey(postId);
-        if (post == null) {
-            log.error("请求的帖子不存在, postId:[{}]", postId);
-            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
-        }
-        UserPost userPost = userPostMapper.selectByUserIdAndPostId(userId, postId);
-        if (userPost == null) {
-            userPost = new UserPost();
-            userPost.setUserId(userId);
-            userPost.setPostId(postId);
-        }
-        if (UserContentStateEnum.LIKE.equals(stateEnum)) {
-            userPost.setLiked(state);
-        } else if (UserContentStateEnum.FAVORITE.equals(stateEnum)) {
-            userPost.setFavorited(state);
-        } else if (UserContentStateEnum.COIN.equals(stateEnum)) {
-            // 不能给自己投币
-            if (userId.equals(post.getAuthorId())) {
-                return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
-            }
-            // 如果用户可投币数量小于1，提示硬币不足。
-            User user = userMapper.selectByPrimaryKey(userId);
-            if (user == null) {
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
-            User author = userMapper.selectByPrimaryKey(post.getAuthorId());
-            if (user.getInsertableCoins() < 1) {
-                return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
-            }
-            if (state) {
-                user.setInsertableCoins(user.getInsertableCoins() - 1);
-                author.setExchangeableCoins(user.getExchangeableCoins() + 1);
-                int result1 = userMapper.updateByPrimaryKeySelective(user);
-                if (result1 != 1) {
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-                int result2 = userMapper.updateByPrimaryKeySelective(author);
-                if (result2 != 1) {
-                    return ResponseVO.error(ResponseEnum.ERROR);
-                }
-            }
-            userPost.setCoined(state);
-        } else {
-            return ResponseVO.error(ResponseEnum.ERROR, "更新帖子状态失败");
-        }
-        int result = userPostMapper.updateState(userPost);
-        if (result == 0 || result > 2) {
-            log.error("更新帖子点赞/收藏/投币状态失败，数据库表'user_post'更新失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
-        }
-        // MQ更新经验
-        if (UserContentStateEnum.LIKE.equals(stateEnum) && state) {
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getLike", post.getAuthorId());
-        } else if (UserContentStateEnum.FAVORITE.equals(stateEnum) && state) {
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getFavorite", post.getAuthorId());
-        } else if (UserContentStateEnum.COIN.equals(stateEnum) && state) {
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "insertCoin", userId);
-            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "getCoin", post.getAuthorId());
-        }
-        return ResponseVO.success();
-    }
 }

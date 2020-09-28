@@ -16,4 +16,11 @@ public interface UserPostFavoriteMapper {
     int updateByPrimaryKey(UserPostFavorite record);
 
     UserPostFavorite selectByUserIdAndPostId(Integer userId, Integer postId);
+
+    int countByPostId(Integer postId);
+
+    Integer countByUserId(Integer userId);
+
+    void deleteByPostId(Integer postId);
+
 }

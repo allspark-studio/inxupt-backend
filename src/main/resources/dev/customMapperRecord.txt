@@ -20,18 +20,11 @@ PostStatisticMapper:
 CategoryMapper:
     Category selectByName(String name);
 
-UserPostMapper:
-    int countLikeByUserId(Integer userId);
-    int countFavoriteByUserId(Integer uid);
-    UserPost selectByUserIdAndPostId(Integer userId, Integer postId);
 
 UserCircleMapper:
     List<Integer> selectFollowedCircleIdsByUserId(Integer userId);
     List<Integer> selectFollowedUserIdByCircleId(Integer circleId);
 
-UserCommentMapper:
-    int countLikeByUserId(Integer userId);
-    UserComment selectByUserIdAndCommentId(Integer userId, Integer commentId);
 
 CommentMapper:
     List<Comment> selectByPostId(Integer postId);

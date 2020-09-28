@@ -3,21 +3,8 @@ package com.allsparkstudio.zaixiyou;
 import com.allsparkstudio.zaixiyou.dao.FollowMapper;
 import com.allsparkstudio.zaixiyou.dao.PostMapper;
 import com.allsparkstudio.zaixiyou.dao.UserMapper;
-import com.allsparkstudio.zaixiyou.dao.UserPostMapper;
-import com.allsparkstudio.zaixiyou.pojo.po.Post;
-import com.allsparkstudio.zaixiyou.pojo.po.User;
-import com.allsparkstudio.zaixiyou.pojo.vo.UserLoginVO;
 import com.allsparkstudio.zaixiyou.util.UUIDUtils;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +35,6 @@ public class ZaixiyouApplicationTests {
     PostMapper postMapper;
 
     @Autowired
-    UserPostMapper userPostMapper;
-
-    @Autowired
     FollowMapper followMapper;
 
     @Autowired
@@ -61,22 +45,7 @@ public class ZaixiyouApplicationTests {
 
     @Test
     public void updateUserLiked() {
-//        for (int i = 1; i<= 30; i++) {
-//            synchronized (this) {
-//                User user = userMapper.selectByPrimaryKey(i);
-//                if (user == null) {
-//                    continue;
-//                }
-//                Integer likeNum = 0;
-//                List<Post> postList = postMapper.selectAllByAuthorId(user.getId());
-//                for (Post post : postList) {
-//                    likeNum += userPostMapper.countLikeByPostId(post.getId());
-//                }
-//                log.debug("user[{}], like:[{}]", i, likeNum);
-//                user.setLikeNum(likeNum);
-//                userMapper.updateLikeNum(user);
-//            }
-//        }
+
     }
 
     @Test

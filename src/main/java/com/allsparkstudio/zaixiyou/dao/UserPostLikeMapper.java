@@ -16,4 +16,8 @@ public interface UserPostLikeMapper {
     int updateByPrimaryKey(UserPostLike record);
 
     UserPostLike selectByUserIdAndPostId(Integer userId, Integer postId);
+
+    int countByPostId(Integer postId);
+
+    void deleteByPostId(Integer postId);
 }
