@@ -6,6 +6,7 @@
         <include refid="Base_Column_List" />
         from comment
         where post_id = #{postId,jdbcType=INTEGER}
+        order by id desc;
     </select>
     <select id="selectByPostIdSortedByHeat" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select

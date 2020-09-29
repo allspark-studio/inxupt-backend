@@ -2,6 +2,8 @@ package com.allsparkstudio.zaixiyou.dao;
 
 import com.allsparkstudio.zaixiyou.pojo.po.EventRemind;
 
+import java.util.List;
+
 public interface EventRemindMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -14,4 +16,14 @@ public interface EventRemindMapper {
     int updateByPrimaryKeySelective(EventRemind record);
 
     int updateByPrimaryKey(EventRemind record);
+
+    List<EventRemind> selectReplyNoticesByUserId(Integer userId);
+
+    int updateState(EventRemind replyNotice);
+
+    Integer countUnreadNoticeByUserId(Integer userId);
+
+    List<EventRemind> selectNewsNoticesByUserId(Integer userId);
+
+    List<EventRemind> selectAtNoticesByUserId(Integer userId);
 }
