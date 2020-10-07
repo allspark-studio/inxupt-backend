@@ -1,6 +1,9 @@
 package com.allsparkstudio.zaixiyou.dao;
 
 import com.allsparkstudio.zaixiyou.pojo.po.UserSystemNotice;
+import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
+
+import java.util.List;
 
 public interface UserSystemNoticeMapper {
     int deleteByPrimaryKey(Integer id);
@@ -14,4 +17,10 @@ public interface UserSystemNoticeMapper {
     int updateByPrimaryKeySelective(UserSystemNotice record);
 
     int updateByPrimaryKey(UserSystemNotice record);
+
+    List<UserSystemNotice> selectUnreadNoticesByUserId(Integer userId);
+
+    void updateState(UserSystemNotice userSystemNotice);
+
+    Integer countUnreadNoticeByUserId(Integer userId);
 }

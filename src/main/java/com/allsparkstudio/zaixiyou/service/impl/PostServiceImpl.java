@@ -251,6 +251,7 @@ public class PostServiceImpl implements PostService {
             // MQ通知作者内容被点赞
             EventRemind remind = new EventRemind();
             remind.setAction(RemindActionEnum.LIKE_POST.getCode());
+            remind.setPostType(post.getType());
             if (PostTypeEnum.POST.getCode().equals(post.getType())) {
                 StringBuilder sourceContentBuilder = new StringBuilder();
                 if (post.getBody() != null) {
@@ -343,6 +344,7 @@ public class PostServiceImpl implements PostService {
             // MQ通知作者内容被收藏
             EventRemind remind = new EventRemind();
             remind.setAction(RemindActionEnum.FAVORITE_POST.getCode());
+            remind.setPostType(post.getType());
             if (PostTypeEnum.POST.getCode().equals(post.getType())) {
                 StringBuilder sourceContentBuilder = new StringBuilder();
                 if (post.getBody() != null) {
@@ -429,9 +431,9 @@ public class PostServiceImpl implements PostService {
         }
         user.setInsertableCoins(user.getInsertableCoins() - 1);
         User author = userMapper.selectByPrimaryKey(post.getAuthorId());
-        author.setExchangeableCoins(author.getExchangeableCoins());
+        author.setExchangeableCoins(author.getExchangeableCoins() + 1);
         userMapper.updateInsertableCoins(user);
-        userMapper.updateExchangeableCoins(user);
+        userMapper.updateExchangeableCoins(author);
 
         UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(userId, postId);
         if (userPostCoin == null) {
@@ -450,6 +452,7 @@ public class PostServiceImpl implements PostService {
             // MQ通知作者内容被投币
             EventRemind remind = new EventRemind();
             remind.setAction(RemindActionEnum.COIN_POST.getCode());
+            remind.setPostType(post.getType());
             if (PostTypeEnum.POST.getCode().equals(post.getType())) {
                 StringBuilder sourceContentBuilder = new StringBuilder();
                 if (post.getBody() != null) {
@@ -546,6 +549,7 @@ public class PostServiceImpl implements PostService {
         for (Integer atId : addPostForm.getAtIds()) {
             EventRemind remind = new EventRemind();
             remind.setSenderId(userId);
+            remind.setPostType(post.getType());
             StringBuilder sourceContentBuilder = new StringBuilder();
             if (post.getBody() != null) {
                 sourceContentBuilder.append(post.getBody().length() > 20 ? post.getBody().substring(0, 20) + "..." : post.getBody());
@@ -647,6 +651,7 @@ public class PostServiceImpl implements PostService {
         for (Integer atId : addArticleForm.getAtIds()) {
             EventRemind remind = new EventRemind();
             remind.setSourceContent(article.getArticleTitle());
+            remind.setPostType(article.getType());
             remind.setAction(RemindActionEnum.AT.getCode());
             remind.setSenderId(userId);
             remind.setReceiveId(atId);

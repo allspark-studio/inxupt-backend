@@ -22,6 +22,8 @@ public class EventRemind implements Serializable {
 
     private String replyContent;
 
+    private Integer postType;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -96,6 +98,14 @@ public class EventRemind implements Serializable {
         this.replyContent = replyContent == null ? null : replyContent.trim();
     }
 
+    public Integer getPostType() {
+        return postType;
+    }
+
+    public void setPostType(Integer postType) {
+        this.postType = postType;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -111,6 +121,7 @@ public class EventRemind implements Serializable {
         sb.append(", receiveId=").append(receiveId);
         sb.append(", remindTime=").append(remindTime);
         sb.append(", replyContent=").append(replyContent);
+        sb.append(", postType=").append(postType);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

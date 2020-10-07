@@ -5,14 +5,14 @@ import lombok.Data;
 @Data
 public class AtNoticeVO {
 
-    private String senderName;
-
-    private String senderAvatar;
+    private Integer senderId;
 
     private String sourceContent;
 
     private String sendTime;
 
     private Integer sourceId;
+
+    private Integer postType;
 
 }

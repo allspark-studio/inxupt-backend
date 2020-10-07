@@ -5,9 +5,7 @@ import lombok.Data;
 @Data
 public class ReplyNoticeVO {
 
-    private String senderName;
-
-    private String senderAvatar;
+    private Integer senderId;
 
     private String sourceContent;
 
@@ -16,6 +14,8 @@ public class ReplyNoticeVO {
     private String sendTime;
 
     private Integer sourceType;
+
+    private Integer postType;
 
     private Integer sourceId;
 

@@ -1,14 +1,16 @@
 package com.allsparkstudio.zaixiyou.service.impl;
 
 import com.allsparkstudio.zaixiyou.dao.EventRemindMapper;
+import com.allsparkstudio.zaixiyou.dao.SystemNoticeMapper;
 import com.allsparkstudio.zaixiyou.dao.UserMapper;
+import com.allsparkstudio.zaixiyou.dao.UserSystemNoticeMapper;
+import com.allsparkstudio.zaixiyou.enums.RemindActionEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.po.EventRemind;
+import com.allsparkstudio.zaixiyou.pojo.po.SystemNotice;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
-import com.allsparkstudio.zaixiyou.pojo.vo.AtNoticeVO;
-import com.allsparkstudio.zaixiyou.pojo.vo.NewsNoticeVO;
-import com.allsparkstudio.zaixiyou.pojo.vo.ReplyNoticeVO;
-import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
+import com.allsparkstudio.zaixiyou.pojo.po.UserSystemNotice;
+import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.allsparkstudio.zaixiyou.service.NoticeService;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +34,20 @@ public class NoticeServiceImpl implements NoticeService {
     @Autowired
     UserMapper userMapper;
 
+    @Autowired
+    UserSystemNoticeMapper userSystemNoticeMapper;
+
+    @Autowired
+    SystemNoticeMapper systemNoticeMapper;
+
     @Override
     public ResponseVO countUnreadNotice(String token) {
-        Integer noticeNum = 0;
+        int noticeNum = 0;
         if (jwtUtils.validateToken(token)) {
             Integer userId = jwtUtils.getIdFromToken(token);
-            noticeNum = eventRemindMapper.countUnreadNoticeByUserId(userId);
+            Integer remindNoticeNum = eventRemindMapper.countUnreadNoticeByUserId(userId);
+            Integer systemNoticeNum = userSystemNoticeMapper.countUnreadNoticeByUserId(userId);
+            noticeNum = remindNoticeNum + systemNoticeNum;
         }
         return ResponseVO.success(noticeNum);
     }
@@ -55,11 +65,15 @@ public class NoticeServiceImpl implements NoticeService {
         List<ReplyNoticeVO> replyNoticeVOList = new ArrayList<>();
         for (EventRemind replyNotice : replyNotices) {
             ReplyNoticeVO replyNoticeVO = new ReplyNoticeVO();
-            User sender = userMapper.selectByPrimaryKey(userId);
-            replyNoticeVO.setSenderName(sender.getNickname());
-            replyNoticeVO.setSenderAvatar(sender.getAvatarUrl());
+            replyNoticeVO.setSenderId(replyNotice.getSenderId());
             replyNoticeVO.setSourceContent(replyNotice.getSourceContent());
             replyNoticeVO.setReplyContent(replyNotice.getReplyContent());
+            replyNoticeVO.setPostType(replyNotice.getPostType());
+            if (replyNotice.getAction().equals(RemindActionEnum.REPLY_POST.getCode())) {
+                replyNoticeVO.setSourceType(1);
+            }else {
+                replyNoticeVO.setSourceType(2);
+            }
             replyNoticeVO.setSourceId(replyNotice.getSourceId());
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
@@ -84,13 +98,13 @@ public class NoticeServiceImpl implements NoticeService {
         List<NewsNoticeVO> newsNoticeVOList = new ArrayList<>();
         for (EventRemind newsNotice : newsNotices) {
             NewsNoticeVO newsNoticeVO = new NewsNoticeVO();
-            User sender = userMapper.selectByPrimaryKey(newsNotice.getSenderId());
-            newsNoticeVO.setSenderAvatar(sender.getAvatarUrl());
-            newsNoticeVO.setSenderName(sender.getNickname());
+            newsNoticeVO.setSenderId(newsNotice.getSenderId());
             newsNoticeVO.setSourceId(newsNotice.getSourceId());
             newsNoticeVO.setSourceContent(newsNotice.getSourceContent());
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            newsNoticeVO.setSendTime(simpleDateFormat.format(newsNotice.getRemindTime()));
+            newsNoticeVO.setPostType(newsNotice.getPostType());
             switch (newsNotice.getAction()) {
                 case 1:
                     newsNoticeVO.setAction("点赞");
@@ -113,7 +127,7 @@ public class NoticeServiceImpl implements NoticeService {
                     newsNoticeVO.setSourceType("帖子");
                     break;
                 case 8:
-                    newsNoticeVO.setAction("收藏");
+                    newsNoticeVO.setAction("关注");
                 default:
                     break;
             }
@@ -137,11 +151,10 @@ public class NoticeServiceImpl implements NoticeService {
         List<AtNoticeVO> atNoticeVOList = new ArrayList<>();
         for (EventRemind atNotice : atNotices) {
             AtNoticeVO atNoticeVO = new AtNoticeVO();
-            User sender = userMapper.selectByPrimaryKey(userId);
-            atNoticeVO.setSenderName(sender.getNickname());
-            atNoticeVO.setSenderAvatar(sender.getAvatarUrl());
+            atNoticeVO.setSenderId(atNotice.getSenderId());
             atNoticeVO.setSourceContent(atNotice.getSourceContent());
             atNoticeVO.setSourceId(atNotice.getSourceId());
+            atNoticeVO.setPostType(atNotice.getPostType());
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             atNoticeVO.setSendTime(simpleDateFormat.format(atNotice.getRemindTime()));
@@ -154,6 +167,27 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public ResponseVO listSystemNotices(String token) {
-        return null;
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        List<UserSystemNotice> userSystemNotices = userSystemNoticeMapper.selectUnreadNoticesByUserId(userId);
+        List<SystemNoticeVO> systemNoticeVOList = new ArrayList<>();
+        for (UserSystemNotice userSystemNotice : userSystemNotices) {
+            SystemNotice systemNotice = systemNoticeMapper.selectByPrimaryKey(userSystemNotice.getNoticeId());
+            SystemNoticeVO systemNoticeVO = new SystemNoticeVO();
+            systemNoticeVO.setTitle(systemNotice.getTitle());
+            systemNoticeVO.setContent(systemNotice.getContent());
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+            systemNoticeVO.setPublishTime(simpleDateFormat.format(systemNotice.getPublishTime()));
+            systemNoticeVOList.add(systemNoticeVO);
+            userSystemNotice.setState(1);
+            userSystemNoticeMapper.updateState(userSystemNotice);
+        }
+        return ResponseVO.success(systemNoticeVOList);
     }
 }

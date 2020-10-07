@@ -11,10 +11,11 @@
     <result column="receive_id" jdbcType="INTEGER" property="receiveId" />
     <result column="remind_time" jdbcType="TIMESTAMP" property="remindTime" />
     <result column="reply_content" jdbcType="VARCHAR" property="replyContent" />
+    <result column="post_type" jdbcType="INTEGER" property="postType" />
   </resultMap>
   <sql id="Base_Column_List">
     id, action, source_id, source_content, state, sender_id, receive_id, remind_time, 
-    reply_content
+    reply_content, post_type
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -29,12 +30,12 @@
   <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.EventRemind">
     insert into event_remind (id, action, source_id, 
       source_content, state, sender_id, 
-      receive_id, remind_time, reply_content
-      )
+      receive_id, remind_time, reply_content, 
+      post_type)
     values (#{id,jdbcType=INTEGER}, #{action,jdbcType=INTEGER}, #{sourceId,jdbcType=INTEGER}, 
       #{sourceContent,jdbcType=VARCHAR}, #{state,jdbcType=INTEGER}, #{senderId,jdbcType=INTEGER}, 
-      #{receiveId,jdbcType=INTEGER}, #{remindTime,jdbcType=TIMESTAMP}, #{replyContent,jdbcType=VARCHAR}
-      )
+      #{receiveId,jdbcType=INTEGER}, #{remindTime,jdbcType=TIMESTAMP}, #{replyContent,jdbcType=VARCHAR}, 
+      #{postType,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.EventRemind">
     insert into event_remind
@@ -66,6 +67,9 @@
       <if test="replyContent != null">
         reply_content,
       </if>
+      <if test="postType != null">
+        post_type,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -94,6 +98,9 @@
       </if>
       <if test="replyContent != null">
         #{replyContent,jdbcType=VARCHAR},
+      </if>
+      <if test="postType != null">
+        #{postType,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -124,6 +131,9 @@
       <if test="replyContent != null">
         reply_content = #{replyContent,jdbcType=VARCHAR},
       </if>
+      <if test="postType != null">
+        post_type = #{postType,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -136,7 +146,8 @@
       sender_id = #{senderId,jdbcType=INTEGER},
       receive_id = #{receiveId,jdbcType=INTEGER},
       remind_time = #{remindTime,jdbcType=TIMESTAMP},
-      reply_content = #{replyContent,jdbcType=VARCHAR}
+      reply_content = #{replyContent,jdbcType=VARCHAR},
+      post_type = #{postType,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

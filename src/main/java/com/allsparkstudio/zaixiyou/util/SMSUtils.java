@@ -67,7 +67,7 @@ public class SMSUtils {
             JsonElement data = JsonParser.parseString(response.getData());
             if ("OK".equals(data.getAsJsonObject().get("Code").getAsString())) {
                 stringRedisTemplate.opsForHash().put("code", phone, code);
-                // 验证码十分钟过期
+                // 验证码5分钟过期
                 stringRedisTemplate.expire("code", 5, TimeUnit.MINUTES);
                 return code;
             }

@@ -55,4 +55,10 @@ public class SearchController {
         keyWord = URLDecoder.decode(keyWord, "utf-8");
         return searchService.searchCircles(keyWord, pageNum, pageSize, token);
     }
+
+    @GetMapping("/search/hotWords")
+    @ApiOperation("热搜")
+    public ResponseVO hotWords() {
+        return searchService.getHotWords();
+    }
 }

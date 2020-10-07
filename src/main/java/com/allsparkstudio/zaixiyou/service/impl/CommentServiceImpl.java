@@ -209,8 +209,9 @@ public class CommentServiceImpl implements CommentService {
         remind.setSourceId(postId);
         remind.setSenderId(userId);
         remind.setReceiveId(post.getAuthorId());
+        remind.setPostType(post.getType());
         remind.setReplyContent(addCommentForm.getBody().length() > 20 ? addCommentForm.getBody().substring(0, 20) + "..." : addCommentForm.getBody());
-        if (addCommentForm.getRootId().equals(0)) {
+        if (addCommentForm.getParentId().equals(0)) {
             if (PostTypeEnum.POST.getCode().equals(post.getType())) {
                 StringBuilder sourceContentBuilder = new StringBuilder();
                 if (post.getBody() != null) {
@@ -235,9 +236,9 @@ public class CommentServiceImpl implements CommentService {
             rabbitTemplate.convertAndSend("updateHeat", "comment", addCommentForm.getRootId());
             // MQ通知用户帖子被回复
             remind.setAction(RemindActionEnum.REPLY_COMMENT.getCode());
-            Comment rootComment = commentMapper.selectByPrimaryKey(addCommentForm.getRootId());
-            if (rootComment.getBody() != null) {
-                remind.setSourceContent(rootComment.getBody().length() > 20 ? rootComment.getBody().substring(0, 20) + "..." : rootComment.getBody());
+            Comment parentComment = commentMapper.selectByPrimaryKey(addCommentForm.getParentId());
+            if (parentComment.getBody() != null) {
+                remind.setSourceContent(parentComment.getBody().length() > 20 ? parentComment.getBody().substring(0, 20) + "..." : parentComment.getBody());
             }
             rabbitTemplate.convertAndSend("eventRemind", remind);
         }
@@ -331,10 +332,12 @@ public class CommentServiceImpl implements CommentService {
             // MQ通知作者内容被点赞
             EventRemind remind = new EventRemind();
             remind.setAction(RemindActionEnum.LIKE_COMMENT.getCode());
+            Post post = postMapper.selectByPrimaryKey(comment.getPostId());
+            remind.setPostType(post.getType());
             if (comment.getBody() != null) {
                 remind.setSourceContent(comment.getBody().length() > 20 ? comment.getBody().substring(0, 20) + "..." : comment.getBody());
             }
-            remind.setSourceId(commentId);
+            remind.setSourceId(comment.getPostId());
             remind.setSenderId(userId);
             remind.setReceiveId(comment.getAuthorId());
             rabbitTemplate.convertAndSend("eventRemind", remind);
@@ -407,9 +410,9 @@ public class CommentServiceImpl implements CommentService {
 
         user.setInsertableCoins(user.getInsertableCoins() - 1);
         User author = userMapper.selectByPrimaryKey(comment.getAuthorId());
-        author.setExchangeableCoins(author.getExchangeableCoins());
+        author.setExchangeableCoins(author.getExchangeableCoins() + 1);
         userMapper.updateInsertableCoins(user);
-        userMapper.updateExchangeableCoins(user);
+        userMapper.updateExchangeableCoins(author);
 
         UserCommentCoin userCommentCoin = userCommentCoinMapper.selectByUserIdAndCommentId(userId, commentId);
         if (userCommentCoin == null) {
@@ -427,8 +430,10 @@ public class CommentServiceImpl implements CommentService {
             EventRemind remind = new EventRemind();
             remind.setAction(RemindActionEnum.COIN_COMMENT.getCode());
             remind.setSourceContent(comment.getBody().length() > 20 ? comment.getBody().substring(0, 20) + "..." : comment.getBody());
-            remind.setSourceId(commentId);
+            remind.setSourceId(comment.getPostId());
             remind.setSenderId(userId);
+            Post post = postMapper.selectByPrimaryKey(comment.getPostId());
+            remind.setPostType(post.getType());
             remind.setReceiveId(comment.getAuthorId());
             rabbitTemplate.convertAndSend("eventRemind", remind);
         } else {

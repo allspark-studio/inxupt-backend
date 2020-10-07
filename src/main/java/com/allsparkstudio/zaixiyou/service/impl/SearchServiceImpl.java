@@ -47,6 +47,9 @@ public class SearchServiceImpl implements SearchService {
     private JWTUtils jwtUtils;
 
     @Autowired
+    SearchWordMapper searchWordMapper;
+
+    @Autowired
     PostMapper postMapper;
 
     @Autowired
@@ -367,5 +370,11 @@ public class SearchServiceImpl implements SearchService {
         pageInfo.setHasNextPage(total > pageNum * pageSize);
         pageInfo.setIsLastPage(total <= pageNum * pageSize);
         return ResponseVO.success(pageInfo);
+    }
+
+    @Override
+    public ResponseVO getHotWords() {
+        List<String> topWords = searchWordMapper.selectTopWords();
+        return ResponseVO.success(topWords);
     }
 }

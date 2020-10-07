@@ -26,7 +26,7 @@
         <include refid="Base_Column_List" />
         from event_remind
         where receive_id = #{userId,jdbcType=INTEGER}
-        and action between 1 and 5
+        and action in (1,2,3,4,5,8)
         and state = 0
         order by id desc
     </select>

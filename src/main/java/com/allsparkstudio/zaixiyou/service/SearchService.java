@@ -36,4 +36,9 @@ public interface SearchService {
      * @param token token
      */
     ResponseVO<PageInfo> searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException;
+
+    /**
+     * 获取热搜
+     */
+    ResponseVO getHotWords();
 }

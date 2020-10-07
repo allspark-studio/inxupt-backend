@@ -5,15 +5,15 @@ import lombok.Data;
 @Data
 public class NewsNoticeVO {
 
-    private String senderAvatar;
-
-    private String senderName;
+    private Integer senderId;
 
     private Integer sourceId;
 
     private String action;
 
     private String sourceType;
+
+    private Integer postType;
 
     private String sourceContent;
 

@@ -86,4 +86,6 @@ public interface UserService {
      * 修改密码时验证手机
      */
     ResponseVO<UserLoginVO> validate(ValidateForm validateForm);
+
+    ResponseVO getAvatarAndNickname(Integer userId);
 }

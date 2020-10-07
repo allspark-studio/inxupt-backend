@@ -194,4 +194,10 @@ public class UserController {
         return postService.listAll(null, null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
+    @GetMapping("/user/{userId}/avatarAndNickname")
+    @ApiOperation("获取用户头像和昵称")
+    public ResponseVO getAvatarAndNickname(@PathVariable("userId") Integer userId) {
+        return userService.getAvatarAndNickname(userId);
+    }
+
 }

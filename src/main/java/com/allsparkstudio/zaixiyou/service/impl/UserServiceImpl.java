@@ -477,4 +477,16 @@ public class UserServiceImpl implements UserService {
         userLoginVO.setUserId(user.getId());
         return ResponseVO.success(userLoginVO);
     }
+
+    @Override
+    public ResponseVO getAvatarAndNickname(Integer userId) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "用户不存在");
+        }
+        AvatarAndNicknameVO avatarAndNicknameVO = new AvatarAndNicknameVO();
+        avatarAndNicknameVO.setAvatar(user.getAvatarUrl());
+        avatarAndNicknameVO.setNickname(user.getNickname());
+        return ResponseVO.success(avatarAndNicknameVO);
+    }
 }
