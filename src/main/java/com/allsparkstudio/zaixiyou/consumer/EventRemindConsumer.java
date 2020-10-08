@@ -17,6 +17,8 @@ public class EventRemindConsumer {
 
     @RabbitHandler
     public void addEvent(EventRemind remind) {
-        eventRemindMapper.insertSelective(remind);
+        if (!remind.getSenderId().equals(remind.getReceiveId())) {
+            eventRemindMapper.insertSelective(remind);
+        }
     }
 }
