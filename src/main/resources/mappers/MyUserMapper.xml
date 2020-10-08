@@ -51,4 +51,9 @@
             level = #{level,jdbcType=INTEGER}
         where id = #{id,jdbcType=INTEGER}
     </update>
+    <update id="updateAvatar" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+        update user
+        set avatar_url = #{avatarUrl,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
 </mapper>

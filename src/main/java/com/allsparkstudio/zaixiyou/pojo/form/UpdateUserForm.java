@@ -8,9 +8,6 @@ import lombok.Data;
 @ApiModel("更新用户信息表单")
 public class UpdateUserForm {
 
-    @ApiModelProperty("头像url")
-    private String avatarUrl;
-
     @ApiModelProperty("昵称")
     private String nickName;
 

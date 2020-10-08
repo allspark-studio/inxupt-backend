@@ -200,4 +200,11 @@ public class UserController {
         return userService.getAvatarAndNickname(userId);
     }
 
+    @PutMapping("/user/avatar")
+    @ApiOperation("修改用户头像")
+    public ResponseVO updateAvatar(@RequestBody String url,
+                                   @RequestHeader(value = "token", required = false) String token) {
+        return userService.updateAvatar(token, url);
+    }
+
 }

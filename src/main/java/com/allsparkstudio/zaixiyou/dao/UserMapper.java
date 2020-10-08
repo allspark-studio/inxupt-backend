@@ -34,4 +34,6 @@ public interface UserMapper {
     int updateLikeNum(User record);
 
     int updateExpAndLv(User record);
+
+    int updateAvatar(User user);
 }

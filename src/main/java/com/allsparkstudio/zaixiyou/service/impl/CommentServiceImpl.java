@@ -208,7 +208,6 @@ public class CommentServiceImpl implements CommentService {
         EventRemind remind = new EventRemind();
         remind.setSourceId(postId);
         remind.setSenderId(userId);
-        remind.setReceiveId(post.getAuthorId());
         remind.setPostType(post.getType());
         remind.setReplyContent(addCommentForm.getBody().length() > 20 ? addCommentForm.getBody().substring(0, 20) + "..." : addCommentForm.getBody());
         if (addCommentForm.getParentId().equals(0)) {
@@ -228,6 +227,7 @@ public class CommentServiceImpl implements CommentService {
             }
             // MQ通知用户帖子被回复
             remind.setAction(RemindActionEnum.REPLY_POST.getCode());
+            remind.setReceiveId(post.getAuthorId());
             rabbitTemplate.convertAndSend("eventRemind", remind);
             // MQ更新帖子热度
             rabbitTemplate.convertAndSend("updateHeat", "post", postId);
@@ -240,6 +240,7 @@ public class CommentServiceImpl implements CommentService {
             if (parentComment.getBody() != null) {
                 remind.setSourceContent(parentComment.getBody().length() > 20 ? parentComment.getBody().substring(0, 20) + "..." : parentComment.getBody());
             }
+            remind.setReceiveId(parentComment.getAuthorId());
             rabbitTemplate.convertAndSend("eventRemind", remind);
         }
         CommentVO commentVO = new CommentVO();

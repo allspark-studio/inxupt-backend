@@ -361,7 +361,6 @@ public class UserServiceImpl implements UserService {
         }
         Integer id = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(id);
-        user.setAvatarUrl(form.getAvatarUrl());
         user.setNickname(form.getNickName());
         user.setDescription(form.getDescription());
         user.setGender(form.getGender());
@@ -488,5 +487,23 @@ public class UserServiceImpl implements UserService {
         avatarAndNicknameVO.setAvatar(user.getAvatarUrl());
         avatarAndNicknameVO.setNickname(user.getNickname());
         return ResponseVO.success(avatarAndNicknameVO);
+    }
+
+    @Override
+    public ResponseVO updateAvatar(String token, String url) {
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        user.setAvatarUrl(url);
+        int result = userMapper.updateAvatar(user);
+        if (result == 0) {
+            return ResponseVO.error(ResponseEnum.ERROR);
+        }
+        return ResponseVO.success();
     }
 }

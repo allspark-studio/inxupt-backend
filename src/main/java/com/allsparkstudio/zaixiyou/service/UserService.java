@@ -88,4 +88,6 @@ public interface UserService {
     ResponseVO<UserLoginVO> validate(ValidateForm validateForm);
 
     ResponseVO getAvatarAndNickname(Integer userId);
+
+    ResponseVO updateAvatar(String token, String url);
 }
