@@ -67,5 +67,4 @@ public class ResponseVO<T> {
     public static <T> ResponseVO<T> error(ResponseEnum responseEnum, String msg) {
         return error(responseEnum.getCode(), msg);
     }
-
 }

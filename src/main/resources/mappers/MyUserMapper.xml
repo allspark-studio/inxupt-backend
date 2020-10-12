@@ -7,6 +7,11 @@
         from user
         where phone = #{phone,jdbcType=VARCHAR}
     </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+    </select>
     <select id="selectFans" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

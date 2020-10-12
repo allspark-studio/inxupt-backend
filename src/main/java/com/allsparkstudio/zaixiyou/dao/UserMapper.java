@@ -19,6 +19,8 @@ public interface UserMapper {
 
     User selectByPhone(String phone);
 
+    List<User> selectAll();
+
     List<User> selectFans(Integer userId);
 
     List<User> selectFollowers(Integer userId);

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.allsparkstudio</groupId>
     <artifactId>zaixiyou</artifactId>
-    <version>0.1.55</version>
+    <version>0.1.60</version>
     <name>zaixiyou</name>
     <description>Demo project for Spring Boot</description>
 

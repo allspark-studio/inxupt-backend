@@ -1,7 +1,6 @@
 package com.allsparkstudio.zaixiyou.dao;
 
 import com.allsparkstudio.zaixiyou.pojo.po.UserSystemNotice;
-import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 
 import java.util.List;
 

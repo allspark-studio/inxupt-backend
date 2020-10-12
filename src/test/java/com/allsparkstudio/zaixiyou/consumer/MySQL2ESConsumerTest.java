@@ -30,20 +30,7 @@ public class MySQL2ESConsumerTest extends ZaixiyouApplicationTests {
     public void
     addPost() {
 //
-//        List<Post> postList = postMapper.selectAllByTime();
-//        for (Post post : postList) {
-//            rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
-//        }
-//
-//        for (int i = 1;i<=12;i++) {
-//            User user = userMapper.selectByPrimaryKey(i);
-//            rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "update", user);
-//        }
-//
-//        List<Circle> circleList = circleMapper.selectAll();
-//        for (Circle circle : circleList) {
-//            rabbitTemplate.convertAndSend("MySQL2ESCircleExchange", "add", circle);
-//        }
+
     }
 
     @Test

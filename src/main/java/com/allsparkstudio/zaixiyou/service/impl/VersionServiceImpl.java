@@ -20,16 +20,12 @@ public class VersionServiceImpl implements VersionService {
         Version latestVersion = versionMapper.selectLatestVersion();
         String[] latestVersionNum = latestVersion.getVersion().split("\\.");
         int code = 1;
-        int force = 0;
         if (Integer.parseInt(versionNum[0]) < Integer.parseInt(latestVersionNum[0]) ||
                 Integer.parseInt(versionNum[1]) < Integer.parseInt(latestVersionNum[1]) ||
                 Integer.parseInt(versionNum[2]) < Integer.parseInt(latestVersionNum[2])) {
             code = 0;
-            if (Integer.parseInt(versionNum[0]) < Integer.parseInt(latestVersionNum[0]) ||
-                    Integer.parseInt(versionNum[1]) < Integer.parseInt(latestVersionNum[1])) {
-                force = 1;
-            }
         }
+        int force = latestVersion.getForce();
         VersionVO versionVO = new VersionVO();
         if (code == 0) {
             versionVO.setCode(code);

@@ -14,6 +14,8 @@ public class Version implements Serializable {
 
     private String url;
 
+    private Integer force;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -56,6 +58,14 @@ public class Version implements Serializable {
         this.url = url == null ? null : url.trim();
     }
 
+    public Integer getForce() {
+        return force;
+    }
+
+    public void setForce(Integer force) {
+        this.force = force;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -67,6 +77,7 @@ public class Version implements Serializable {
         sb.append(", publishTime=").append(publishTime);
         sb.append(", description=").append(description);
         sb.append(", url=").append(url);
+        sb.append(", force=").append(force);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
