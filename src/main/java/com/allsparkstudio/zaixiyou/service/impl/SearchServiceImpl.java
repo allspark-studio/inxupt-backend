@@ -175,6 +175,7 @@ public class SearchServiceImpl implements SearchService {
             postVO.setAuthorAvatar(author.getAvatarUrl());
             postVO.setAuthorDescription(author.getDescription());
             postVO.setAuthorLevel(author.getLevel());
+            postVO.setAccountAuth(Arrays.asList(author.getAccountAuth().split(";")));
             if (PostTypeEnum.POST.getCode().equals((Integer) postMap.get("type"))) {
                 postVO.setBody((String) postMap.get("body"));
             } else {

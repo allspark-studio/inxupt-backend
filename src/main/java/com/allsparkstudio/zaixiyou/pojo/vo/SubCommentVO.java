@@ -32,6 +32,8 @@ public class SubCommentVO {
 
     private Integer authorLevel;
 
+    private List<String> accountAuth;
+
     private Integer replyUserId;
 
     private String replyUserNickname;

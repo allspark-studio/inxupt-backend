@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -202,6 +203,7 @@ public class UserServiceImpl implements UserService {
         myPageVO.setGender(user.getGender());
         myPageVO.setGrade(user.getGrade());
         myPageVO.setMajor(user.getMajor());
+        myPageVO.setAccountAuth(Arrays.asList(user.getAccountAuth().split(";")));
         myPageVO.setSignCoinsNum(user.getInsertableCoins());
         myPageVO.setExchangeCoinsNum(user.getExchangeableCoins());
         myPageVO.setExperience(user.getExperience());
@@ -242,6 +244,7 @@ public class UserServiceImpl implements UserService {
         hisPageVO.setMajor(he.getMajor());
         hisPageVO.setLevel(he.getLevel());
         hisPageVO.setLikedNum(he.getLikeNum());
+        hisPageVO.setAccountAuth(Arrays.asList(he.getAccountAuth().split(";")));
         Integer fansNum = followMapper.countByFollowedUserId(uid);
         hisPageVO.setFansNum(fansNum);
         Integer followNum = followMapper.countByUserId(uid);
@@ -392,6 +395,7 @@ public class UserServiceImpl implements UserService {
             fansVO.setAvatarUrl(fan.getAvatarUrl());
             fansVO.setDescription(fan.getDescription());
             fansVO.setNickName(fan.getNickname());
+            fansVO.setAccountAuth(Arrays.asList(fan.getAccountAuth().split(";")));
             fansVO.setSelected(false);
             if (login) {
                 fansVO.setFollowed(followMapper.isFollowed(myId, fan.getId()));
@@ -422,6 +426,7 @@ public class UserServiceImpl implements UserService {
             fansVO.setAvatarUrl(follower.getAvatarUrl());
             fansVO.setDescription(follower.getDescription());
             fansVO.setNickName(follower.getNickname());
+            fansVO.setAccountAuth(Arrays.asList(follower.getAccountAuth().split(";")));
             fansVO.setSelected(false);
             if (login) {
                 fansVO.setFollowed(followMapper.isFollowed(myId, follower.getId()));
@@ -505,5 +510,37 @@ public class UserServiceImpl implements UserService {
             return ResponseVO.error(ResponseEnum.ERROR);
         }
         return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO updateBackground(String token, String url) {
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        user.setUserpageBgImgUrl(url);
+        int result = userMapper.updateBackground(user);
+        if (result == 0) {
+            return ResponseVO.error(ResponseEnum.ERROR);
+        }
+        return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO getBackground(String token) {
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        String userpageBgImgUrl = user.getUserpageBgImgUrl();
+        return ResponseVO.success(userpageBgImgUrl);
     }
 }

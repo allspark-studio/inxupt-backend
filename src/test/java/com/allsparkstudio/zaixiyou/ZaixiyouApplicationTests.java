@@ -46,11 +46,10 @@ public class ZaixiyouApplicationTests {
 
     @Test
     public void test() {
-        log.info("password: [{}]", DigestUtils.md5DigestAsHex("syspwd1".getBytes()));
+        log.info("password: [{}]", DigestUtils.md5DigestAsHex("syspwdl1".getBytes()));
     }
 
     @Test
     public void batchRegister() {
-
     }
 }

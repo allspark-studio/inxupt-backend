@@ -52,6 +52,8 @@ public class PostVO {
 
     private Integer authorLevel;
 
+    private List<String> accountAuth;
+
     private String authorDescription;
 
     private String createTime;

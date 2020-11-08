@@ -2,6 +2,8 @@ package com.allsparkstudio.zaixiyou.pojo.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author 陈帅
  * @date 2020/7/16
@@ -17,6 +19,8 @@ public class HisPageVO {
     private String avatarUrl;
     // 个性描述
     private String description;
+    // 账号认证
+    private List<String> accountAuth;
     // 性别
     private Integer gender;
     // 年级

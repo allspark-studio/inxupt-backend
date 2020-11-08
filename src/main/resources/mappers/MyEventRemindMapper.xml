@@ -3,7 +3,7 @@
 <mapper namespace="com.allsparkstudio.zaixiyou.dao.EventRemindMapper">
     <select id="selectReplyNoticesByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from event_remind
         where receive_id = #{userId,jdbcType=INTEGER}
         and action between 6 and 7
@@ -15,15 +15,30 @@
         set state = #{state,jdbcType=INTEGER}
         where id = #{id,jdbcType=INTEGER}
     </update>
-    <select id="countUnreadNoticeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+    <select id="countNewsNoticeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
         select count(*)
         from event_remind
         where receive_id = #{userId,jdbcType=INTEGER}
-        and state = 0;
+          and action in (1, 2, 3, 4, 5, 8)
+          and state = 0;
+    </select>
+    <select id="countReplyNoticeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from event_remind
+        where receive_id = #{userId,jdbcType=INTEGER}
+          and action between 6 and 7
+          and state = 0;
+    </select>
+    <select id="countAtNoticeByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(*)
+        from event_remind
+        where receive_id = #{userId,jdbcType=INTEGER}
+          and action = 9
+          and state = 0;
     </select>
     <select id="selectNewsNoticesByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from event_remind
         where receive_id = #{userId,jdbcType=INTEGER}
         and action in (1,2,3,4,5,8)
@@ -32,7 +47,7 @@
     </select>
     <select id="selectAtNoticesByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from event_remind
         where receive_id = #{userId,jdbcType=INTEGER}
         and action = 9

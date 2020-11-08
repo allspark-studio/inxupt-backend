@@ -1,6 +1,7 @@
 package com.allsparkstudio.zaixiyou.consts;
 
 /**
+ * 用户等级与所需经验值
  * @author 陈帅
  * @date 2020/8/18
  */
@@ -12,6 +13,9 @@ public class ExperienceConst {
     public static Integer LV5 = 60000;
     public static Integer LV6 = 9999999;
 
+    /**
+     * 根据等级获取对应升级需要的经验值
+     */
     public static Integer getExpByLv(Integer level) {
         switch (level) {
             case 1:

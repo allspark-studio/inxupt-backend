@@ -207,4 +207,17 @@ public class UserController {
         return userService.updateAvatar(token, url);
     }
 
+    @PutMapping("/user/background")
+    @ApiOperation("修改用户个人主页背景图片")
+    public ResponseVO updateBackground(@RequestBody String url,
+                                       @RequestHeader(value = "token", required = false) String token) {
+        return userService.updateBackground(token, url);
+    }
+
+    @GetMapping("/user/background")
+    @ApiOperation("获取用户个人主页背景图片")
+    public ResponseVO getBackground(@RequestHeader(value = "token", required = false) String token) {
+        return userService.getBackground(token);
+    }
+
 }

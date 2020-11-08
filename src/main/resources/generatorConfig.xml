@@ -23,10 +23,16 @@
             <property name="suppressAllComments" value="true"/>
         </commentGenerator>
 
+<!--        <jdbcConnection driverClass="com.mysql.jdbc.Driver"-->
+<!--                        connectionURL="jdbc:mysql://154.8.202.244:3306/zaixiyou?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"-->
+<!--                        userId="zaixiyouremote"-->
+<!--                        password="AllSparkStudio.com">-->
+<!--        </jdbcConnection>-->
+
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://154.8.202.244:3306/zaixiyou?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
-                        userId="zaixiyouremote"
-                        password="AllSparkStudio.com">
+                        connectionURL="jdbc:mysql://127.0.0.1:3306/zaixiyou_dev?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
+                        userId="root"
+                        password="24kchunshuai">
         </jdbcConnection>
 
         <javaTypeResolver>
@@ -34,7 +40,7 @@
                 false：把JDBC DECIMAL 和 NUMERIC 类型解析为 Integer
                 true：把JDBC DECIMAL 和 NUMERIC 类型解析为java.math.BigDecimal
             -->
-            <property name="forceBigDecimals" value="false"/>
+            <property name="forceBigDecimals" value="true"/>
         </javaTypeResolver>
 
         <!-- targetPackage：生成的实体类所在的包 -->
@@ -193,5 +199,35 @@
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
+<!--        <table tableName="restaurant" domainObjectName="Restaurant"-->
+<!--               enableCountByExample="false" enableUpdateByExample="false"-->
+<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--               selectByExampleQueryId="false">-->
+<!--        </table>-->
+<!--        <table tableName="window" domainObjectName="Window"-->
+<!--               enableCountByExample="false" enableUpdateByExample="false"-->
+<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--               selectByExampleQueryId="false">-->
+<!--        </table>-->
+<!--        <table tableName="food" domainObjectName="Food"-->
+<!--               enableCountByExample="false" enableUpdateByExample="false"-->
+<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--               selectByExampleQueryId="false">-->
+<!--        </table>-->
+<!--        <table tableName="user_food_like" domainObjectName="UserFoodLike"-->
+<!--               enableCountByExample="false" enableUpdateByExample="false"-->
+<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--               selectByExampleQueryId="false">-->
+<!--        </table>-->
+<!--        <table tableName="restaurant_swiper" domainObjectName="RestaurantSwiper"-->
+<!--               enableCountByExample="false" enableUpdateByExample="false"-->
+<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--               selectByExampleQueryId="false">-->
+<!--        </table>-->
+        <table tableName="club" domainObjectName="Club"
+            enableCountByExample="false" enableUpdateByExample="false"
+            enableDeleteByExample="false" enableSelectByExample="false"
+            selectByExampleQueryId="false">
+        </table>
     </context>
 </generatorConfiguration>

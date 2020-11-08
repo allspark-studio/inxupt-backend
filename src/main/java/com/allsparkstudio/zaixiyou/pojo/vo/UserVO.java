@@ -2,6 +2,8 @@ package com.allsparkstudio.zaixiyou.pojo.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UserVO {
 
@@ -10,6 +12,8 @@ public class UserVO {
     private String nickName;
 
     private String avatarUrl;
+
+    private List<String> accountAuth;
 
     private String description;
 

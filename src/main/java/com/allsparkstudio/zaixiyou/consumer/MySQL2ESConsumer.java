@@ -29,7 +29,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-
+/**
+ * MySQL增量同步到Elasticsearch的消费者
+ */
 @Component
 @Slf4j
 public class MySQL2ESConsumer {
@@ -40,6 +42,12 @@ public class MySQL2ESConsumer {
     @Qualifier("restHighLevelClient")
     private RestHighLevelClient client;
 
+    /**
+     * 新建帖子时同步：
+     * ES中只存储id值和需要全文索引的值：
+     * 1. 文章，存id值和title以及pureText
+     * 2. 帖子，存id值和body
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -67,6 +75,9 @@ public class MySQL2ESConsumer {
         log.debug("ES插入post数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 更新帖子时同步到ES
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -95,6 +106,9 @@ public class MySQL2ESConsumer {
         log.debug("ES更新post数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 删除帖子时增量删除ES中的帖子
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -110,6 +124,10 @@ public class MySQL2ESConsumer {
         log.debug("ES删除post数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 新增用户（注册）时增量同步到ES中：
+     * ES中只存id值和用于全文索引的用户昵称
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -131,6 +149,9 @@ public class MySQL2ESConsumer {
         log.debug("ES插入user数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 更新用户昵称时增量同步ES中的数据
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -151,6 +172,9 @@ public class MySQL2ESConsumer {
         log.debug("ES更新user数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 删除用户昵称时增量删除ES中的数据
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -166,6 +190,10 @@ public class MySQL2ESConsumer {
         log.debug("ES删除user数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 新建圈子时增量同步到ES中：
+     * ES中只存放圈子id和用于全文索引的name
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -187,6 +215,9 @@ public class MySQL2ESConsumer {
         log.debug("ES插入circle数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 更新圈子名称时增量同步更新ES中的圈子数据
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列
@@ -207,6 +238,9 @@ public class MySQL2ESConsumer {
         log.debug("ES更新circle数据 response:[{}]", response.toString());
     }
 
+    /**
+     * 更新圈子名称时增量删除ES中的圈子数据
+     */
     @RabbitListener(bindings = {
             @QueueBinding(
                     // 创建临时队列

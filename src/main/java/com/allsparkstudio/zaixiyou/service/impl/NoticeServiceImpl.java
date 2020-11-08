@@ -8,7 +8,6 @@ import com.allsparkstudio.zaixiyou.enums.RemindActionEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.po.EventRemind;
 import com.allsparkstudio.zaixiyou.pojo.po.SystemNotice;
-import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.po.UserSystemNotice;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.allsparkstudio.zaixiyou.service.NoticeService;
@@ -42,14 +41,26 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public ResponseVO countUnreadNotice(String token) {
-        int noticeNum = 0;
-        if (jwtUtils.validateToken(token)) {
-            Integer userId = jwtUtils.getIdFromToken(token);
-            Integer remindNoticeNum = eventRemindMapper.countUnreadNoticeByUserId(userId);
-            Integer systemNoticeNum = userSystemNoticeMapper.countUnreadNoticeByUserId(userId);
-            noticeNum = remindNoticeNum + systemNoticeNum;
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
         }
-        return ResponseVO.success(noticeNum);
+        if (!jwtUtils.validateToken(token)) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        NoticeNumVO noticeNumVO = new NoticeNumVO();
+        Integer userId = jwtUtils.getIdFromToken(token);
+        Integer replyNum = eventRemindMapper.countReplyNoticeByUserId(userId);
+        Integer newsNum = eventRemindMapper.countNewsNoticeByUserId(userId);
+        Integer atNum = eventRemindMapper.countAtNoticeByUserId(userId);
+        Integer systemNum = userSystemNoticeMapper.countUnreadNoticeByUserId(userId);
+        Integer totalNum = replyNum + newsNum + atNum + systemNum;
+        noticeNumVO.setTotalNum(totalNum);
+        noticeNumVO.setReplyNum(replyNum);
+        noticeNumVO.setNewsNum(newsNum);
+        noticeNumVO.setAtNum(atNum);
+        noticeNumVO.setSystemNum(systemNum);
+
+        return ResponseVO.success(noticeNumVO);
     }
 
     @Override
@@ -71,7 +82,7 @@ public class NoticeServiceImpl implements NoticeService {
             replyNoticeVO.setPostType(replyNotice.getPostType());
             if (replyNotice.getAction().equals(RemindActionEnum.REPLY_POST.getCode())) {
                 replyNoticeVO.setSourceType(1);
-            }else {
+            } else {
                 replyNoticeVO.setSourceType(2);
             }
             replyNoticeVO.setSourceId(replyNotice.getSourceId());

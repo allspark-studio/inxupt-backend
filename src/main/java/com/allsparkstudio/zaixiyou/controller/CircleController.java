@@ -34,6 +34,7 @@ public class CircleController {
     @Autowired
     JWTUtils jwtUtils;
 
+
     @GetMapping("/circle/{circleId}/posts")
     @ApiOperation("列出圈子里的帖子列表")
     public ResponseVO<PageInfo> listPosts(@PathVariable("circleId") Integer circleId,

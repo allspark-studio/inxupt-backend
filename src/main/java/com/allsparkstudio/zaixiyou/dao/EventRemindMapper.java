@@ -21,7 +21,11 @@ public interface EventRemindMapper {
 
     int updateState(EventRemind replyNotice);
 
-    Integer countUnreadNoticeByUserId(Integer userId);
+    Integer countReplyNoticeByUserId(Integer userId);
+
+    Integer countNewsNoticeByUserId(Integer userId);
+
+    Integer countAtNoticeByUserId(Integer userId);
 
     List<EventRemind> selectNewsNoticesByUserId(Integer userId);
 

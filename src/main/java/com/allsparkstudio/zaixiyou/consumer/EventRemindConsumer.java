@@ -7,6 +7,9 @@ import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * 事件提醒消费者
+ */
 @Slf4j
 @Component
 @RabbitListener(queuesToDeclare = @Queue(value = "eventRemind"))

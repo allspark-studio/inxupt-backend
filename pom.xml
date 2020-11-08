@@ -10,9 +10,9 @@
     </parent>
     <groupId>com.allsparkstudio</groupId>
     <artifactId>zaixiyou</artifactId>
-    <version>0.1.60</version>
+    <version>0.1.65</version>
     <name>zaixiyou</name>
-    <description>Demo project for Spring Boot</description>
+    <description>在西邮后端前台接口</description>
 
     <properties>
         <java.version>1.8</java.version>

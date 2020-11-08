@@ -42,6 +42,8 @@ public class User implements Serializable {
 
     private Integer likeNum;
 
+    private String accountAuth;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -196,6 +198,14 @@ public class User implements Serializable {
         this.likeNum = likeNum;
     }
 
+    public String getAccountAuth() {
+        return accountAuth;
+    }
+
+    public void setAccountAuth(String accountAuth) {
+        this.accountAuth = accountAuth == null ? null : accountAuth.trim();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -221,6 +231,7 @@ public class User implements Serializable {
         sb.append(", customAppColor=").append(customAppColor);
         sb.append(", lastActiveTime=").append(lastActiveTime);
         sb.append(", likeNum=").append(likeNum);
+        sb.append(", accountAuth=").append(accountAuth);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

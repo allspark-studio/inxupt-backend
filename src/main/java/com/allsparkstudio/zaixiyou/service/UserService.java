@@ -90,4 +90,8 @@ public interface UserService {
     ResponseVO getAvatarAndNickname(Integer userId);
 
     ResponseVO updateAvatar(String token, String url);
+
+    ResponseVO updateBackground(String token, String url);
+
+    ResponseVO getBackground(String token);
 }

@@ -35,6 +35,8 @@ public class CommentVO {
 
     private Integer authorLevel;
 
+    private List<String> accountAuth;
+
     private String createTime;
 
     private Integer likeNum;

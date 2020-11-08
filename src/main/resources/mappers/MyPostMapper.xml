@@ -39,7 +39,6 @@
         where state = 0
         and author_id = #{authorId,jdbcType=INTEGER}
         and type = #{type,jdbcType=INTEGER}
-        and visible_outside_circle = 1
         order by id desc
     </select>
     <select id="selectPostsByCategoryIdSortedByTime" parameterType="java.lang.Integer" resultMap="BaseResultMap">

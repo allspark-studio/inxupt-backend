@@ -30,7 +30,6 @@ public class ResponseVO<T> {
         this.data = data;
     }
 
-
     public static <T> ResponseVO<T> success(Integer status, String msg, T data) {
         return new ResponseVO<T>(ResponseEnum.SUCCESS.getCode(), msg, data);
     }

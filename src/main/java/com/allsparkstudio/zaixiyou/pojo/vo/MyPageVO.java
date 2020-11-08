@@ -2,6 +2,8 @@ package com.allsparkstudio.zaixiyou.pojo.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author 陈帅
  * @date 2020/7/16
@@ -25,6 +27,8 @@ public class MyPageVO {
     private String major;
     // 经验
     private Integer experience;
+    // 账号认证列表
+    private List<String> accountAuth;
     // 当前等级需要的经验
     private Integer needExperience;
     // 名片背景图片地址

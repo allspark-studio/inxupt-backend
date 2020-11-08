@@ -154,6 +154,7 @@ public class PostServiceImpl implements PostService {
             postVO.setAuthorAvatar(author.getAvatarUrl());
             postVO.setAuthorDescription(author.getDescription());
             postVO.setAuthorLevel(author.getLevel());
+            postVO.setAccountAuth(Arrays.asList(author.getAccountAuth().split(";")));
             postVO.setBody(post.getBody());
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));
@@ -832,6 +833,7 @@ public class PostServiceImpl implements PostService {
         postVO.setAuthorAvatar(author.getAvatarUrl());
         postVO.setAuthorDescription(author.getDescription());
         postVO.setAuthorLevel(author.getLevel());
+        postVO.setAccountAuth(Arrays.asList(author.getAccountAuth().split(";")));
         postVO.setBody(post.getBody());
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         postVO.setCreateTime(simpleDateFormat.format(post.getCreateTime()));

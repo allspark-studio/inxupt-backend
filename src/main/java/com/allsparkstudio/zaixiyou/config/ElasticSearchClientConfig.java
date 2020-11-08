@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Elasticsearch restHighLevelClient配置
+ * @author 陈帅
+ */
 @Configuration
 public class ElasticSearchClientConfig {
 

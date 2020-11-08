@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * @author 陈帅
@@ -88,6 +85,7 @@ public class CommentServiceImpl implements CommentService {
             commentVO.setAuthorAvatar(author.getAvatarUrl());
             commentVO.setAuthorNickname(author.getNickname());
             commentVO.setAuthorLevel(author.getLevel());
+            commentVO.setAccountAuth(Arrays.asList(author.getAccountAuth().split(";")));
             // TODO: 一次查询全部聚合结果
             simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
             commentVO.setCreateTime(simpleDateFormat.format(comment.getCreateTime()));
@@ -128,6 +126,7 @@ public class CommentServiceImpl implements CommentService {
                 User subAuthor = userMapper.selectByPrimaryKey(subComment.getAuthorId());
                 subCommentVO.setAuthorAvatar(subAuthor.getAvatarUrl());
                 subCommentVO.setAuthorNickname(subAuthor.getNickname());
+                subCommentVO.setAccountAuth(Arrays.asList(subAuthor.getAccountAuth().split(";")));
                 subCommentVO.setReplyUserId(subComment.getReplyUserId());
                 User replyUser = userMapper.selectByPrimaryKey(subComment.getReplyUserId());
                 String replyUserNickname = "用户不存在";
@@ -262,6 +261,7 @@ public class CommentServiceImpl implements CommentService {
         commentVO.setAuthorAvatar(user.getAvatarUrl());
         commentVO.setAuthorNickname(user.getNickname());
         commentVO.setAuthorLevel(user.getLevel());
+        commentVO.setAccountAuth(Arrays.asList(user.getAccountAuth().split(";")));
         commentVO.setCoined(false);
         commentVO.setSubComments(new ArrayList<>());
         return ResponseVO.success(commentVO);

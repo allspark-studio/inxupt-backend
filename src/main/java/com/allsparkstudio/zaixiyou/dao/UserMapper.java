@@ -38,4 +38,6 @@ public interface UserMapper {
     int updateExpAndLv(User record);
 
     int updateAvatar(User user);
+
+    int updateBackground(User user);
 }

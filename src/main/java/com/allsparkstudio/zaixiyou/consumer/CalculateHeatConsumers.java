@@ -12,6 +12,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
+/**
+ * 计算热度的消费者
+ * @author 陈帅
+ */
 @Component
 @Slf4j
 public class CalculateHeatConsumers {
@@ -56,8 +61,7 @@ public class CalculateHeatConsumers {
      * favoritesNum: 收藏数
      * hour: 发布到现在的时间间隔,单位小时,+1防止除数太小
      * G: 重力加速度，它的数值大小决定了排名随时间下降的速度快慢，通常取1.5/1.8/2
-     * <p>
-     * 每小时执行一次
+     * 每次更新影响热度相关的数据时更新一次
      */
     @RabbitListener(bindings = {
             @QueueBinding(
@@ -87,8 +91,7 @@ public class CalculateHeatConsumers {
      * comments: 评论数
      * hour: 发布到现在的时间间隔,单位小时,+1防止除数太小
      * G: 重力加速度，它的数值大小决定了排名随时间下降的速度快慢，通常取1.5/1.8/2
-     * <p>
-     * 每小时执行一次
+     * 每次更新影响热度相关的数据时更新一次
      */
     @RabbitListener(bindings = {
             @QueueBinding(
@@ -115,7 +118,7 @@ public class CalculateHeatConsumers {
      * heat = membersNum * 3 + topicsNum * 4
      * membersNum: 成员数量
      * topicsNum: 话题数量
-     * 每小时执行一次
+     * 每次更新影响热度相关的数据时更新一次
      */
     @RabbitListener(bindings = {
             @QueueBinding(

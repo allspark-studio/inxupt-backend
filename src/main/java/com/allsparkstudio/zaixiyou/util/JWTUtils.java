@@ -41,9 +41,6 @@ public class JWTUtils {
     private Long expiration;
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
     private UserMapper userMapper;
 
     @Autowired
