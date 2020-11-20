@@ -90,7 +90,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 UserFoodLike userFoodLike = userFoodLikeMapper.selectByUserIdAndFoodId(userId, food.getId());
                 if (userFoodLike == null) {
                     isLiked = false;
-                }else {
+                } else {
                     isLiked = userFoodLike.getState().equals(1);
                 }
             }
@@ -119,7 +119,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
-        }else {
+        } else {
             userFoodLike.setState(1);
             int result = userFoodLikeMapper.updateState(userFoodLike);
             if (result != 1) {
@@ -151,12 +151,17 @@ public class RestaurantServiceImpl implements RestaurantService {
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
-        }else {
+        } else {
             userFoodLike.setState(0);
             int result = userFoodLikeMapper.updateState(userFoodLike);
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
+        }
+        Food food = foodMapper.selectByPrimaryKey(foodId);
+        if (food.getLikeNum() != 0) {
+            food.setLikeNum(food.getLikeNum() - 1);
+            foodMapper.updateLikeNum(food);
         }
         return ResponseVO.success();
     }

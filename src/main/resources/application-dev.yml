@@ -41,11 +41,6 @@ spring:
     restart:
       enabled: true
 
-    servlet:
-      multipart: # 上传文件相关设置
-        max-file-size: 1GB
-        max-request-size: 10GB
-
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

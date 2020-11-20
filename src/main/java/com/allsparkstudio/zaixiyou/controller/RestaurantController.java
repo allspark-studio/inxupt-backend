@@ -35,21 +35,21 @@ public class RestaurantController {
     @GetMapping("/window/{windowId}/foods")
     @ApiOperation("食物列表")
     public ResponseVO<List<FoodVO>> listFoods(@PathVariable("windowId") Integer windowId,
-                                        @RequestHeader("token") String token) {
+                                        @RequestHeader(value = "token", required = false) String token) {
         return restaurantService.listFoods(windowId, token);
     }
 
     @PostMapping("/food/{foodId}/like")
     @ApiOperation("点赞菜品")
     public ResponseVO like(@PathVariable("foodId") Integer foodId,
-                           @RequestHeader("token") String token) {
+                           @RequestHeader(value = "token", required = false) String token) {
         return restaurantService.like(foodId, token);
     }
 
     @DeleteMapping("/food/{foodId}/like")
     @ApiOperation("取消点赞")
     public ResponseVO disLike(@PathVariable("foodId") Integer foodId,
-                              @RequestHeader("token") String token) {
+                              @RequestHeader(value = "token", required = false) String token) {
         return restaurantService.disLike(foodId, token);
     }
 }

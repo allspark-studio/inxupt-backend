@@ -26,9 +26,12 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.util.List;
 
@@ -162,4 +165,38 @@ public class ApiOperation {
         DeleteIndexRequest request = new DeleteIndexRequest(indexName);
         client.indices().delete(request, RequestOptions.DEFAULT);
     }
+
+    /* 删除帖子接口
+    @DeleteMapping("/post/{postId}")
+    public ResponseVO deletePost(@PathVariable Integer postId, @PathParam("password")String password) {
+        if (!"allsparkstudio".equals(password)) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "密码错误");
+        }
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
+        }
+        postMapper.deleteByPrimaryKey(postId);
+        // 通过MQ同步删除ES数据
+        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "delete", post);
+        // 删除帖子下面的评论对应的用户-评论关系表，这样用户被点赞数不会减只会加
+        List<Integer> commentIdList = commentMapper.selectIdsByPostId(postId);
+        for (Integer commentId : commentIdList) {
+            userCommentLikeMapper.deleteByCommentId(commentId);
+            userCommentCoinMapper.deleteByCommentId(commentId);
+        }
+        commentMapper.deleteByPostId(postId);
+        // 删除用户-帖子-点赞关联动作
+        userPostLikeMapper.deleteByPostId(postId);
+        // 删除用户-帖子-收藏关联动作
+        userPostFavoriteMapper.deleteByPostId(postId);
+        // 删除用户-帖子-投币关联动作
+        userPostCoinMapper.deleteByPostId(postId);
+        // 删除帖子和分类的关系
+        postCategoryMapper.deleteByPostId(postId);
+        // 删除帖子和圈子的关系
+        postCircleMapper.deleteByPostId(postId);
+        return ResponseVO.success();
+    }
+    */
 }

@@ -19,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * 其他的controller
@@ -60,7 +63,18 @@ public class FileController {
             }
             String filename = file.getOriginalFilename();
             if (!"".equals(filename.trim())) {
-                File newFile = new File( filename);
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                String dateStr = format.format(new Date());
+                File path = new File("./data/upload_temp/" + dateStr + "/");
+                log.debug("文件路径：[{}]", path.toString());
+                if (!path.exists()) {
+                    path.mkdirs();
+                }
+                log.debug("新建文件夹的绝对路径：[{}]", path.getAbsolutePath());
+                filename = path.getAbsolutePath() + "/" + filename;
+                File newFile = new File(filename);
+                log.debug("新文件路径:[{}]", newFile.getPath());
                 FileOutputStream os = new FileOutputStream(newFile);
                 os.write(file.getBytes());
                 os.close();
