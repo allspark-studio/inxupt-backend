@@ -30,6 +30,7 @@
         <include refid="Base_Column_List"/>
         from user_circle
         where circle_id = #{userId,jdbcType=INTEGER}
+        and role >= 2
         order by role
     </select>
     <update id="updateRole" parameterType="java.lang.Integer">
