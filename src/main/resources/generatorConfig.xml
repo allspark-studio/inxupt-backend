@@ -76,13 +76,13 @@
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
-<!--        <table tableName="post" domainObjectName="Post"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--            <columnOverride column="body" javaType="java.lang.String" jdbcType="VARCHAR"/>-->
-<!--            <columnOverride column="article_text" javaType="java.lang.String" jdbcType="VARCHAR"/>-->
-<!--        </table>-->
+        <table tableName="post" domainObjectName="Post"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false"
+               selectByExampleQueryId="false">
+            <columnOverride column="body" javaType="java.lang.String" jdbcType="VARCHAR"/>
+            <columnOverride column="article_text" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        </table>
 <!--        <table tableName="comment" domainObjectName="Comment"-->
 <!--               enableCountByExample="false" enableUpdateByExample="false"-->
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
@@ -224,10 +224,10 @@
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
-        <table tableName="club" domainObjectName="Club"
-            enableCountByExample="false" enableUpdateByExample="false"
-            enableDeleteByExample="false" enableSelectByExample="false"
-            selectByExampleQueryId="false">
-        </table>
+<!--        <table tableName="club" domainObjectName="Club"-->
+<!--            enableCountByExample="false" enableUpdateByExample="false"-->
+<!--            enableDeleteByExample="false" enableSelectByExample="false"-->
+<!--            selectByExampleQueryId="false">-->
+<!--        </table>-->
     </context>
 </generatorConfiguration>

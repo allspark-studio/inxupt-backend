@@ -34,6 +34,8 @@ public class Post implements Serializable {
 
     private Integer heat;
 
+    private Integer topOrder;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -156,6 +158,14 @@ public class Post implements Serializable {
         this.heat = heat;
     }
 
+    public Integer getTopOrder() {
+        return topOrder;
+    }
+
+    public void setTopOrder(Integer topOrder) {
+        this.topOrder = topOrder;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -177,6 +187,7 @@ public class Post implements Serializable {
         sb.append(", articleCover=").append(articleCover);
         sb.append(", tags=").append(tags);
         sb.append(", heat=").append(heat);
+        sb.append(", topOrder=").append(topOrder);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

@@ -427,13 +427,21 @@ public class PostServiceImpl implements PostService {
         if (userId.equals(post.getAuthorId())) {
             return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION, "不能给自己投币哦");
         }
+        // 如果签到硬币不足
         if (user.getInsertableCoins() <= 0) {
-            return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
+            // 且兑换硬币不足，返回硬币不足消息
+            if (user.getExchangeableCoins() <= 0) {
+                return ResponseVO.error(ResponseEnum.COINS_NOT_ENOUGH);
+            }
+            // 兑换硬币数量>0，兑换硬币数-1
+            user.setExchangeableCoins(user.getExchangeableCoins() - 1);
+            userMapper.updateExchangeableCoins(user);
+        } else {
+            user.setInsertableCoins(user.getInsertableCoins() - 1);
+            userMapper.updateInsertableCoins(user);
         }
-        user.setInsertableCoins(user.getInsertableCoins() - 1);
         User author = userMapper.selectByPrimaryKey(post.getAuthorId());
         author.setExchangeableCoins(author.getExchangeableCoins() + 1);
-        userMapper.updateInsertableCoins(user);
         userMapper.updateExchangeableCoins(author);
 
         UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(userId, postId);

@@ -14,7 +14,7 @@
         from post
         where state = 0
         and visible_outside_circle = 1
-        order by id desc
+        order by top_order desc, id desc
     </select>
     <select id="selectAllByHeat" resultMap="BaseResultMap">
         select
@@ -22,7 +22,7 @@
         from post
         where state = 0
         and visible_outside_circle = 1
-        order by heat desc
+        order by top_order desc, id desc
     </select>
     <select id="selectAllByAuthorId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select

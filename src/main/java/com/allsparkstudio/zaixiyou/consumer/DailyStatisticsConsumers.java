@@ -170,7 +170,7 @@ public class DailyStatisticsConsumers {
                     // 指定交换机
                     exchange = @Exchange(name = "dailyStatisticsExchange"),
                     //
-                    key = {"getFollowd"}
+                    key = {"getFollowed"}
             )})
     public void getFollow(Integer userId) {
         addExp(userId, AddExpEnum.GET_FOLLOWED.getExp());

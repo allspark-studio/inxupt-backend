@@ -16,7 +16,9 @@ public class DefaultSettingConsts {
     /**
      * 默认用户头像2（9选1）
      */
-    public static final String DEFAULT_USER_AVATAR_URL_2 = String.format("https://zaixiyou.oss-cn-beijing.aliyuncs.com/base-image/default-user-avatar/%d.jpg", new Random().nextInt(8));
+    public static String getDefaultAvatar() {
+        return String.format("https://zaixiyou.oss-cn-beijing.aliyuncs.com/base-image/default-user-avatar/%d.jpg", new Random().nextInt(8));
+    }
 
     /**
      * 默认用户签名

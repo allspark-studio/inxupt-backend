@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.allsparkstudio.zaixiyou.consts.DefaultSettingConsts.DEFAULT_USER_AVATAR_URL_2;
-
 
 /**
  * @author 陈帅
@@ -138,7 +136,7 @@ public class UserServiceImpl implements UserService {
         }
         user = new User();
         user.setPhone(validateForm.getPhone());
-        user.setAvatarUrl(DEFAULT_USER_AVATAR_URL_2);
+        user.setAvatarUrl(DefaultSettingConsts.getDefaultAvatar());
         user.setDescription(DefaultSettingConsts.DEFAULT_USER_DESCRIPTION);
         user.setUserpageBgImgUrl(DefaultSettingConsts.DEFAULT_USERPAGE_BG_IMG_URL);
         user.setNickname("邮友_" + uuidUtils.generateShortUUID());

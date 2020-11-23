@@ -17,10 +17,11 @@
     <result column="article_cover" jdbcType="VARCHAR" property="articleCover" />
     <result column="tags" jdbcType="VARCHAR" property="tags" />
     <result column="heat" jdbcType="INTEGER" property="heat" />
+    <result column="top_order" jdbcType="INTEGER" property="topOrder" />
   </resultMap>
   <sql id="Base_Column_List">
     id, body, author_id, state, create_time, edit_time, type, post_media_urls, article_title, 
-    article_text, at_ids, visible_outside_circle, article_cover, tags, heat
+    article_text, at_ids, visible_outside_circle, article_cover, tags, heat, top_order
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -32,21 +33,21 @@
     delete from post
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
     insert into post (id, body, author_id, 
       state, create_time, edit_time, 
       type, post_media_urls, article_title, 
       article_text, at_ids, visible_outside_circle, 
-      article_cover, tags, heat
-      )
+      article_cover, tags, heat, 
+      top_order)
     values (#{id,jdbcType=INTEGER}, #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, 
       #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{editTime,jdbcType=TIMESTAMP}, 
       #{type,jdbcType=INTEGER}, #{postMediaUrls,jdbcType=VARCHAR}, #{articleTitle,jdbcType=VARCHAR}, 
       #{articleText,jdbcType=VARCHAR}, #{atIds,jdbcType=VARCHAR}, #{visibleOutsideCircle,jdbcType=BIT}, 
-      #{articleCover,jdbcType=VARCHAR}, #{tags,jdbcType=VARCHAR}, #{heat,jdbcType=INTEGER}
-      )
+      #{articleCover,jdbcType=VARCHAR}, #{tags,jdbcType=VARCHAR}, #{heat,jdbcType=INTEGER}, 
+      #{topOrder,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
+  <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
     insert into post
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -93,6 +94,9 @@
       </if>
       <if test="heat != null">
         heat,
+      </if>
+      <if test="topOrder != null">
+        top_order,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -141,6 +145,9 @@
       <if test="heat != null">
         #{heat,jdbcType=INTEGER},
       </if>
+      <if test="topOrder != null">
+        #{topOrder,jdbcType=INTEGER},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
@@ -188,6 +195,9 @@
       <if test="heat != null">
         heat = #{heat,jdbcType=INTEGER},
       </if>
+      <if test="topOrder != null">
+        top_order = #{topOrder,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -206,7 +216,8 @@
       visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
       article_cover = #{articleCover,jdbcType=VARCHAR},
       tags = #{tags,jdbcType=VARCHAR},
-      heat = #{heat,jdbcType=INTEGER}
+      heat = #{heat,jdbcType=INTEGER},
+      top_order = #{topOrder,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
