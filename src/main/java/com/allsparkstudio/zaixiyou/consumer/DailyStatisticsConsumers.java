@@ -191,7 +191,6 @@ public class DailyStatisticsConsumers {
                     key = {"getCoin"}
             )})
     public void getCoin(Integer userId) {
-        userDailyStatisticsUtils.updatePostNum(userId);
         addExp(userId, AddExpEnum.GET_COIN.getExp());
     }
 
