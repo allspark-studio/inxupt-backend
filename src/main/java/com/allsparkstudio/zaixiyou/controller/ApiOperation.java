@@ -1,15 +1,15 @@
 package com.allsparkstudio.zaixiyou.controller;
 
 
-import com.allsparkstudio.zaixiyou.dao.CircleMapper;
-import com.allsparkstudio.zaixiyou.dao.PostMapper;
-import com.allsparkstudio.zaixiyou.dao.UserMapper;
+import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
+import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESCircle;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESPost;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESUser;
 import com.allsparkstudio.zaixiyou.pojo.po.Circle;
+import com.allsparkstudio.zaixiyou.pojo.po.Comment;
 import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
@@ -26,10 +26,13 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.websocket.server.PathParam;
 import java.io.IOException;
@@ -59,6 +62,24 @@ public class ApiOperation {
 
     @Autowired
     CircleMapper circleMapper;
+
+    @Autowired
+    UserPostLikeMapper userPostLikeMapper;
+
+    @Autowired
+    UserPostFavoriteMapper userPostFavoriteMapper;
+
+    @Autowired
+    UserPostCoinMapper userPostCoinMapper;
+
+    @Autowired
+    CommentMapper commentMapper;
+
+    @Autowired
+    UserCommentLikeMapper userCommentLikeMapper;
+
+    @Autowired
+    UserCommentCoinMapper userCommentCoinMapper;
 
     @Autowired
     @Qualifier("restHighLevelClient")
@@ -165,6 +186,108 @@ public class ApiOperation {
         DeleteIndexRequest request = new DeleteIndexRequest(indexName);
         client.indices().delete(request, RequestOptions.DEFAULT);
     }
+
+    /**
+     * 更新帖子热度
+     */
+    @PostMapping("/api/post/heat")
+    @io.swagger.annotations.ApiOperation("重新计算全部帖子热度")
+    public ResponseVO updatePostHeat(String password) {
+        if (!"allspark520".equals(password)) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
+        }
+        for (int i = 0; i < 100000; i++) {
+            Post post = postMapper.selectByPrimaryKey(i);
+            if (post == null) {
+                continue;
+            }
+            calculatePostHeat(i);
+        }
+
+        return ResponseVO.success();
+    }
+
+    /**
+     * 更新评论热度
+     */
+    @PostMapping("/api/comment/heat")
+    @io.swagger.annotations.ApiOperation("重新计算全部评论热度")
+    public ResponseVO updateCommentHeat(String password) {
+        if (!"allspark520".equals(password)) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
+        }
+        for (int i = 0; i < 100000; i++) {
+            Comment comment = commentMapper.selectByPrimaryKey(i);
+            if (comment == null) {
+                continue;
+            }
+            calculateCommentHeat(i);
+        }
+        return ResponseVO.success();
+    }
+
+    private void calculatePostHeat(Integer postId) {
+        int likesNum = userPostLikeMapper.countByPostId(postId);
+        int coinsNum = userPostFavoriteMapper.countByPostId(postId);
+        int favoritesNum = userPostCoinMapper.countByPostId(postId);
+        int commentsNum = commentMapper.countCommentsByPostId(postId);
+        Post post = postMapper.selectByPrimaryKey(postId);
+        int hour = (int) ((System.currentTimeMillis() - post.getCreateTime().getTime()) / (1000 * 60 * 60));
+        Integer heat = (likesNum * 10 + coinsNum * 20 + favoritesNum * 20 + commentsNum * 30) / (int) Math.pow(hour + 36, 1.1);
+        post.setHeat(heat);
+        postMapper.updateHeat(post);
+    }
+
+    private void calculateCommentHeat(Integer commentId) {
+        int likesNum = userCommentLikeMapper.countByCommentId(commentId);
+        int coinsNum = userCommentCoinMapper.countByCommentId(commentId);
+        int commentsNum = commentMapper.countSubCommentsByCommentId(commentId);
+        Comment comment = commentMapper.selectByPrimaryKey(commentId);
+        int hour = (int) ((System.currentTimeMillis() - comment.getCreateTime().getTime()) / (1000 * 60 * 60));
+        Integer heat = (likesNum * 10 + coinsNum * 20 + commentsNum * 30) / (int) Math.pow(hour + 36, 1.1);
+        comment.setHeat(heat);
+        commentMapper.updateHeat(comment);
+    }
+
+    /**
+     * 更新评论热度
+     */
+    @PutMapping("/api/user/exp")
+    @io.swagger.annotations.ApiOperation("给用户加经验")
+    public ResponseVO addExperience(String password,
+                                    @RequestParam("phone") String phone,
+                                    @RequestParam("experience") Integer exp) {
+        if (!"allspark520".equals(password)) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
+        }
+        User user = userMapper.selectByPhone(phone);
+        if (user == null) {
+            return ResponseVO.error(ResponseEnum.ERROR, "用户不存在");
+        }
+        user.setExperience(user.getExperience() + exp);
+        while (user.getExperience() >= ExperienceConst.getExpByLv(user.getLevel())) {
+            user.setLevel(user.getLevel() + 1);
+        }
+        userMapper.updateExpAndLv(user);
+        log.info("用户[{}],id[{}]，通过后台api增加经验：[{}]", user.getNickname(),user.getId(), exp);
+        RestTemplate restTemplate = new RestTemplate();
+        // 请求地址
+        String url = "http://154.8.202.244:8088/systemNotice/single";
+        // 入参
+        String title = "活动奖励到账啦！";
+        String content = "恭喜您，您在本次转发唐某人空间说说的活动中总共获得" + exp + "经验值，已经发放到您的账号，请注意查收。";
+        Integer userId = user.getId();
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+        map.add("title", title);
+        map.add("content", content);
+        map.add("userId", userId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("token", "eyJhbGciOiJIUzUxMiJ9.eyJleHAiOjE2MjEzOTMyNDUsInN1YiI6MywiY3JlYXRlZCI6MTYwNTg0MTI0NTQ4OX0.FDsrt38Ch-4I9J7vN2V8C2rBXgm99Pl04P28QSZfhYkVVJMzRYd7FTz17o1DwCgnKYBQkpGMvFHmGjVehEkLEQ");
+        HttpEntity<Object> requestEntity = new HttpEntity<Object>(map, headers);
+        restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+        return ResponseVO.success();
+    }
+
 
     /* 删除帖子接口
     @DeleteMapping("/post/{postId}")

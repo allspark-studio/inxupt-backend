@@ -24,4 +24,6 @@ public interface AnnouncementMapper {
     Announcement selectSecondAnnouncement(Integer circleId);
 
     int updateState(Announcement record);
+
+    void deleteByCircleId(Integer circleId);
 }

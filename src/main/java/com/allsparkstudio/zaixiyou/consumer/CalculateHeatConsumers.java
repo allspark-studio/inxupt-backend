@@ -51,7 +51,7 @@ public class CalculateHeatConsumers {
     @Autowired
     PostCircleMapper postCircleMapper;
 
-    private static final Double G = 1.2;
+    private static final Double G = 1.1;
 
     /**
      * heat = (likesNum*10 + coinsNum*20 + favoritesNum *20 + commentsNum *30) / (hour + 1)^G
@@ -79,7 +79,7 @@ public class CalculateHeatConsumers {
         int commentsNum = commentMapper.countCommentsByPostId(postId);
         Post post = postMapper.selectByPrimaryKey(postId);
         int hour = (int) ((System.currentTimeMillis() - post.getCreateTime().getTime()) / (1000 * 60 * 60));
-        Integer heat = (likesNum * 10 + coinsNum * 20 + favoritesNum * 20 + commentsNum * 30) / (int) Math.pow(hour + 1, G);
+        Integer heat = (likesNum * 300 + coinsNum * 500 + favoritesNum * 400 + commentsNum * 300) / (int) Math.pow(hour + 48, G);
         post.setHeat(heat);
         postMapper.updateHeat(post);
     }
@@ -109,7 +109,7 @@ public class CalculateHeatConsumers {
         int commentsNum = commentMapper.countSubCommentsByCommentId(commentId);
         Comment comment = commentMapper.selectByPrimaryKey(commentId);
         int hour = (int) ((System.currentTimeMillis() - comment.getCreateTime().getTime()) / (1000 * 60 * 60));
-        Integer heat = (likesNum * 10 + coinsNum * 20 + commentsNum * 30) / (int) Math.pow(hour + 1, G);
+        Integer heat = (likesNum * 300 + coinsNum * 500 + commentsNum * 400) / (int) Math.pow(hour + 48, G);
         comment.setHeat(heat);
         commentMapper.updateHeat(comment);
     }

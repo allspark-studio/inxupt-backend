@@ -29,4 +29,8 @@
         set state = #{state,jdbcType=INTEGER}
         where id = #{id,jdbcType=INTEGER}
     </update>
+    <delete id="deleteByCircleId" parameterType="java.lang.Integer">
+        delete from announcement
+        where circle_id = #{circleId,jdbcType=INTEGER}
+    </delete>
 </mapper>

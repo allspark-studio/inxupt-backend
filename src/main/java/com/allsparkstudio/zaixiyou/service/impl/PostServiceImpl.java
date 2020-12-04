@@ -184,6 +184,7 @@ public class PostServiceImpl implements PostService {
                 }
             }
             postVO.setLiked(liked);
+            postVO.setTop(post.getTopOrder() > 0);
             postVO.setCoined(coined);
             postVO.setFavorited(favorited);
 
@@ -435,14 +436,11 @@ public class PostServiceImpl implements PostService {
             }
             // 兑换硬币数量>0，兑换硬币数-1
             user.setExchangeableCoins(user.getExchangeableCoins() - 1);
-            userMapper.updateExchangeableCoins(user);
         } else {
             user.setInsertableCoins(user.getInsertableCoins() - 1);
-            userMapper.updateInsertableCoins(user);
         }
         User author = userMapper.selectByPrimaryKey(post.getAuthorId());
         author.setExchangeableCoins(author.getExchangeableCoins() + 1);
-        userMapper.updateExchangeableCoins(author);
 
         UserPostCoin userPostCoin = userPostCoinMapper.selectByUserIdAndPostId(userId, postId);
         if (userPostCoin == null) {
@@ -481,12 +479,18 @@ public class PostServiceImpl implements PostService {
             remind.setReceiveId(post.getAuthorId());
             rabbitTemplate.convertAndSend("eventRemind", remind);
         } else {
+            if (userPostCoin.getState() == 1) {
+                return ResponseVO.success("已经投过币了");
+            }
             userPostCoin.setState(1);
             int result = userPostCoinMapper.updateByPrimaryKeySelective(userPostCoin);
             if (result != 1) {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
+        userMapper.updateExchangeableCoins(user);
+        userMapper.updateInsertableCoins(user);
+        userMapper.updateExchangeableCoins(author);
         rabbitTemplate.convertAndSend("updateHeat", "post", postId);
         return ResponseVO.success();
     }

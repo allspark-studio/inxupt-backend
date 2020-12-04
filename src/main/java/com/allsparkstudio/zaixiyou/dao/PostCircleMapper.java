@@ -18,4 +18,6 @@ public interface PostCircleMapper {
     Integer countPostsByCircleId(Integer circleId);
 
     int deleteByPostId(Integer postId);
+
+    Integer deleteByCircleId(Integer circleId);
 }

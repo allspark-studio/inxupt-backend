@@ -52,6 +52,13 @@ public class CircleController {
         return circleService.addCircle(addCircleForm, token);
     }
 
+    @DeleteMapping("/circle/{id}")
+    @ApiOperation("删除圈子")
+    public ResponseVO deleteCircle(@PathVariable("id") Integer circleId,
+                                   @RequestHeader(value = "token", required = false) String token) {
+        return circleService.deleteCircle(circleId, token);
+    }
+
     @GetMapping("/circles")
     @ApiOperation("全部圈子")
     public ResponseVO<PageInfo> listAll(@RequestParam(required = false, defaultValue = "1") Integer pageNum,

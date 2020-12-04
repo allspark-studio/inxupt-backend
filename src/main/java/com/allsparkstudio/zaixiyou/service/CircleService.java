@@ -19,6 +19,11 @@ public interface CircleService {
      */
     ResponseVO<Map<String, Integer>> addCircle(AddCircleForm addCircleForm, String token);
 
+    /**
+     * 删除圈子
+     */
+    ResponseVO deleteCircle(Integer circleId, String token);
+
 
     /**
      * 根据id展示用户的圈子列表

@@ -31,4 +31,6 @@ public interface UserCircleMapper {
     int updateRole(Integer userId, Integer circleId, Integer role);
 
     Integer selectOwnerId(Integer circleId);
+
+    void deleteByCircleId(Integer circleId);
 }

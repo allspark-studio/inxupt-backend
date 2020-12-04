@@ -21,6 +21,11 @@ public class PostVO {
     private Integer type;
 
     /**
+     * 是否置顶
+     */
+    private Boolean top;
+
+    /**
      * 类型为【文章】才有的属性
      */
     private String title;

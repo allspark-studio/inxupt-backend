@@ -123,6 +123,27 @@ public class CircleServiceImpl implements CircleService {
     }
 
     @Override
+    public ResponseVO deleteCircle(Integer circleId, String token) {
+        if (StringUtils.isEmpty(token)) {
+            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
+        }
+        Integer userId = jwtUtils.getIdFromToken(token);
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null) {
+            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
+        }
+        Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
+        if (role == null || role < UserCircleRoleEnum.ADMIN.getCode()) {
+            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
+        }
+        circleMapper.deleteByPrimaryKey(circleId);
+        userCircleMapper.deleteByCircleId(circleId);
+        postCircleMapper.deleteByCircleId(circleId);
+        announcementMapper.deleteByCircleId(circleId);
+        return ResponseVO.success("删除成功");
+    }
+
+    @Override
     public ResponseVO<List<CircleInListVO>> listCircles(Integer userId, String token) {
         List<Circle> circleList = circleMapper.selectCirclesByUserId(userId);
         List<CircleInListVO> circleVOList = new ArrayList<>();

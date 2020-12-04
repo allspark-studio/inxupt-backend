@@ -10,4 +10,8 @@
         delete from post_circle
         where post_id = #{postId,jdbcType=INTEGER}
     </delete>
+    <delete id="deleteByCircleId" parameterType="java.lang.Integer">
+        delete from post_circle
+        where circle_id = #{circleId,jdbcType=INTEGER}
+    </delete>
 </mapper>

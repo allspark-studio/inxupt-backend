@@ -45,4 +45,8 @@
         where circle_id = #{circleId,jdbcType=INTEGER}
         and role = 4
     </select>
+    <delete id="deleteByCircleId" parameterType="java.lang.Integer">
+        delete from user_circle
+        where circle_id = #{circleId,jdbcType=INTEGER}
+    </delete>
 </mapper>

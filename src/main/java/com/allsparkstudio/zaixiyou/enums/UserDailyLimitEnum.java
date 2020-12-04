@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum UserDailyLimitEnum {
-    EXP(300),
+    EXP(300000),
 
     LOGIN(1),
 
