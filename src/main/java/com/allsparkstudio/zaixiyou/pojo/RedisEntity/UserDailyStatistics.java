@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * 当日用户成长数据
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/9/18
  */
 @Data

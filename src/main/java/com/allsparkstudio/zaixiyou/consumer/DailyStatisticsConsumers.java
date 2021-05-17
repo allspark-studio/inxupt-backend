@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * 每日统计的消费者
  *
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Slf4j
 @Component

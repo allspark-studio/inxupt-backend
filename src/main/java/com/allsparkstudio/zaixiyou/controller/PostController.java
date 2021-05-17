@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * 学术文章相关的controller
  *
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/19
  */
 @RestController

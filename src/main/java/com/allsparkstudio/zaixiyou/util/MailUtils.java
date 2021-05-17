@@ -14,7 +14,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/21
  */
 @Component

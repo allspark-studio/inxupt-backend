@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * APP相关的默认配置
- * @author 陈帅
+ * @author AlkaidChen
  */
 public class DefaultSettingConsts {
 

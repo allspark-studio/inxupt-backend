@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 评论相关
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/19
  */
 public interface CommentService {

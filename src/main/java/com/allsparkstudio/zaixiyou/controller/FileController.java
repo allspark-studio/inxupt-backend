@@ -26,7 +26,7 @@ import java.util.TimeZone;
 /**
  * 其他的controller
  *
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/21
  */
 

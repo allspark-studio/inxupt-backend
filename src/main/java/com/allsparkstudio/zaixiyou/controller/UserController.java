@@ -17,7 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/16
  */
 @Slf4j

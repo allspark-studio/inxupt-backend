@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/18
  */
 @Component

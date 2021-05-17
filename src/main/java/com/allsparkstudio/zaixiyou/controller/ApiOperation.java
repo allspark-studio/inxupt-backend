@@ -42,7 +42,7 @@ import java.util.List;
  * 第三方调用的Api接口
  * 这个只是暂时这么用，所以没有分三层架构
  * 如果要更进一步完善功能，一定要把业务下放到service层
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Api(tags = "后台接口自定义调用")
 @RestController

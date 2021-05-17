@@ -12,7 +12,7 @@ import com.github.pagehelper.PageInfo;
 import java.util.Map;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/20
  */
 public interface PostService {

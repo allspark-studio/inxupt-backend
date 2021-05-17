@@ -17,7 +17,7 @@ import java.util.UUID;
 
 /**
  * 阿里云OSS工具类
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/21
  */
 @Component

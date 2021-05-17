@@ -3,7 +3,7 @@ package com.allsparkstudio.zaixiyou.pojo.vo;
 import lombok.Data;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/24
  */
 

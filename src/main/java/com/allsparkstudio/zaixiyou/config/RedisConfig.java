@@ -9,7 +9,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * redis存取对象的序列化配置
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Configuration
 public class RedisConfig {

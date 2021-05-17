@@ -17,7 +17,7 @@ import java.util.*;
 /**
  * jwt相关工具类
  *
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/13
  */
 @Slf4j

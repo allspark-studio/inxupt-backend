@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 计算热度的消费者
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Component
 @Slf4j

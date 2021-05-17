@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/17
  * 基本VO对象
  */

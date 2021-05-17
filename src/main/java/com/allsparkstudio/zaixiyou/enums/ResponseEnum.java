@@ -3,7 +3,7 @@ package com.allsparkstudio.zaixiyou.enums;
 import lombok.Getter;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/23
  */
 @Getter

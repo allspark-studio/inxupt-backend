@@ -7,7 +7,7 @@ import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.github.pagehelper.PageInfo;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/16
  */
 public interface UserService {
