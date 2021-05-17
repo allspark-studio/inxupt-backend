@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,11 +43,15 @@ public class ReportController {
     @Autowired
     MailUtils mailUtils;
 
+    @Value("${spring.mail.to}")
+    String receiverEmailAddress;
+
     @PostMapping("/post/{postId}/report")
     @ApiOperation("举报帖子")
     public ResponseVO reportPost(@PathVariable("postId") Integer postId,
                                  @RequestBody ReportForm form,
                                  @RequestHeader(value = "token", required = false) String token) {
+        log.info("邮箱地址:{}",receiverEmailAddress);
         Report report = new Report();
         report.setType(ReportTypeEnum.POST.getCode());
         report.setItemId(postId);
@@ -75,7 +80,7 @@ public class ReportController {
             log.error("举报帖子/文章时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        mailUtils.sendHtmlMail("362774405@qq.com", "举报帖子", "有新的举报内容");
+        mailUtils.sendHtmlMail(receiverEmailAddress, "举报帖子", "举报原因：" + form.getReasons().toString() + "\n详细原因：" + form.getDetail() + "\n帖子内容：" + post.getBody());
         return ResponseVO.success();
     }
 
@@ -112,7 +117,7 @@ public class ReportController {
             log.error("举报评论时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        mailUtils.sendHtmlMail("362774405@qq.com", "举报评论", "有新的举报内容");
+        mailUtils.sendHtmlMail(receiverEmailAddress, "举报评论", "举报原因：" + form.getReasons().toString() + "\n详细原因：" + form.getDetail() + "\n评论内容：" + comment.getBody());
         return ResponseVO.success();
     }
 
@@ -144,7 +149,7 @@ public class ReportController {
             log.error("举报用户时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        mailUtils.sendHtmlMail("362774405@qq.com", "举报用户", "有新的举报内容");
+        mailUtils.sendHtmlMail(receiverEmailAddress, "举报用户", "举报原因：" + form.getReasons().toString() + "\n详细原因：" + form.getDetail() + "\n用户ID：" + userId);
         return ResponseVO.success();
     }
 
@@ -182,7 +187,7 @@ public class ReportController {
             log.error("举报圈子时出现错误，数据库表’report‘更新失败");
             return ResponseVO.error(ResponseEnum.ERROR);
         }
-        mailUtils.sendHtmlMail("362774405@qq.com", "举报圈子", "有新的举报内容");
+        mailUtils.sendHtmlMail(receiverEmailAddress, "举报圈子", "举报原因：" + form.getReasons().toString() + "\n详细原因：" + form.getDetail() + "\n圈子名称：" + circle.getName());
         return ResponseVO.success();
     }
 }

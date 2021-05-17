@@ -282,7 +282,7 @@ public class UserServiceImpl implements UserService {
             follow = new Follow();
             follow.setUserId(myId);
             follow.setFollowedUserId(userId);
-            follow.setStatus(true);
+            follow.setState(true);
             int result = followMapper.insertSelective(follow);
             if (result != 1) {
                 log.error("关注用户时出现错误,'follower'表更新失败");
@@ -290,7 +290,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         follow.setFollowedUserId(userId);
-        follow.setStatus(true);
+        follow.setState(true);
         int result = followMapper.updateByPrimaryKeySelective(follow);
         if (result != 1) {
             log.error("关注用户时出现错误,'follower'表更新失败");
@@ -330,7 +330,7 @@ public class UserServiceImpl implements UserService {
             follow = new Follow();
             follow.setUserId(myId);
             follow.setFollowedUserId(userId);
-            follow.setStatus(false);
+            follow.setState(false);
             int result = followMapper.insertSelective(follow);
             if (result != 1) {
                 log.error("取消关注用户时出现错误,'follower'表更新失败");
@@ -338,7 +338,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         follow.setFollowedUserId(userId);
-        follow.setStatus(false);
+        follow.setState(false);
         int result = followMapper.updateByPrimaryKeySelective(follow);
         if (result != 1) {
             log.error("取消关注用户时出现错误,'follower'表更新失败");

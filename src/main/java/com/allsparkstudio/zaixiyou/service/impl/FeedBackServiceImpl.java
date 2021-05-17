@@ -9,6 +9,7 @@ import com.allsparkstudio.zaixiyou.service.MetaService;
 import com.allsparkstudio.zaixiyou.util.MailUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -19,6 +20,8 @@ import java.util.TimeZone;
 @Slf4j
 public class FeedBackServiceImpl implements MetaService {
 
+    @Value("${spring.mail.to}")
+    String receiverEmailAddress;
 
     @Autowired
     FeedbackMapper feedbackMapper;
@@ -42,7 +45,7 @@ public class FeedBackServiceImpl implements MetaService {
                 "<br>" + "时间：" + simpleDateFormat.format(new Date()) +
                 "<br>" + "正文：" + "<br>" +
                 feedbackForm.getBody();
-        mailUtils.sendHtmlMail("362774405@qq.com", "【在西邮】用户反馈", content);
+        mailUtils.sendHtmlMail(receiverEmailAddress, "【在西邮】用户反馈", content);
         return ResponseVO.success("提交反馈成功");
     }
 }

@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -72,7 +73,6 @@ public class UserController {
 
     /**
      * 注册
-     *
      * @param validateForm 客户端填写的注册表单
      */
     @ApiOperation("注册时验证手机号和验证码")
@@ -101,7 +101,6 @@ public class UserController {
 
     /**
      * 其他用户的个人主页
-     *
      * @param userId 该用户的id
      */
     @ApiOperation("查看别人的主页")

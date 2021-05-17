@@ -17,6 +17,8 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -33,6 +35,8 @@ import java.util.*;
 public class PostServiceImpl implements PostService {
 
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+//    private final static String POST_USER_LIKE_BITMAP_REDIS_TEMPLATE = "post_user_like_%s";
 
     @Autowired
     private UserMapper userMapper;
@@ -72,6 +76,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     UserDailyStatisticsUtils userDailyStatisticsUtils;
@@ -238,6 +245,13 @@ public class PostServiceImpl implements PostService {
             log.error("请求的帖子不存在, postId:[{}]", postId);
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
         }
+// ===================== Redis bitmap 重构点赞 ========================
+//        Boolean bit = stringRedisTemplate.opsForValue().getBit(POST_USER_LIKE_BITMAP_REDIS_TEMPLATE, postId);
+//        if (!bit) {
+//
+//        }
+// ===================== 重构失败 =====================================
+
         UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(userId, postId);
         if (userPostLike == null) {
             userPostLike = new UserPostLike();
