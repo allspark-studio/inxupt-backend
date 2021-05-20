@@ -32,7 +32,7 @@
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
                         connectionURL="jdbc:mysql://127.0.0.1:3306/zaixiyou_dev?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
                         userId="root"
-                        password="24kchunshuai">
+                        password="AllSparkStudio.com">
         </jdbcConnection>
 
         <javaTypeResolver>
