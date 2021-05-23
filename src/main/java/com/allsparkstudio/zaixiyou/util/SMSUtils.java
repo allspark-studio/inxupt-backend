@@ -41,7 +41,7 @@ public class SMSUtils {
     @Value("${aliyun.accessKeySecret}")
     private String accessKeySecret;
 
-    Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     public String sendCode(String phone) {
 
