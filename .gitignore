@@ -9,6 +9,10 @@
 # BlueJ files
 *.ctxt
 
+# IDE files
+*.iml
+.idea/
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
@@ -31,5 +35,4 @@ target/generated-test-sources/
 target/
 log/
 data/
-.idea/
 .mvn/
