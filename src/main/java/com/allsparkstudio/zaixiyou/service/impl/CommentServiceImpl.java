@@ -78,8 +78,12 @@ public class CommentServiceImpl implements CommentService {
             commentVO.setRootId(comment.getRootId());
             commentVO.setParentId(comment.getParentId());
             commentVO.setText(comment.getBody());
-            // TODO: 下个版本 => 评论添加视频或者图片
-//             commentVO.setMediaUrls(null);
+            if (!StringUtils.isEmpty(comment.getMediaUrls())) {
+                List<String> mediaUrlList;
+                String[] mediaUrl = comment.getMediaUrls().split(";");
+                mediaUrlList = Arrays.asList(mediaUrl);
+                commentVO.setMediaUrls(mediaUrlList);
+            }
             commentVO.setAuthorId(comment.getAuthorId());
             User author = userMapper.selectByPrimaryKey(comment.getAuthorId());
             commentVO.setAuthorAvatar(author.getAvatarUrl());
@@ -120,8 +124,12 @@ public class CommentServiceImpl implements CommentService {
                 subCommentVO.setRootId(subComment.getRootId());
                 subCommentVO.setParentId(subComment.getParentId());
                 subCommentVO.setText(subComment.getBody());
-                // TODO: 下个版本 => 评论添加视频或者图片
-                // subCommentVO.setMediaUrls(null);
+                if (!StringUtils.isEmpty(subComment.getMediaUrls())) {
+                    List<String> mediaUrlList;
+                    String[] mediaUrl = subComment.getMediaUrls().split(";");
+                    mediaUrlList = Arrays.asList(mediaUrl);
+                    subCommentVO.setMediaUrls(mediaUrlList);
+                }
                 subCommentVO.setAuthorId(subComment.getAuthorId());
                 User subAuthor = userMapper.selectByPrimaryKey(subComment.getAuthorId());
                 subCommentVO.setAuthorAvatar(subAuthor.getAvatarUrl());
@@ -187,6 +195,16 @@ public class CommentServiceImpl implements CommentService {
             return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
         }
         Comment comment = new Comment();
+        // 设置评论的图片或视频url列表
+        if (addCommentForm.getMediaUrls() != null && addCommentForm.getMediaUrls().size() != 0) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String mediaUrl : addCommentForm.getMediaUrls()) {
+                stringBuilder.append(mediaUrl);
+                stringBuilder.append(";");
+            }
+            String mediaUrls = stringBuilder.substring(0, stringBuilder.length() - 1);
+            comment.setMediaUrls(mediaUrls);
+        }
         comment.setRootId(addCommentForm.getRootId());
         comment.setParentId(addCommentForm.getParentId());
         comment.setAuthorId(userId);
@@ -244,8 +262,12 @@ public class CommentServiceImpl implements CommentService {
         }
         CommentVO commentVO = new CommentVO();
         commentVO.setText(comment.getBody());
-        // TODO: 下个版本加图片
-//        commentVO.setMediaUrls(comment.getMediaUrls());
+        if (!StringUtils.isEmpty(comment.getMediaUrls())) {
+            List<String> mediaUrlList;
+            String[] mediaUrl = comment.getMediaUrls().split(";");
+            mediaUrlList = Arrays.asList(mediaUrl);
+            commentVO.setMediaUrls(mediaUrlList);
+        }
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         commentVO.setCreateTime(simpleDateFormat.format(new Date()));
         commentVO.setLiked(false);

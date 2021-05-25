@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.allsparkstudio</groupId>
     <artifactId>zaixiyou</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
     <name>zaixiyou</name>
     <description>在西邮后端前台接口</description>
 
