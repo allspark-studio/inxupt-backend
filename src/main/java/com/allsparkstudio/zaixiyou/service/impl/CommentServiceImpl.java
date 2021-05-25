@@ -79,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
             commentVO.setParentId(comment.getParentId());
             commentVO.setText(comment.getBody());
             // TODO: 下个版本 => 评论添加视频或者图片
-            // commentVO.setMediaUrls(null);
+//             commentVO.setMediaUrls(null);
             commentVO.setAuthorId(comment.getAuthorId());
             User author = userMapper.selectByPrimaryKey(comment.getAuthorId());
             commentVO.setAuthorAvatar(author.getAvatarUrl());
