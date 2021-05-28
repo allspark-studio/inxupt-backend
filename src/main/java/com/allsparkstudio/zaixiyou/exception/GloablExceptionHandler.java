@@ -5,6 +5,7 @@ import com.allsparkstudio.zaixiyou.pojo.log.ApiLog;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.util.MailUtils;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.Signature;
@@ -31,7 +32,7 @@ public class GloablExceptionHandler {
     @Autowired
     private MailUtils mailUtils;
 
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseVO handle(RuntimeException e) {
