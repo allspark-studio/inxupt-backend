@@ -1,10 +1,8 @@
 package com.allsparkstudio.zaixiyou.consumer;
 
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
-import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESCircle;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESPost;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESUser;
-import com.allsparkstudio.zaixiyou.pojo.po.Circle;
 import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.google.gson.Gson;
@@ -189,71 +187,4 @@ public class MySQL2ESConsumer {
         DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
         log.debug("ES删除user数据 response:[{}]", response.toString());
     }
-
-    /**
-     * 新建圈子时增量同步到ES中：
-     * ES中只存放圈子id和用于全文索引的name
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "MySQL2ESCircleExchange"),
-                    // 路由key：只接收更新活跃用户的信息，验证token成功时的后续处理
-                    key = {"add"}
-            )})
-    public void addCircle(Circle circle) throws IOException {
-        IndexRequest request = new IndexRequest("circle");
-        request.id(String.valueOf(circle.getId()));
-        ESCircle esCircle = new ESCircle();
-        esCircle.setItemId(circle.getId());
-        esCircle.setName(circle.getName());
-        request.source(gson.toJson(esCircle), XContentType.JSON);
-
-        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
-        log.debug("ES插入circle数据 response:[{}]", response.toString());
-    }
-
-    /**
-     * 更新圈子名称时增量同步更新ES中的圈子数据
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "MySQL2ESCircleExchange"),
-                    // 路由key：只接收更新活跃用户的信息，验证token成功时的后续处理
-                    key = {"update"}
-            )})
-    public void updateCircle(Circle circle) throws IOException {
-        UpdateRequest request = new UpdateRequest("circle", String.valueOf(circle.getId()));
-        ESCircle esCircle = new ESCircle();
-        esCircle.setItemId(circle.getId());
-        esCircle.setName(circle.getName());
-        request.doc(gson.toJson(esCircle), XContentType.JSON);
-
-        UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
-        log.debug("ES更新circle数据 response:[{}]", response.toString());
-    }
-
-    /**
-     * 更新圈子名称时增量删除ES中的圈子数据
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "MySQL2ESCircleExchange"),
-                    // 路由key：只接收更新活跃用户的信息，验证token成功时的后续处理
-                    key = {"delete"}
-            )})
-    public void deleteCircle(Circle circle) throws IOException {
-        DeleteRequest request = new DeleteRequest("circle", String.valueOf(circle.getId()));
-        DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
-        log.debug("ES删除circle数据 response:[{}]", response.toString());
-    }
-
 }

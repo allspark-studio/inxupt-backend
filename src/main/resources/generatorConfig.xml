@@ -94,11 +94,6 @@
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
-<!--        <table tableName="circle" domainObjectName="Circle"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--        </table>-->
 <!--        <table tableName="follow" domainObjectName="Follow"-->
 <!--               enableCountByExample="false" enableUpdateByExample="false"-->
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
@@ -114,27 +109,12 @@
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
-<!--        <table tableName="post_circle" domainObjectName="PostCircle"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--        </table>-->
 <!--        <table tableName="user_post" domainObjectName="UserPost"-->
 <!--               enableCountByExample="false" enableUpdateByExample="false"-->
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->
 <!--        </table>-->
 <!--        <table tableName="user_comment" domainObjectName="UserComment"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--        </table>-->
-<!--        <table tableName="user_circle" domainObjectName="UserCircle"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--        </table>-->
-<!--        <table tableName="announcement" domainObjectName="Announcement"-->
 <!--               enableCountByExample="false" enableUpdateByExample="false"-->
 <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
 <!--               selectByExampleQueryId="false">-->

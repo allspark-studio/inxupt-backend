@@ -35,7 +35,4 @@ public class AddArticleForm {
     @ApiModelProperty("@的用户id列表")
     private List<Integer> atIds;
 
-    @ApiModelProperty("同步到的圈子id列表")
-    private List<Integer> circleIds;
-
 }

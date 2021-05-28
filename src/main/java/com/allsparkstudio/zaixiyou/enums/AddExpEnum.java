@@ -20,10 +20,6 @@ public enum AddExpEnum {
     ADD_POST(2),
     // 发评论
     ADD_COMMENT(1),
-    // 新建圈子
-    ADD_CIRCLE(2),
-    // 发布公告
-    ADD_ANNOUNCEMENT(1),
     // 投币
     INSERT_COIN(2);
 

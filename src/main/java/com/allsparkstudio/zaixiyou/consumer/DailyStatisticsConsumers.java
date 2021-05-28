@@ -268,43 +268,7 @@ public class DailyStatisticsConsumers {
         addExp(userId, AddExpEnum.INSERT_COIN.getExp());
     }
 
-    /**
-     * 用户新建圈子后的MQ延迟处理：
-     * 增加经验，更新用户当日创建圈子数量
-     * @param userId 创建圈子的用户id
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "dailyStatisticsExchange"),
-                    //
-                    key = {"addCircle"}
-            )})
-    public void addCircle(Integer userId) {
-        userDailyStatisticsUtils.updateCircleNum(userId);
-        addExp(userId, AddExpEnum.ADD_CIRCLE.getExp());
-    }
 
-    /**
-     * 用户发布圈子公告后的MQ延迟处理：
-     * 增加经验，更新用户当日发布圈子公告数量
-     * @param userId 发布公告的用户id
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "dailyStatisticsExchange"),
-                    //
-                    key = {"addAnnouncement"}
-            )})
-    public void addAnnouncement(Integer userId) {
-        userDailyStatisticsUtils.updateAnnouncementNum(userId);
-        addExp(userId, AddExpEnum.ADD_ANNOUNCEMENT.getExp());
-    }
 
     /**
      * 工具方法：加经验值

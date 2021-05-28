@@ -6,14 +6,12 @@
         from post
         where author_id = #{authorId,jdbcType=INTEGER}
         and type = #{type,jdbcType=INTEGER}
-        and visible_outside_circle = 1
     </select>
     <select id="selectAllByTime" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />
         from post
         where state = 0
-        and visible_outside_circle = 1
         order by top_order desc, id desc
     </select>
     <select id="selectAllByHeat" resultMap="BaseResultMap">
@@ -21,7 +19,6 @@
         <include refid="Base_Column_List" />
         from post
         where state = 0
-        and visible_outside_circle = 1
         order by top_order desc, heat desc, id desc
     </select>
     <select id="selectAllByAuthorId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
@@ -46,21 +43,7 @@
         <include refid="Base_Column_List" />
         from post
         where id in (select post_id from post_category where category_id = #{categoryId,jdbcType=INTEGER})
-        and visible_outside_circle = 1
         order by id desc
-    </select>
-    <select id="selectPostsByCircleIdSortedByTime" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-        select *
-        from post
-        where id in (select post_id from post_circle where circle_id = #{circleId,jdbcType=INTEGER})
-        order by id desc
-    </select>
-    <select id="selectPostsByCircleIdSortedByHeat" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-        select *
-        from post
-        where id in (select post_id from post_circle where circle_id = #{circleId,jdbcType=INTEGER})
-          and visible_outside_circle = 0
-        order by heat desc
     </select>
     <select id="selectFavoritesPostsByUserIdAndType" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select <include refid="Base_Column_List" />
@@ -79,7 +62,6 @@
         <include refid="Base_Column_List" />
         from post
         where id in (select post_id from post_category where category_id = #{categoryId,jdbcType=INTEGER})
-        and visible_outside_circle = 1
         order by heat desc
     </select>
 </mapper>

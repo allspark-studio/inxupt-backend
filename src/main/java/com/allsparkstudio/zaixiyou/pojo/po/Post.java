@@ -26,8 +26,6 @@ public class Post implements Serializable {
 
     private String atIds;
 
-    private Boolean visibleOutsideCircle;
-
     private String articleCover;
 
     private String tags;
@@ -126,14 +124,6 @@ public class Post implements Serializable {
         this.atIds = atIds == null ? null : atIds.trim();
     }
 
-    public Boolean getVisibleOutsideCircle() {
-        return visibleOutsideCircle;
-    }
-
-    public void setVisibleOutsideCircle(Boolean visibleOutsideCircle) {
-        this.visibleOutsideCircle = visibleOutsideCircle;
-    }
-
     public String getArticleCover() {
         return articleCover;
     }
@@ -183,7 +173,6 @@ public class Post implements Serializable {
         sb.append(", articleTitle=").append(articleTitle);
         sb.append(", articleText=").append(articleText);
         sb.append(", atIds=").append(atIds);
-        sb.append(", visibleOutsideCircle=").append(visibleOutsideCircle);
         sb.append(", articleCover=").append(articleCover);
         sb.append(", tags=").append(tags);
         sb.append(", heat=").append(heat);

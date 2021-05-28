@@ -36,7 +36,7 @@ public class PostController {
                                         @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                         @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                         @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, null, null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, null, null, null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/category/{categoryId}/posts")
@@ -46,7 +46,7 @@ public class PostController {
                                                @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                                @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(categoryId, null, null, null, null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(categoryId, null, null,  null, token, pageNum, pageSize, sortedBy);
     }
 
     @PostMapping("/article")

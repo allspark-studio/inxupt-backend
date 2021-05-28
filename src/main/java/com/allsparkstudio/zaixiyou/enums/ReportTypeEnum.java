@@ -7,8 +7,7 @@ public enum  ReportTypeEnum {
 
     POST(1),
     COMMENT(2),
-    USER(3),
-    CIRCLE(4);
+    USER(3);
 
     Integer code;
 

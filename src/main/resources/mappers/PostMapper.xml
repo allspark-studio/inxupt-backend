@@ -13,7 +13,6 @@
     <result column="article_title" jdbcType="VARCHAR" property="articleTitle" />
     <result column="article_text" jdbcType="VARCHAR" property="articleText" />
     <result column="at_ids" jdbcType="VARCHAR" property="atIds" />
-    <result column="visible_outside_circle" jdbcType="BIT" property="visibleOutsideCircle" />
     <result column="article_cover" jdbcType="VARCHAR" property="articleCover" />
     <result column="tags" jdbcType="VARCHAR" property="tags" />
     <result column="heat" jdbcType="INTEGER" property="heat" />
@@ -21,7 +20,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     id, body, author_id, state, create_time, edit_time, type, post_media_urls, article_title, 
-    article_text, at_ids, visible_outside_circle, article_cover, tags, heat, top_order
+    article_text, at_ids, article_cover, tags, heat, top_order
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -37,15 +36,14 @@
     insert into post (id, body, author_id, 
       state, create_time, edit_time, 
       type, post_media_urls, article_title, 
-      article_text, at_ids, visible_outside_circle, 
+      article_text, at_ids,
       article_cover, tags, heat, 
       top_order)
     values (#{id,jdbcType=INTEGER}, #{body,jdbcType=VARCHAR}, #{authorId,jdbcType=INTEGER}, 
       #{state,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{editTime,jdbcType=TIMESTAMP}, 
       #{type,jdbcType=INTEGER}, #{postMediaUrls,jdbcType=VARCHAR}, #{articleTitle,jdbcType=VARCHAR}, 
-      #{articleText,jdbcType=VARCHAR}, #{atIds,jdbcType=VARCHAR}, #{visibleOutsideCircle,jdbcType=BIT}, 
-      #{articleCover,jdbcType=VARCHAR}, #{tags,jdbcType=VARCHAR}, #{heat,jdbcType=INTEGER}, 
-      #{topOrder,jdbcType=INTEGER})
+      #{articleText,jdbcType=VARCHAR}, #{atIds,jdbcType=VARCHAR},  #{articleCover,jdbcType=VARCHAR},
+      #{tags,jdbcType=VARCHAR}, #{heat,jdbcType=INTEGER}, #{topOrder,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Post">
     insert into post
@@ -82,9 +80,6 @@
       </if>
       <if test="atIds != null">
         at_ids,
-      </if>
-      <if test="visibleOutsideCircle != null">
-        visible_outside_circle,
       </if>
       <if test="articleCover != null">
         article_cover,
@@ -133,9 +128,6 @@
       <if test="atIds != null">
         #{atIds,jdbcType=VARCHAR},
       </if>
-      <if test="visibleOutsideCircle != null">
-        #{visibleOutsideCircle,jdbcType=BIT},
-      </if>
       <if test="articleCover != null">
         #{articleCover,jdbcType=VARCHAR},
       </if>
@@ -183,9 +175,6 @@
       <if test="atIds != null">
         at_ids = #{atIds,jdbcType=VARCHAR},
       </if>
-      <if test="visibleOutsideCircle != null">
-        visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
-      </if>
       <if test="articleCover != null">
         article_cover = #{articleCover,jdbcType=VARCHAR},
       </if>
@@ -213,7 +202,6 @@
       article_title = #{articleTitle,jdbcType=VARCHAR},
       article_text = #{articleText,jdbcType=VARCHAR},
       at_ids = #{atIds,jdbcType=VARCHAR},
-      visible_outside_circle = #{visibleOutsideCircle,jdbcType=BIT},
       article_cover = #{articleCover,jdbcType=VARCHAR},
       tags = #{tags,jdbcType=VARCHAR},
       heat = #{heat,jdbcType=INTEGER},

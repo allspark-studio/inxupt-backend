@@ -162,7 +162,7 @@ public class UserController {
                                           @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                           @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                           @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, userId, null, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, userId, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/{userId}/articles")
@@ -172,7 +172,7 @@ public class UserController {
                                              @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                              @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                              @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, userId, null, PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, userId,  PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/posts")
@@ -181,7 +181,7 @@ public class UserController {
                                                   @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                   @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                                   @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/articles")
@@ -190,7 +190,7 @@ public class UserController {
                                                      @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                      @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                                      @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/{userId}/avatarAndNickname")

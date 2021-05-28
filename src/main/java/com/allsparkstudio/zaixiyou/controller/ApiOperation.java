@@ -5,10 +5,8 @@ import com.allsparkstudio.zaixiyou.consts.ExperienceConst;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
-import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESCircle;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESPost;
 import com.allsparkstudio.zaixiyou.pojo.ESEntity.ESUser;
-import com.allsparkstudio.zaixiyou.pojo.po.Circle;
 import com.allsparkstudio.zaixiyou.pojo.po.Comment;
 import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
@@ -34,7 +32,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.util.List;
 
@@ -59,9 +56,6 @@ public class ApiOperation {
 
     @Autowired
     UserMapper userMapper;
-
-    @Autowired
-    CircleMapper circleMapper;
 
     @Autowired
     UserPostLikeMapper userPostLikeMapper;
@@ -110,14 +104,6 @@ public class ApiOperation {
             syncUser(user);
         }
 
-        // 删除并重置索引
-        deleteIndex("circle");
-        createIndex("circle");
-        List<Circle> circleList = circleMapper.selectAll();
-        // 同步全部circle
-        for (Circle circle : circleList) {
-            syncCircle(circle);
-        }
         return ResponseVO.success();
     }
 
@@ -155,19 +141,6 @@ public class ApiOperation {
         client.index(request, RequestOptions.DEFAULT);
     }
 
-    /**
-     * 同步增加圈子数据到ES中
-     */
-    private void syncCircle(Circle circle) throws IOException {
-        IndexRequest request = new IndexRequest("circle");
-        request.id(String.valueOf(circle.getId()));
-        ESCircle esCircle = new ESCircle();
-        esCircle.setItemId(circle.getId());
-        esCircle.setName(circle.getName());
-        request.source(gson.toJson(esCircle), XContentType.JSON);
-
-        client.index(request, RequestOptions.DEFAULT);
-    }
 
     /**
      * 新建索引
@@ -317,8 +290,6 @@ public class ApiOperation {
         userPostCoinMapper.deleteByPostId(postId);
         // 删除帖子和分类的关系
         postCategoryMapper.deleteByPostId(postId);
-        // 删除帖子和圈子的关系
-        postCircleMapper.deleteByPostId(postId);
         return ResponseVO.success();
     }
     */

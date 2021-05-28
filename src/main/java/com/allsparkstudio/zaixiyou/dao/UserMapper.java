@@ -25,7 +25,6 @@ public interface UserMapper {
 
     List<User> selectFollowers(Integer userId);
 
-    List<User> selectAllMembersByCircleId(Integer circleId);
 
     int updateLastActiveTime(User user);
 

@@ -52,21 +52,6 @@ public class UserDailyStatisticsUtils {
         return userDailyStatistics.getCommentNum() >= UserDailyLimitEnum.COMMENT_NUM.getLimit();
     }
 
-    public boolean isAddCircleLimited(int userId) {
-        UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
-        if (userDailyStatistics == null) {
-            return false;
-        }
-        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.CIRCLE_NUM.getLimit();
-    }
-
-    public boolean isAddAnnouncementLimited(int userId) {
-        UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
-        if (userDailyStatistics == null) {
-            return false;
-        }
-        return userDailyStatistics.getCircleNum() >= UserDailyLimitEnum.ANNOUNCEMENT_NUM.getLimit();
-    }
 
     public void updateLogin(Integer userId) {
         synchronized (this) {
@@ -118,34 +103,6 @@ public class UserDailyStatisticsUtils {
                 userDailyStatistics.setExp(exp);
             } else {
                 userDailyStatistics.setExp(userDailyStatistics.getExp() + exp);
-            }
-            redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
-            redisTemplate.expireAt(KEY, getMidnight());
-        }
-    }
-
-    public void updateCircleNum(Integer userId) {
-        synchronized (this) {
-            UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
-            if (userDailyStatistics == null) {
-                userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setCircleNum(1);
-            } else {
-                userDailyStatistics.setCircleNum(userDailyStatistics.getCircleNum() + 1);
-            }
-            redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
-            redisTemplate.expireAt(KEY, getMidnight());
-        }
-    }
-
-    public void updateAnnouncementNum(Integer userId) {
-        synchronized (this) {
-            UserDailyStatistics userDailyStatistics = (UserDailyStatistics) redisTemplate.opsForHash().get(KEY, userId);
-            if (userDailyStatistics == null) {
-                userDailyStatistics = new UserDailyStatistics();
-                userDailyStatistics.setAnnouncementNum(1);
-            } else {
-                userDailyStatistics.setAnnouncementNum(userDailyStatistics.getAnnouncementNum() + 1);
             }
             redisTemplate.opsForHash().put(KEY, userId, userDailyStatistics);
             redisTemplate.expireAt(KEY, getMidnight());
