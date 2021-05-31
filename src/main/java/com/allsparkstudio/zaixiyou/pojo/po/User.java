@@ -34,7 +34,7 @@ public class User implements Serializable {
 
     private Integer state;
 
-    private String userpageBgImgUrl;
+    private String backgroundUrl;
 
     private String customAppColor;
 
@@ -166,12 +166,12 @@ public class User implements Serializable {
         this.state = state;
     }
 
-    public String getUserpageBgImgUrl() {
-        return userpageBgImgUrl;
+    public String getBackgroundUrl() {
+        return backgroundUrl;
     }
 
-    public void setUserpageBgImgUrl(String userpageBgImgUrl) {
-        this.userpageBgImgUrl = userpageBgImgUrl == null ? null : userpageBgImgUrl.trim();
+    public void setBackgroundUrl(String backgroundUrl) {
+        this.backgroundUrl = backgroundUrl == null ? null : backgroundUrl.trim();
     }
 
     public String getCustomAppColor() {
@@ -227,7 +227,7 @@ public class User implements Serializable {
         sb.append(", insertableCoins=").append(insertableCoins);
         sb.append(", exchangeableCoins=").append(exchangeableCoins);
         sb.append(", state=").append(state);
-        sb.append(", userpageBgImgUrl=").append(userpageBgImgUrl);
+        sb.append(", backgroundUrl=").append(backgroundUrl);
         sb.append(", customAppColor=").append(customAppColor);
         sb.append(", lastActiveTime=").append(lastActiveTime);
         sb.append(", likeNum=").append(likeNum);

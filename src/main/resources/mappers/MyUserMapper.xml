@@ -57,7 +57,7 @@
     </update>
     <update id="updateBackground" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
         update user
-        set userpage_bg_img_url = #{userpageBgImgUrl,jdbcType=VARCHAR}
+        set background_url = #{backgroundUrl,jdbcType=VARCHAR}
         where id = #{id,jdbcType=INTEGER}
     </update>
 </mapper>

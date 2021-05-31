@@ -29,5 +29,5 @@ public class DefaultSettingConsts {
     /**
      * 默认用户个人主页背景图片
      */
-    public static final String DEFAULT_USERPAGE_BG_IMG_URL = "https://zaixiyou.oss-cn-beijing.aliyuncs.com/base-image/default-userpage-bg-img.png";
+    public static final String DEFAULT_USERPAGE_BACKGROUND_URL = "https://zaixiyou.oss-cn-beijing.aliyuncs.com/base-image/default-userpage-bg-img.png";
 }

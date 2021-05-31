@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(validateForm.getPhone());
         user.setAvatarUrl(DefaultSettingConsts.getDefaultAvatar());
         user.setDescription(DefaultSettingConsts.DEFAULT_USER_DESCRIPTION);
-        user.setUserpageBgImgUrl(DefaultSettingConsts.DEFAULT_USERPAGE_BG_IMG_URL);
+        user.setBackgroundUrl(DefaultSettingConsts.DEFAULT_USERPAGE_BACKGROUND_URL);
         user.setNickname("邮友_" + uuidUtils.generateShortUUID());
         int result = userMapper.insertSelective(user);
         if (result != 1) {
@@ -235,7 +235,7 @@ public class UserServiceImpl implements UserService {
         hisPageVO.setHisId(uid);
         hisPageVO.setNickname(he.getNickname());
         hisPageVO.setAvatarUrl(he.getAvatarUrl());
-        hisPageVO.setBgImageUrl(he.getUserpageBgImgUrl());
+        hisPageVO.setBackgroundUrl(he.getBackgroundUrl());
         hisPageVO.setDescription(he.getDescription());
         hisPageVO.setGender(he.getGender());
         hisPageVO.setGrade(he.getGrade());
@@ -520,7 +520,7 @@ public class UserServiceImpl implements UserService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        user.setUserpageBgImgUrl(url);
+        user.setBackgroundUrl(url);
         int result = userMapper.updateBackground(user);
         if (result == 0) {
             return ResponseVO.error(ResponseEnum.ERROR);
@@ -538,7 +538,7 @@ public class UserServiceImpl implements UserService {
         }
         Integer userId = jwtUtils.getIdFromToken(token);
         User user = userMapper.selectByPrimaryKey(userId);
-        String userpageBgImgUrl = user.getUserpageBgImgUrl();
-        return ResponseVO.success(userpageBgImgUrl);
+        String backgroundUrl = user.getBackgroundUrl();
+        return ResponseVO.success(backgroundUrl);
     }
 }
