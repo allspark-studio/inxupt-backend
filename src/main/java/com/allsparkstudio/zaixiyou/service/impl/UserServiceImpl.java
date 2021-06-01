@@ -195,6 +195,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectByPrimaryKey(uid);
         // 构建VO对象
         MyPageVO myPageVO = new MyPageVO();
+        myPageVO.setBackgroundUrl(user.getBackgroundUrl());
         myPageVO.setNickname(user.getNickname());
         myPageVO.setAvatarUrl(user.getAvatarUrl());
         myPageVO.setLevel(user.getLevel());
