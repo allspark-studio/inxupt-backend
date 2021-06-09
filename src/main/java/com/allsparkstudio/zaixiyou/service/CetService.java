@@ -5,6 +5,9 @@ import com.allsparkstudio.zaixiyou.pojo.form.CetInquireTicketForm;
 import com.allsparkstudio.zaixiyou.pojo.vo.CetGradeVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.CetTicketVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.CetVerificationCodeVO;
+import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
+
+import javax.xml.ws.Response;
 
 /**
  * @Author: Marble
@@ -17,19 +20,19 @@ public interface CetService {
      * @param cetInquireGradeForm cet提交信息的表单
      * @return 返回cet成绩
      */
-    CetGradeVO getCetGrade(CetInquireGradeForm cetInquireGradeForm);
+    ResponseVO<CetGradeVO> getCetGrade(CetInquireGradeForm cetInquireGradeForm);
 
     /**
      * 获找回cet账号
      * @param cetInquireTicketForm 找回cet准考号需要的信息
      * @return 返回cet信息
      */
-    CetTicketVO findBackCetTicket(CetInquireTicketForm cetInquireTicketForm);
+    ResponseVO<CetTicketVO> findBackCetTicket(CetInquireTicketForm cetInquireTicketForm);
 
     /**
      *  获取验证码以及cookie
      * @return 返回cookie(sessionId)以及验证码
      */
-    CetVerificationCodeVO getVerificationCode();
+    ResponseVO<CetVerificationCodeVO> getVerificationCode();
 
 }
