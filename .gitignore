@@ -29,8 +29,9 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
 #我自己的开发环境，不上交了
-target/classes/application-dev.yml
+src/main/resources/application-dev.yml
 target/generated-sources/
 target/generated-test-sources/
 target/
