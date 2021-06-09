@@ -54,9 +54,9 @@ public class ResponseVO<T> {
         return new ResponseVO<T>(ResponseEnum.SUCCESS.getCode(), ResponseEnum.SUCCESS.getMsg());
     }
 
-
+    //这里new ResponseVO<T> 里面需要把泛型加上，不然报错. 不知道为啥
     public static <T> ResponseVO<T> error(Integer status, String msg) {
-        return new ResponseVO<>(status, msg);
+        return new ResponseVO<T>(status, msg);
     }
 
     public static <T> ResponseVO<T> error(ResponseEnum responseEnum) {
