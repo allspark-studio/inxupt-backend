@@ -21,6 +21,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import sun.misc.BASE64Encoder;
 
 import java.io.ByteArrayOutputStream;
@@ -171,7 +172,13 @@ public class CetServiceImpl implements CetService {
     public ResponseVO<CetGradeVO> getCetGrade(CetInquireGradeForm cetInquireGradeForm){
 
         String ticket=cetInquireGradeForm.getTicket();
+        if (StringUtils.isEmpty(ticket)) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "请输入准考证号");
+        }
         String name=cetInquireGradeForm.getName();
+        if (StringUtils.isEmpty(name)) {
+            return ResponseVO.error(ResponseEnum.PARAM_ERROR, "请输入姓名");
+        }
         CetGradeVO cetGradeVO = null;
 
         //创建httpClient对象
