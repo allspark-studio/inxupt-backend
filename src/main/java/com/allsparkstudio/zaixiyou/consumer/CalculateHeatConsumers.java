@@ -1,7 +1,6 @@
 package com.allsparkstudio.zaixiyou.consumer;
 
 import com.allsparkstudio.zaixiyou.dao.*;
-import com.allsparkstudio.zaixiyou.pojo.po.Circle;
 import com.allsparkstudio.zaixiyou.pojo.po.Comment;
 import com.allsparkstudio.zaixiyou.pojo.po.Post;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 计算热度的消费者
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Component
 @Slf4j
@@ -41,15 +40,6 @@ public class CalculateHeatConsumers {
 
     @Autowired
     UserCommentCoinMapper userCommentCoinMapper;
-
-    @Autowired
-    CircleMapper circleMapper;
-
-    @Autowired
-    UserCircleMapper userCircleMapper;
-
-    @Autowired
-    PostCircleMapper postCircleMapper;
 
     private static final Double G = 1.1;
 
@@ -103,7 +93,7 @@ public class CalculateHeatConsumers {
                     key = {"comment"}
             )})
     public void calculateCommentHeat(Integer commentId) {
-        log.info("执行定时任务计算评论热度");
+        log.info("计算评论热度");
         int likesNum = userCommentLikeMapper.countByCommentId(commentId);
         int coinsNum = userCommentCoinMapper.countByCommentId(commentId);
         int commentsNum = commentMapper.countSubCommentsByCommentId(commentId);
@@ -114,28 +104,4 @@ public class CalculateHeatConsumers {
         commentMapper.updateHeat(comment);
     }
 
-    /**
-     * heat = membersNum * 3 + topicsNum * 4
-     * membersNum: 成员数量
-     * topicsNum: 话题数量
-     * 每次更新影响热度相关的数据时更新一次
-     */
-    @RabbitListener(bindings = {
-            @QueueBinding(
-                    // 创建临时队列
-                    value = @Queue(),
-                    // 指定交换机
-                    exchange = @Exchange(name = "updateHeat"),
-                    // 路由key：只接收更新活跃用户的信息，验证token成功时的后续处理
-                    key = {"circle"}
-            )})
-    public void calculateCircleHeat(Integer circleId) {
-        log.info("执行定时任务计算圈子热度");
-        int membersNum = userCircleMapper.countMembers(circleId);
-        int topicsNum = postCircleMapper.countPostsByCircleId(circleId);
-        Integer heat = membersNum * 30 + topicsNum * 40;
-        Circle circle = circleMapper.selectByPrimaryKey(circleId);
-        circle.setHeat(heat);
-        circleMapper.updateHeat(circle);
-    }
 }

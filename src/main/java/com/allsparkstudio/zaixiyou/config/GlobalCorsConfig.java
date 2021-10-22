@@ -8,7 +8,7 @@ import org.springframework.web.filter.CorsFilter;
 
 /**
  * 全局跨域配置
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/10
  */
 @Configuration

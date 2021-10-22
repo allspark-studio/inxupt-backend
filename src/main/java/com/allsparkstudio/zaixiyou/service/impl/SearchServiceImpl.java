@@ -3,7 +3,6 @@ package com.allsparkstudio.zaixiyou.service.impl;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.PostTypeEnum;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
-import com.allsparkstudio.zaixiyou.pojo.vo.CircleInListVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.UserVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
@@ -17,7 +16,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -69,15 +67,6 @@ public class SearchServiceImpl implements SearchService {
 
     @Autowired
     FollowMapper followMapper;
-
-    @Autowired
-    CircleMapper circleMapper;
-
-    @Autowired
-    UserCircleMapper userCircleMapper;
-
-    @Autowired
-    PostCircleMapper postCircleMapper;
 
     @Override
     public ResponseVO<PageInfo> searchPosts(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
@@ -319,59 +308,6 @@ public class SearchServiceImpl implements SearchService {
         return ResponseVO.success(pageInfo);
     }
 
-    @Override
-    public ResponseVO<PageInfo> searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException {
-        SearchRequest request = new SearchRequest("circle");
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery("name", keyWord);
-        // 分页
-        sourceBuilder.from((pageNum - 1) * pageSize);
-        sourceBuilder.size(pageSize);
-        // 开始查询
-        sourceBuilder.query(queryBuilder);
-
-        request.source(sourceBuilder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-
-        List<Map<String, Object>> list = new ArrayList<>();
-        for (SearchHit hit : response.getHits().getHits()) {
-            // 取出结果
-            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            list.add(sourceAsMap);
-        }
-        // 构建分页的list对象
-        List<CircleInListVO> circleVOList = new ArrayList<>();
-        for (Map<String, Object> circleMap : list) {
-            Integer circleId = (Integer) circleMap.get("itemId");
-            Circle circle = circleMapper.selectByPrimaryKey(circleId);
-            // 如果不存在，说明ES与MySQL未同步
-            if (circle == null) {
-                continue;
-            }
-            CircleInListVO circleVO = new CircleInListVO();
-            circleVO.setId(circle.getId());
-            circleVO.setName(circle.getName());
-            circleVO.setAvatarUrl(circle.getAvatarUrl());
-            circleVO.setDescription(circle.getDescription());
-            Integer members = userCircleMapper.countMembers(circleId);
-            Integer topics = postCircleMapper.countPostsByCircleId(circleId);
-            circleVO.setMembers(members);
-            circleVO.setTopics(topics);
-            circleVO.setSelected(false);
-            circleVOList.add(circleVO);
-        }
-        PageInfo pageInfo = new PageInfo<>();
-        pageInfo.setList(circleVOList);
-        long total = response.getHits().getTotalHits().value;
-        pageInfo.setTotal(total);
-        pageInfo.setPageNum(pageNum);
-        pageInfo.setPageSize(pageSize);
-        pageInfo.setPages((int) (total / pageSize + 1));
-        pageInfo.setIsFirstPage(pageNum.equals(1));
-        pageInfo.setHasNextPage(total > pageNum * pageSize);
-        pageInfo.setIsLastPage(total <= pageNum * pageSize);
-        return ResponseVO.success(pageInfo);
-    }
 
     @Override
     public ResponseVO getHotWords() {

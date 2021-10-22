@@ -12,7 +12,7 @@ public class Follow implements Serializable {
 
     private Date editTime;
 
-    private Boolean status;
+    private Boolean state;
 
     private static final long serialVersionUID = 1L;
 
@@ -48,12 +48,12 @@ public class Follow implements Serializable {
         this.editTime = editTime;
     }
 
-    public Boolean getStatus() {
-        return status;
+    public Boolean getState() {
+        return state;
     }
 
-    public void setStatus(Boolean status) {
-        this.status = status;
+    public void setState(Boolean state) {
+        this.state = state;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Follow implements Serializable {
         sb.append(", userId=").append(userId);
         sb.append(", followedUserId=").append(followedUserId);
         sb.append(", editTime=").append(editTime);
-        sb.append(", status=").append(status);
+        sb.append(", state=").append(state);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

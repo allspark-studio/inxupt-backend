@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/16
  */
 @Data
@@ -32,7 +32,7 @@ public class MyPageVO {
     // 当前等级需要的经验
     private Integer needExperience;
     // 名片背景图片地址
-    private String cartBgImageUrl;
+    private String backgroundUrl;
     // 签到硬币数量
     private Integer signCoinsNum;
     // 可兑换硬币数量

@@ -27,10 +27,6 @@ public interface PostMapper {
 
     List<Post> selectByUserIdAndType(Integer authorId, Integer type);
 
-    List<Post> selectPostsByCircleIdSortedByTime(Integer circleId);
-
-    List<Post> selectPostsByCircleIdSortedByHeat(Integer circleId);
-
     List<Post> selectPostsByCategoryIdSortedByTime(Integer categoryId);
 
     List<Post> selectPostsByCategoryIdSortedByHeat(Integer categoryId);

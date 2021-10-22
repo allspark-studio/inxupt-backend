@@ -3,7 +3,7 @@ package com.allsparkstudio.zaixiyou.enums;
 import lombok.Getter;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/23
  */
 @Getter
@@ -36,8 +36,6 @@ public enum ResponseEnum {
     BANNED(115, "您的账号已被限制登录"),
 
     HAVE_NOT_PERMISSION(301, "没有权限"),
-    CIRCLE_NAME_EXISTS(302, "圈子名字已存在"),
-
 
     COINS_NOT_ENOUGH(401, "硬币数量不足"),
 

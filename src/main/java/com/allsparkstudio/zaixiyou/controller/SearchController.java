@@ -46,16 +46,6 @@ public class SearchController {
         return searchService.searchUsers(keyWord, pageNum, pageSize, token);
     }
 
-    @GetMapping("/search/circles")
-    @ApiOperation("搜索圈子")
-    public ResponseVO<PageInfo> searchCircles(@RequestParam String keyWord,
-                                            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                            @RequestHeader(value = "token", required = false) String token) throws IOException {
-        keyWord = URLDecoder.decode(keyWord, "utf-8");
-        return searchService.searchCircles(keyWord, pageNum, pageSize, token);
-    }
-
     @GetMapping("/search/hotWords")
     @ApiOperation("热搜")
     public ResponseVO hotWords() {

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/16
  */
 @Data
@@ -36,7 +36,7 @@ public class HisPageVO {
     // 他关注的用户数量
     private Integer followNum;
     // 主页背景图片地址
-    private String bgImageUrl;
+    private String backgroundUrl;
     // 是否已经关注该用户
     private Boolean followed;
     // 动态数量

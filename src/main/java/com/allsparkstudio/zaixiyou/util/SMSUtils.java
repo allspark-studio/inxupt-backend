@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 阿里云的短信SMS
  * 详情见阿里云SMS服务文档:
  * https://api.aliyun.com/new#/?product=Dysmsapi
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/18
  */
 @Slf4j
@@ -41,7 +41,7 @@ public class SMSUtils {
     @Value("${aliyun.accessKeySecret}")
     private String accessKeySecret;
 
-    Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     public String sendCode(String phone) {
 

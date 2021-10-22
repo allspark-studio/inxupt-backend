@@ -2,7 +2,7 @@ package com.allsparkstudio.zaixiyou.consts;
 
 /**
  * 用户等级与所需经验值
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/18
  */
 public class ExperienceConst {

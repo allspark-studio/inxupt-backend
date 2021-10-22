@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Elasticsearch restHighLevelClient配置
- * @author 陈帅
+ * @author AlkaidChen
  */
 @Configuration
 public class ElasticSearchClientConfig {

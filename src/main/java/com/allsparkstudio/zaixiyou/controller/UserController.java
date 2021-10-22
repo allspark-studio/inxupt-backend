@@ -13,10 +13,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/7/16
  */
 @Slf4j
@@ -72,7 +73,6 @@ public class UserController {
 
     /**
      * 注册
-     *
      * @param validateForm 客户端填写的注册表单
      */
     @ApiOperation("注册时验证手机号和验证码")
@@ -101,7 +101,6 @@ public class UserController {
 
     /**
      * 其他用户的个人主页
-     *
      * @param userId 该用户的id
      */
     @ApiOperation("查看别人的主页")
@@ -163,7 +162,7 @@ public class UserController {
                                           @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                           @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                           @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, userId, null, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, userId, PostTypeEnum.POST.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/{userId}/articles")
@@ -173,7 +172,7 @@ public class UserController {
                                              @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                              @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                              @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, userId, null, PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, userId,  PostTypeEnum.ARTICLE.getCode(), null, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/posts")
@@ -182,7 +181,7 @@ public class UserController {
                                                   @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                   @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                                   @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, null, PostTypeEnum.POST.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/favorites/articles")
@@ -191,7 +190,7 @@ public class UserController {
                                                      @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                      @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                                      @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
     @GetMapping("/user/{userId}/avatarAndNickname")

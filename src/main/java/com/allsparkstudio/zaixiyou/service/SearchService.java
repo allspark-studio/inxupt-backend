@@ -29,15 +29,6 @@ public interface SearchService {
     ResponseVO<PageInfo> searchUsers(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException;
 
     /**
-     * 搜索圈子
-     * @param keyWord 关键字
-     * @param pageNum 分页页数
-     * @param pageSize 每页条数
-     * @param token token
-     */
-    ResponseVO<PageInfo> searchCircles(String keyWord, Integer pageNum, Integer pageSize, String token) throws IOException;
-
-    /**
      * 获取热搜
      */
     ResponseVO getHotWords();

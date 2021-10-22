@@ -3,8 +3,6 @@ package com.allsparkstudio.zaixiyou.service.impl;
 import com.allsparkstudio.zaixiyou.dao.*;
 import com.allsparkstudio.zaixiyou.enums.*;
 import com.allsparkstudio.zaixiyou.pojo.form.AddArticleForm;
-import com.allsparkstudio.zaixiyou.pojo.form.AddCircleArticleForm;
-import com.allsparkstudio.zaixiyou.pojo.form.AddCirclePostForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddPostForm;
 import com.allsparkstudio.zaixiyou.pojo.po.*;
 import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
@@ -17,6 +15,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,7 +24,7 @@ import java.util.*;
 
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/20
  */
 @Service
@@ -33,6 +32,8 @@ import java.util.*;
 public class PostServiceImpl implements PostService {
 
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+//    private final static String POST_USER_LIKE_BITMAP_REDIS_TEMPLATE = "post_user_like_%s";
 
     @Autowired
     private UserMapper userMapper;
@@ -45,12 +46,6 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private PostCategoryMapper postCategoryMapper;
-
-    @Autowired
-    private UserCircleMapper userCircleMapper;
-
-    @Autowired
-    private PostCircleMapper postCircleMapper;
 
     @Autowired
     private UserPostLikeMapper userPostLikeMapper;
@@ -74,10 +69,13 @@ public class PostServiceImpl implements PostService {
     RabbitTemplate rabbitTemplate;
 
     @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
     UserDailyStatisticsUtils userDailyStatisticsUtils;
 
     @Override
-    public ResponseVO<PageInfo> listAll(Integer categoryId, Integer userId, Integer circleId,
+    public ResponseVO<PageInfo> listAll(Integer categoryId, Integer userId,
                                         Integer type, UserContentStateEnum stateEnum,
                                         String token, Integer pageNum, Integer pageSize,
                                         Integer sortedBy) {
@@ -110,15 +108,6 @@ public class PostServiceImpl implements PostService {
             }
             PageHelper.startPage(pageNum, pageSize);
             postList = postMapper.selectFavoritesPostsByUserIdAndType(myId, type);
-        } else if (circleId != null) {
-            // 根据圈子来列出帖子
-            if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
-                PageHelper.startPage(pageNum, pageSize);
-                postList = postMapper.selectPostsByCircleIdSortedByHeat(circleId);
-            } else {
-                PageHelper.startPage(pageNum, pageSize);
-                postList = postMapper.selectPostsByCircleIdSortedByTime(circleId);
-            }
         } else {
             // 列出全部帖子
             if (SortTypeEnum.HEAT.getCode().equals(sortedBy)) {
@@ -238,6 +227,13 @@ public class PostServiceImpl implements PostService {
             log.error("请求的帖子不存在, postId:[{}]", postId);
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "帖子不存在");
         }
+// ===================== Redis bitmap 重构点赞 ========================
+//        Boolean bit = stringRedisTemplate.opsForValue().getBit(POST_USER_LIKE_BITMAP_REDIS_TEMPLATE, postId);
+//        if (!bit) {
+//
+//        }
+// ===================== 重构失败 =====================================
+
         UserPostLike userPostLike = userPostLikeMapper.selectByUserIdAndPostId(userId, postId);
         if (userPostLike == null) {
             userPostLike = new UserPostLike();
@@ -589,17 +585,6 @@ public class PostServiceImpl implements PostService {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
-        // 设置文章同步到哪个圈子
-        for (Integer circleId : addPostForm.getCircleIds()) {
-            PostCircle postCircle = new PostCircle();
-            postCircle.setPostId(post.getId());
-            postCircle.setCircleId(circleId);
-            int result2 = postCircleMapper.insertSelective(postCircle);
-            if (result2 != 1) {
-                log.error("新建文章时，数据库表'post_circle'插入失败");
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
-        }
         Map<String, Integer> map = new HashMap<>(1);
         map.put("postId", post.getId());
         return ResponseVO.success(map);
@@ -683,130 +668,11 @@ public class PostServiceImpl implements PostService {
                 return ResponseVO.error(ResponseEnum.ERROR);
             }
         }
-        // 设置文章同步到哪个圈子
-        for (Integer circleId : addArticleForm.getCircleIds()) {
-            PostCircle postCircle = new PostCircle();
-            postCircle.setPostId(article.getId());
-            postCircle.setCircleId(circleId);
-            int result2 = postCircleMapper.insertSelective(postCircle);
-            if (result2 != 1) {
-                log.error("新建文章时，数据库表'post_circle'插入失败");
-                return ResponseVO.error(ResponseEnum.ERROR);
-            }
-        }
         Map<String, Integer> map = new HashMap<>(1);
         map.put("postId", article.getId());
         return ResponseVO.success(map);
     }
 
-    @Override
-    public ResponseVO<Map<String, Integer>> addPostInCircle(Integer circleId, AddCirclePostForm form, String token) {
-        if (StringUtils.isEmpty(token)) {
-            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
-        }
-        if (!jwtUtils.validateToken(token)) {
-            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
-        }
-        Integer userId = jwtUtils.getIdFromToken(token);
-        User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.MUTE);
-        }
-        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
-            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
-        }
-        Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
-        if (role == null || role < UserCircleRoleEnum.FOLLOW.getCode()) {
-            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
-        }
-        Post post = new Post();
-        post.setType(PostTypeEnum.POST.getCode());
-        post.setAuthorId(userId);
-        post.setBody(form.getBody());
-        post.setVisibleOutsideCircle(false);
-        if (form.getMediaUrls() != null && form.getMediaUrls().size() != 0) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String mediaUrl : form.getMediaUrls()) {
-                stringBuilder.append(mediaUrl);
-                stringBuilder.append(";");
-            }
-            String postMediaUrls = stringBuilder.substring(0, stringBuilder.length() - 1);
-            post.setPostMediaUrls(postMediaUrls);
-        }
-        int result = postMapper.insertSelective(post);
-        if (result != 1) {
-            log.error("圈子内发布帖子时出现错误,数据库表'post'插入失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
-        }
-        // MQ更新用户当日发帖子数量，更新用户经验
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
-        // 通过MQ同步数据到ES
-        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", post);
-        PostCircle postCircle = new PostCircle();
-        postCircle.setCircleId(circleId);
-        postCircle.setPostId(post.getId());
-        int result1 = postCircleMapper.insertSelective(postCircle);
-        if (result1 != 1) {
-            log.error("圈子内发布帖子时出现错误,数据库表'post_circle'插入失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
-        }
-        rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
-        Map<String, Integer> map = new HashMap<>(1);
-        map.put("postId", post.getId());
-
-        return ResponseVO.success(map);
-    }
-
-    @Override
-    public ResponseVO<Map<String, Integer>> addArticleInCircle(Integer circleId, AddCircleArticleForm form, String token) {
-        if (StringUtils.isEmpty(token)) {
-            return ResponseVO.error(ResponseEnum.NEED_LOGIN);
-        }
-        if (!jwtUtils.validateToken(token)) {
-            return ResponseVO.error(ResponseEnum.TOKEN_VALIDATE_FAILED);
-        }
-        Integer userId = jwtUtils.getIdFromToken(token);
-        User user = userMapper.selectByPrimaryKey(userId);
-        if (UserStateEnum.MUTE.getCode().equals(user.getState())) {
-            return ResponseVO.error(ResponseEnum.MUTE);
-        }
-        if (userDailyStatisticsUtils.isAddPostLimited(userId)) {
-            return ResponseVO.error(ResponseEnum.REACH_PUBLISH_LIMIT);
-        }
-        Integer role = userCircleMapper.selectRoleOrNull(userId, circleId);
-        if (role == null || role < UserCircleRoleEnum.FOLLOW.getCode()) {
-            return ResponseVO.error(ResponseEnum.HAVE_NOT_PERMISSION);
-        }
-        Post article = new Post();
-        article.setType(PostTypeEnum.ARTICLE.getCode());
-        article.setArticleText(form.getPureText());
-        article.setArticleCover(form.getCover());
-        article.setAuthorId(userId);
-        article.setBody(form.getBody());
-        article.setVisibleOutsideCircle(false);
-        article.setArticleTitle(form.getTitle());
-        int result = postMapper.insertSelective(article);
-        if (result != 1) {
-            log.error("圈子内发布文章时出现错误,数据库表'post'插入失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
-        }
-        // MQ更新用户当日发帖子数量，更新用户经验
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "addPost", userId);
-        // 通过MQ同步数据到ES
-        rabbitTemplate.convertAndSend("MySQL2ESPostExchange", "add", article);
-        PostCircle postCircle = new PostCircle();
-        postCircle.setCircleId(circleId);
-        postCircle.setPostId(article.getId());
-        int result1 = postCircleMapper.insertSelective(postCircle);
-        if (result1 != 1) {
-            log.error("圈子内发布文章时出现错误,数据库表'post_circle'插入失败");
-            return ResponseVO.error(ResponseEnum.ERROR);
-        }
-        rabbitTemplate.convertAndSend("updateHeat", "circle", circleId);
-        Map<String, Integer> map = new HashMap<>(1);
-        map.put("postId", article.getId());
-        return ResponseVO.success(map);
-    }
 
     @Override
     public ResponseVO<PostVO> getPost(Integer postId, String token) {
@@ -944,8 +810,6 @@ public class PostServiceImpl implements PostService {
         userPostCoinMapper.deleteByPostId(postId);
         // 删除帖子和分类的关系
         postCategoryMapper.deleteByPostId(postId);
-        // 删除帖子和圈子的关系
-        postCircleMapper.deleteByPostId(postId);
         return ResponseVO.success();
     }
 

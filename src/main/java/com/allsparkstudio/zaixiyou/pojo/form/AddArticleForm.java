@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @author 陈帅
+ * @author AlkaidChen
  * @date 2020/8/26
  */
 @Data
@@ -34,8 +34,5 @@ public class AddArticleForm {
 
     @ApiModelProperty("@的用户id列表")
     private List<Integer> atIds;
-
-    @ApiModelProperty("同步到的圈子id列表")
-    private List<Integer> circleIds;
 
 }

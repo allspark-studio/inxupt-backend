@@ -6,13 +6,13 @@
     <result column="user_id" jdbcType="INTEGER" property="userId" />
     <result column="followed_user_id" jdbcType="INTEGER" property="followedUserId" />
     <result column="edit_time" jdbcType="TIMESTAMP" property="editTime" />
-    <result column="status" jdbcType="BIT" property="status" />
+    <result column="state" jdbcType="BIT" property="state" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, user_id, followed_user_id, edit_time, status
+    id, user_id, followed_user_id, edit_time, state
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
+    select
     <include refid="Base_Column_List" />
     from follow
     where id = #{id,jdbcType=INTEGER}
@@ -22,10 +22,10 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
-    insert into follow (id, user_id, followed_user_id, 
-      edit_time, status)
-    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{followedUserId,jdbcType=INTEGER}, 
-      #{editTime,jdbcType=TIMESTAMP}, #{status,jdbcType=BIT})
+    insert into follow (id, user_id, followed_user_id,
+      edit_time, state)
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{followedUserId,jdbcType=INTEGER},
+      #{editTime,jdbcType=TIMESTAMP}, #{state,jdbcType=BIT})
   </insert>
   <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Follow">
     insert into follow
@@ -42,8 +42,8 @@
       <if test="editTime != null">
         edit_time,
       </if>
-      <if test="status != null">
-        status,
+      <if test="state != null">
+        state,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -59,8 +59,8 @@
       <if test="editTime != null">
         #{editTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="status != null">
-        #{status,jdbcType=BIT},
+      <if test="state != null">
+        #{state,jdbcType=BIT},
       </if>
     </trim>
   </insert>
@@ -76,8 +76,8 @@
       <if test="editTime != null">
         edit_time = #{editTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="status != null">
-        status = #{status,jdbcType=BIT},
+      <if test="state != null">
+        state = #{state,jdbcType=BIT},
       </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
@@ -87,7 +87,7 @@
     set user_id = #{userId,jdbcType=INTEGER},
       followed_user_id = #{followedUserId,jdbcType=INTEGER},
       edit_time = #{editTime,jdbcType=TIMESTAMP},
-      status = #{status,jdbcType=BIT}
+      state = #{state,jdbcType=BIT}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
