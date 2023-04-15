@@ -76,5 +76,8 @@ protected-mode no    # 关闭保护模式
 
 > ES 太占内存，并且启动配置较为麻烦，可以先不在本地启动，仅搜索功能不能调试，不影响开发调试主流程
 
+## Swagger 地址
+http://localhost:8080/swagger-ui/index.html
+
 
 

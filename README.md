@@ -1,54 +1,5 @@
-# 在西邮后台开发规约
+# 在西邮后台服务
 
-## git协作
-
-> git地址：https://gitee.com/alkaidchen/zaixiyou
-
-*由于github国内网络不稳定，选择`gitee`作为远程仓库。*
-
-### 分支管理
-
-- **master:** 项目生产环境代码，未来计划增加持续集成功能，所以 master 分支不要在 master 分支上进行开发性地提交，当确定 test 分支稳定并且能够进入生产环境时，由我来 Merge 到 master 分支
-- **test:** 项目测试环境代码，目前已经通过 jenkins 持续集成部署，将 develop 分支的代码 merge 到该分支，测试通过后并且稳定后再 merge 到 master 分支。
-- **develop:** 开发环境代码，所有开发代码从这个分支 Pull 到本地，然后新建一个自己的开发分支进行开发，开发完成之后 Pull Requests由我进行代码审查之后我来Merge到develop分支。（**每个人开发个人分支之前都需要先pull一下develop分支，并且merge到自己当前开发的跟人分支，以保证自己本地的代码版本不会低于服务器**）
-- 其他个人分支：在Pull Requests时选择Pull Requests之后自动删除，避免冗余过多分支。
-
-### 协作方式
-
-> 开发前期采用Pull Requests的方式协作是为了方便代码审查，你们每次提交的代码我都要进行审查，等你们熟悉项目之后，后期将放开develop的推送权限，采取隔一段时间代码审查的方式来规范协作
->
-> commit建议增加修改时间，修改人，修改内容，例如：
->
-> ```
-> 2021/05/23 12:19
-> contributor:AlkaidChen
-> ----------------------------------------
-> 修改.gitignore
-> 修改README.md
-> 增加点赞功能
-> 修复验证码不能发送的BUG
-> ```
-
-## 测试环境
-
-> 测试环境已经部署完毕，接口: 139.9.201.209:8080 其他配置详见 `application-test.yml`
-
-该环境为测试环境，所有数据与生产环境相隔离，互不影响。
-
-- 目前测试环境MySQL数据是从生产环境的2021.05.26日期截点dump过去的。
-
-- 由于ES太大，暂未在测试环境部署，所以测试环境搜索相关功能暂不可用，不影响整体功能。
-
-
-
-## 项目文档
-
-> 建设中，希望大家一起参与进来，帮助项目文档的建设
-
-
-
-## 接口文档
-
-目前采用集成`Swagger`的形式自动生成，但是需要人工地与前端沟通接口返回结构
-
-二期开发过程中希望重新建设完善的接口文档
+## FAQ
+- [开发文档](https://github.com/allspark-studio/inxupt-backend/blob/master/doc/develop.md)
+- [CHANGE LOG](https://github.com/allspark-studio/inxupt-backend/blob/master/doc/changelog.md)
