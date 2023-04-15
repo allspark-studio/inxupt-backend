@@ -77,7 +77,7 @@ protected-mode no    # 关闭保护模式
 
 > ES 太占内存，并且启动配置较为麻烦，可以先不在本地启动，仅搜索功能不能调试，不影响开发调试主流程
 
-## 启动
+## 启动 SpringBoot 主程序
 在终端输入命令行 `mvn:spring-boot:run`
 
 或者直接在 JetBrains IDEA 右边 Maven tab 栏单击
