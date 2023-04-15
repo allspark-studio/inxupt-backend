@@ -23,16 +23,10 @@
             <property name="suppressAllComments" value="true"/>
         </commentGenerator>
 
-<!--        <jdbcConnection driverClass="com.mysql.jdbc.Driver"-->
-<!--                        connectionURL="jdbc:mysql://154.8.202.244:3306/zaixiyou?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"-->
-<!--                        userId="zaixiyouremote"-->
-<!--                        password="AllSparkStudio.com">-->
-<!--        </jdbcConnection>-->
-
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://127.0.0.1:3306/zaixiyou_dev?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
+                        connectionURL="jdbc:mysql://127.0.0.1:3306/inxupt_dev?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"
                         userId="root"
-                        password="AllSparkStudio.com">
+                        password="password">
         </jdbcConnection>
 
         <javaTypeResolver>

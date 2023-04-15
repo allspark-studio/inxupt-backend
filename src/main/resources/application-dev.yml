@@ -1,4 +1,4 @@
-# 开发环境配置
+# 本地开发环境配置
 
 server:
   port: 8080
@@ -6,37 +6,38 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/zaixiyou-data?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/inxupt_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: AllSparkStudio.com
+    password: password
 
   rabbitmq:
-    host: 127.0.0.1
+    host: localhost
     port: 5672
-    username: guest
-    password: guest
-    virtual-host: /zaixiyou-dev
+    username: allspark
+    password: password
+    virtual-host: inxupt_dev
 
   servlet:
     multipart:
+      # 上传文件相关配置
       max-file-size: 1GB
       max-request-size: 10GB
 
   redis:
-    host: 127.0.0.1
+    host: localhost
     port: 6379
 
   mail:
-    host: smtp.qq.com #发送邮件服务器
-    username: 362774405@qq.com #发送邮件的邮箱地址
-    password:  miocgxpcjmjtbgec #客户端授权码，不是邮箱密码，这个在qq邮箱设置里面自动生成的
+    host: "smtp.qq.com" #发送邮件服务器
+    username: example@qq.com #发送邮件的邮箱地址
+    password:  example-password #客户端授权码，不是邮箱密码，这个在qq邮箱设置里面自动生成的
     properties.mail.smtp.port: 465 #端口号465或587
     properties.mail.smtp.starttls.enable: true
     properties.mail.smtp.starttls.required: true
     properties.mail.smtp.ssl.enable: true
     default-encoding: utf-8
-    from: 362774405@qq.com # 发送邮件的地址，和上面username一致
-    to: 1656842978@qq.com
+    from: example@qq.com # 发送邮件的地址，和上面username一致
+    to: example@qq.com
 
   devtools:
     restart:
@@ -45,23 +46,23 @@ spring:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath:mappers/*.xml
 
 elasticsearch:
   host: "127.0.0.1"
   port: 9200
 
+
 jwt:
-  secret: "allsparkstudio.com"
+  secret: "example-secret"
   expiration: 180
 
 aliyun:
-  accessKeyId: "LTAI4Fyrhr3rwffnwg5yebxS"
-  accessKeySecret: "LnHKeNKiZTJcgYZvN5QwcsdheGC7g0"
+  accessKeyId: ""
+  accessKeySecret: ""
   oss:
-    endpoint: "oss-cn-beijing.aliyuncs.com"
-    bucketName: "zaixiyou"
+    endpoint: ""
+    bucketName: ""
+
 logging:
-  level:
-    root: debug
+  config: classpath:logbackConfig.xml
