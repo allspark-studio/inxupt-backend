@@ -51,7 +51,7 @@
 
 1. 下载 redis 默认配置文件
 
-   http://download.redis.io/redis-stable/redis.conf
+   https://raw.githubusercontent.com/redis/redis/7.0/redis.conf
 
 2. 将 redis.conf 中的文件内容作如下修改
 
