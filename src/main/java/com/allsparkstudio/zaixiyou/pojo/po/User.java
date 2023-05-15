@@ -44,6 +44,8 @@ public class User implements Serializable {
 
     private String accountAuth;
 
+    private String wechatOpenid;
+
     private static final long serialVersionUID = 1L;
 
     public Integer getId() {
@@ -206,6 +208,14 @@ public class User implements Serializable {
         this.accountAuth = accountAuth == null ? null : accountAuth.trim();
     }
 
+    public String getWechatOpenid() {
+        return wechatOpenid;
+    }
+
+    public void setWechatOpenid(String wechatOpenid) {
+        this.wechatOpenid = wechatOpenid == null ? null : wechatOpenid.trim();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -232,6 +242,7 @@ public class User implements Serializable {
         sb.append(", lastActiveTime=").append(lastActiveTime);
         sb.append(", likeNum=").append(likeNum);
         sb.append(", accountAuth=").append(accountAuth);
+        sb.append(", wechatOpenid=").append(wechatOpenid);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

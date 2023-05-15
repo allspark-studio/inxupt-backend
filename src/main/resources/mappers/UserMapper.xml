@@ -22,11 +22,12 @@
     <result column="last_active_time" jdbcType="VARCHAR" property="lastActiveTime" />
     <result column="like_num" jdbcType="INTEGER" property="likeNum" />
     <result column="account_auth" jdbcType="VARCHAR" property="accountAuth" />
+    <result column="wechat_openid" jdbcType="VARCHAR" property="wechatOpenid" />
   </resultMap>
   <sql id="Base_Column_List">
     id, phone, nickname, password, description, gender, grade, major, avatar_url, level, 
-    experience, register_time, insertable_coins, exchangeable_coins, state, background_url,
-    custom_app_color, last_active_time, like_num, account_auth
+    experience, register_time, insertable_coins, exchangeable_coins, state, background_url, 
+    custom_app_color, last_active_time, like_num, account_auth, wechat_openid
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -38,23 +39,25 @@
     delete from user
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+  <insert id="insert" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
     insert into user (id, phone, nickname, 
       password, description, gender, 
       grade, major, avatar_url, 
       level, experience, register_time, 
-      insertable_coins, exchangeable_coins, state,
-                      background_url, custom_app_color, last_active_time,
-      like_num, account_auth)
+      insertable_coins, exchangeable_coins, state, 
+      background_url, custom_app_color, last_active_time, 
+      like_num, account_auth, wechat_openid
+      )
     values (#{id,jdbcType=INTEGER}, #{phone,jdbcType=VARCHAR}, #{nickname,jdbcType=VARCHAR}, 
       #{password,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{gender,jdbcType=INTEGER}, 
       #{grade,jdbcType=VARCHAR}, #{major,jdbcType=VARCHAR}, #{avatarUrl,jdbcType=VARCHAR}, 
       #{level,jdbcType=INTEGER}, #{experience,jdbcType=INTEGER}, #{registerTime,jdbcType=TIMESTAMP}, 
       #{insertableCoins,jdbcType=INTEGER}, #{exchangeableCoins,jdbcType=INTEGER}, #{state,jdbcType=INTEGER}, 
-      #{backgroundUrl,jdbcType=VARCHAR}, #{customAppColor,jdbcType=VARCHAR}, #{lastActiveTime,jdbcType=VARCHAR},
-      #{likeNum,jdbcType=INTEGER}, #{accountAuth,jdbcType=VARCHAR})
+      #{backgroundUrl,jdbcType=VARCHAR}, #{customAppColor,jdbcType=VARCHAR}, #{lastActiveTime,jdbcType=VARCHAR}, 
+      #{likeNum,jdbcType=INTEGER}, #{accountAuth,jdbcType=VARCHAR}, #{wechatOpenid,jdbcType=VARCHAR}
+      )
   </insert>
-  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
+  <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
     insert into user
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -116,6 +119,9 @@
       </if>
       <if test="accountAuth != null">
         account_auth,
+      </if>
+      <if test="wechatOpenid != null">
+        wechat_openid,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -179,6 +185,9 @@
       <if test="accountAuth != null">
         #{accountAuth,jdbcType=VARCHAR},
       </if>
+      <if test="wechatOpenid != null">
+        #{wechatOpenid,jdbcType=VARCHAR},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.User">
@@ -241,6 +250,9 @@
       <if test="accountAuth != null">
         account_auth = #{accountAuth,jdbcType=VARCHAR},
       </if>
+      <if test="wechatOpenid != null">
+        wechat_openid = #{wechatOpenid,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -260,11 +272,12 @@
       insertable_coins = #{insertableCoins,jdbcType=INTEGER},
       exchangeable_coins = #{exchangeableCoins,jdbcType=INTEGER},
       state = #{state,jdbcType=INTEGER},
-        background_url = #{backgroundUrl,jdbcType=VARCHAR},
+      background_url = #{backgroundUrl,jdbcType=VARCHAR},
       custom_app_color = #{customAppColor,jdbcType=VARCHAR},
       last_active_time = #{lastActiveTime,jdbcType=VARCHAR},
       like_num = #{likeNum,jdbcType=INTEGER},
-      account_auth = #{accountAuth,jdbcType=VARCHAR}
+      account_auth = #{accountAuth,jdbcType=VARCHAR},
+      wechat_openid = #{wechatOpenid,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

@@ -287,7 +287,6 @@ public class SearchServiceImpl implements SearchService {
             userVO.setAvatarUrl(user.getAvatarUrl());
             userVO.setDescription(user.getDescription());
             userVO.setNickName(user.getNickname());
-            userVO.setSelected(false);
             if (login) {
                 userVO.setFollowed(followMapper.isFollowed(myId, user.getId()));
             } else {

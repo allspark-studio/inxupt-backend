@@ -28,6 +28,13 @@ public interface UserService {
     ResponseVO<UserLoginVO> loginByCode(String phone, String code);
 
     /**
+     * 通过微信登录
+     * @param code 微信临时登录凭证
+     * @return 返回成功或失败信息
+     */
+    ResponseVO<UserLoginVO> loginByWechat(String code);
+
+    /**
      * 注册
      * @param validateForm  注册时提交的表单
      * @return 返回注册成功或者失败信息
@@ -87,7 +94,7 @@ public interface UserService {
      */
     ResponseVO<UserLoginVO> validate(ValidateForm validateForm);
 
-    ResponseVO getAvatarAndNickname(Integer userId);
+    ResponseVO getUserInfo(Integer userId);
 
     ResponseVO updateAvatar(String token, String url);
 

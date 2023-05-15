@@ -31,7 +31,7 @@
 ### MySQL
 1. 启动 mysql 容器
 
-`docker run -d --name mysql5.7 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password sql:5.7`
+`docker run -d --name mysql5.7 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password mysql:5.7`
 
 2. 进入 mysql 容器
 
