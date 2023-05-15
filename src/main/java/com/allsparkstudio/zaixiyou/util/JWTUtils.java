@@ -9,9 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.*;
 
 /**
@@ -53,7 +54,7 @@ public class JWTUtils {
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(generateExpirationDate())
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .signWith(SignatureAlgorithm.HS512, generateKey())
                 .compact();
     }
 
@@ -71,13 +72,18 @@ public class JWTUtils {
         Claims claims = null;
         try {
             claims = Jwts.parser()
-                    .setSigningKey(secret)
+                    .setSigningKey(generateKey())
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
             log.error("JWT格式检验失败：[{}]", token);
         }
         return claims;
+    }
+
+    private SecretKey generateKey() {
+        byte[] encodedKey = Base64.getEncoder().encode(secret.getBytes());
+        return new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
     }
 
     /**
@@ -117,7 +123,7 @@ public class JWTUtils {
         }
         // MQ更新日活跃用户量
         // MQ更新用户最后登录时间
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange","userLogin", user);
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "userLogin", user);
         log.debug("生产者routerKey=userActive发送消息, user:[{}]", user.toString());
 
         return id.equals(user.getId()) && !isTokenExpired(token);

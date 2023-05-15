@@ -236,6 +236,7 @@ CREATE TABLE `user` (
   `phone` varchar(20) DEFAULT NULL COMMENT '用户手机号',
   `nickname` varchar(20) NOT NULL COMMENT '用户昵称',
   `password` varchar(50) DEFAULT NULL,
+  `wechat_openid` varchar(128) DEFAULT NULL COMMENT '微信小程序用户唯一标识 openid',
   `description` varchar(60) DEFAULT NULL COMMENT '个性描述',
   `gender` int(10) NOT NULL DEFAULT '0' COMMENT '用户性别  0保密  1男  2女',
   `grade` varchar(20) DEFAULT NULL COMMENT '年级',

@@ -15,9 +15,8 @@ import com.allsparkstudio.zaixiyou.pojo.po.Follow;
 import com.allsparkstudio.zaixiyou.pojo.po.User;
 import com.allsparkstudio.zaixiyou.pojo.vo.*;
 import com.allsparkstudio.zaixiyou.service.UserService;
-import com.allsparkstudio.zaixiyou.util.JWTUtils;
-import com.allsparkstudio.zaixiyou.util.SMSUtils;
-import com.allsparkstudio.zaixiyou.util.UUIDUtils;
+import com.allsparkstudio.zaixiyou.util.*;
+import com.allsparkstudio.zaixiyou.util.entity.Code2SessionResponse;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +70,9 @@ public class UserServiceImpl implements UserService {
     private UUIDUtils uuidUtils;
 
     @Autowired
+    private WeChatUtils weChatUtils;
+
+    @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @Override
@@ -117,6 +119,52 @@ public class UserServiceImpl implements UserService {
         return ResponseVO.success(userLoginVO, "登录成功");
     }
 
+    @Override
+    public ResponseVO<UserLoginVO> loginByWechat(String code) {
+        try {
+            Code2SessionResponse sessionResult = weChatUtils.Code2Session(code);
+            User user = userMapper.selectByOpenID(sessionResult.getOpenID());
+            if (user != null) {
+                // 如果用户存在，则登录，先判断用户是否被封禁
+                if (UserStateEnum.BANNED.getCode().equals(user.getState())) {
+                    return ResponseVO.error(ResponseEnum.BANNED);
+                }
+                String token = jwtUtils.generateToken(user);
+                log.info("用户通过微信登录成功: openid:[{}]", user.getWechatOpenid());
+                UserLoginVO userLoginVO = new UserLoginVO();
+                userLoginVO.setToken(token);
+                userLoginVO.setUserId(user.getId());
+                return ResponseVO.success(userLoginVO, "登录成功");
+            }
+            // 如果用户不存在，则注册一个新用户
+            user = new User();
+            user.setWechatOpenid(sessionResult.getOpenID());
+            user.setAvatarUrl(DefaultSettingConsts.getDefaultAvatar());
+            user.setDescription(DefaultSettingConsts.DEFAULT_USER_DESCRIPTION);
+            user.setBackgroundUrl(DefaultSettingConsts.DEFAULT_USERPAGE_BACKGROUND_URL);
+            user.setNickname("邮友_" + uuidUtils.generateShortUUID());
+            int result = userMapper.insertSelective(user);
+            if (result != 1) {
+                log.error("user表插入失败，openid:[{}]", user.getWechatOpenid());
+                return ResponseVO.error(ResponseEnum.ERROR);
+            }
+            // 通过MQ同步数据到ES
+            rabbitTemplate.convertAndSend("MySQL2ESUserExchange", "add", user);
+            String token = jwtUtils.generateToken(user);
+            log.info("用户注册成功，openid:[{}], userId:[{}]", user.getWechatOpenid(), user.getId());
+            // 使用MQ延迟更新当日注册量数
+            rabbitTemplate.convertAndSend("dailyStatisticsExchange", "userRegister", user);
+            log.debug("生产者routerKey=userRegister发送消息");
+            // 构造VO对象
+            UserLoginVO userLoginVO = new UserLoginVO();
+            userLoginVO.setToken(token);
+            userLoginVO.setUserId(user.getId());
+            return ResponseVO.success(userLoginVO, "注册成功");
+        } catch (Exception e) {
+            return ResponseVO.error(ResponseEnum.ERROR, e.getMessage());
+        }
+    }
+
     /**
      * 注册
      *
@@ -150,7 +198,7 @@ public class UserServiceImpl implements UserService {
         String token = jwtUtils.generateToken(user);
         log.info("用户注册成功，phone:[{}], token:[{}], userId:[{}]", validateForm.getPhone(), token, user.getId());
         // 使用MQ延迟更新当日注册量数
-        rabbitTemplate.convertAndSend("dailyStatisticsExchange","userRegister", user);
+        rabbitTemplate.convertAndSend("dailyStatisticsExchange", "userRegister", user);
         log.debug("生产者routerKey=userRegister发送消息");
         // 构造VO对象
         UserLoginVO userLoginVO = new UserLoginVO();
@@ -263,6 +311,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 关注
+     *
      * @param userId 被关注的用户id
      * @param token  客户端传入的token
      */
@@ -395,7 +444,6 @@ public class UserServiceImpl implements UserService {
             fansVO.setDescription(fan.getDescription());
             fansVO.setNickName(fan.getNickname());
             fansVO.setAccountAuth(Arrays.asList(fan.getAccountAuth().split(";")));
-            fansVO.setSelected(false);
             if (login) {
                 fansVO.setFollowed(followMapper.isFollowed(myId, fan.getId()));
             } else {
@@ -426,7 +474,6 @@ public class UserServiceImpl implements UserService {
             fansVO.setDescription(follower.getDescription());
             fansVO.setNickName(follower.getNickname());
             fansVO.setAccountAuth(Arrays.asList(follower.getAccountAuth().split(";")));
-            fansVO.setSelected(false);
             if (login) {
                 fansVO.setFollowed(followMapper.isFollowed(myId, follower.getId()));
             } else {
@@ -482,15 +529,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseVO getAvatarAndNickname(Integer userId) {
+    public ResponseVO getUserInfo(Integer userId) {
         User user = userMapper.selectByPrimaryKey(userId);
         if (user == null) {
             return ResponseVO.error(ResponseEnum.PARAM_ERROR, "用户不存在");
         }
-        AvatarAndNicknameVO avatarAndNicknameVO = new AvatarAndNicknameVO();
-        avatarAndNicknameVO.setAvatar(user.getAvatarUrl());
-        avatarAndNicknameVO.setNickname(user.getNickname());
-        return ResponseVO.success(avatarAndNicknameVO);
+        UserVO userInfo = new UserVO();
+        userInfo.setId(user.getId());
+        userInfo.setAvatarUrl(user.getAvatarUrl());
+        userInfo.setNickName(user.getNickname());
+        userInfo.setDescription(user.getDescription());
+        userInfo.setAccountAuth(Arrays.asList(user.getAccountAuth().split(";")));
+        return ResponseVO.success(userInfo);
     }
 
     @Override

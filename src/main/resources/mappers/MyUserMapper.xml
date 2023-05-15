@@ -7,6 +7,12 @@
         from user
         where phone = #{phone,jdbcType=VARCHAR}
     </select>
+    <select id="selectByOpenID" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where wechat_openid = #{openID,jdbcType=VARCHAR}
+    </select>
     <select id="selectAll" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -59,6 +58,15 @@ public class UserController {
     @PostMapping("/user/loginByPassword")
     public ResponseVO login(@RequestBody LoginByPasswordForm loginForm) {
         return userService.loginByPassword(loginForm.getPhone(), loginForm.getPassword());
+    }
+
+    /**
+     * 通过微信登录
+     */
+    @ApiOperation("通过微信登录")
+    @PostMapping("/user/loginByWechat")
+    public ResponseVO login(@RequestBody LoginByWechatForm loginForm) {
+        return userService.loginByWechat(loginForm.getCode());
     }
 
     /**
@@ -193,10 +201,10 @@ public class UserController {
         return postService.listAll(null, null, PostTypeEnum.ARTICLE.getCode(), UserContentStateEnum.FAVORITE, token, pageNum, pageSize, sortedBy);
     }
 
-    @GetMapping("/user/{userId}/avatarAndNickname")
-    @ApiOperation("获取用户头像和昵称")
-    public ResponseVO getAvatarAndNickname(@PathVariable("userId") Integer userId) {
-        return userService.getAvatarAndNickname(userId);
+    @GetMapping("/user/{userId}/info")
+    @ApiOperation("获取用户基本信息")
+    public ResponseVO getUserInfo(@PathVariable("userId") Integer userId) {
+        return userService.getUserInfo(userId);
     }
 
     @PutMapping("/user/avatar")

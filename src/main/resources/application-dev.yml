@@ -66,3 +66,8 @@ aliyun:
 
 logging:
   config: classpath:logbackConfig.xml
+
+wechat:
+  appID: wxexampleappid
+  appSecret: exampleappsecret
+
