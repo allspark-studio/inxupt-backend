@@ -63,6 +63,12 @@ public class PostServiceImpl implements PostService {
     private UserCommentCoinMapper userCommentCoinMapper;
 
     @Autowired
+    private FollowMapper followMapper;
+
+    @Autowired
+    private CategoryMapper categoryMapper;
+
+    @Autowired
     JWTUtils jwtUtils;
 
     @Autowired
@@ -205,6 +211,8 @@ public class PostServiceImpl implements PostService {
                 }
                 postVO.setTags(tagMapList);
             }
+            Follow follow = followMapper.selectBy2UserId(userId, postVO.getAuthorId());
+            postVO.setFollowed(follow != null);
             postVOList.add(postVO);
         }
 
@@ -811,6 +819,11 @@ public class PostServiceImpl implements PostService {
         // 删除帖子和分类的关系
         postCategoryMapper.deleteByPostId(postId);
         return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO<List<Category>> listCategories() {
+        return ResponseVO.success(categoryMapper.selectAllCategories());
     }
 
 }

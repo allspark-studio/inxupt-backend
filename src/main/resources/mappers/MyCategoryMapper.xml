@@ -7,4 +7,10 @@
         from category
         where name = #{name,jdbcType=VARCHAR}
     </select>
+    <select id="selectAllCategories" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from category
+        where state = 0
+    </select>
 </mapper>

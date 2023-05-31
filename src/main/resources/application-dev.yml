@@ -6,16 +6,16 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://43.154.148.84:3306/inxupt?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/inxupt_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: pwd.allspark.studio
+    password: password
 
   rabbitmq:
-    host: 43.154.148.84
+    host: localhost
     port: 5672
     username: allspark
-    password: pwd.allspark.studio
-    virtual-host: inxupt
+    password: password
+    virtual-host: inxupt_dev
 
   servlet:
     multipart:
@@ -24,7 +24,7 @@ spring:
       max-request-size: 10GB
 
   redis:
-    host: 43.154.148.84
+    host: localhost
     port: 6379
 
   mail:
@@ -36,8 +36,8 @@ spring:
     properties.mail.smtp.starttls.required: true
     properties.mail.smtp.ssl.enable: true
     default-encoding: utf-8
-    from: 362774405@qq.com # 发送邮件的地址，和上面username一致
-    to: 362774405@qq.com
+    from: example@qq.com # 发送邮件的地址，和上面username一致
+    to: example@qq.com
 
   devtools:
     restart:
@@ -54,7 +54,7 @@ elasticsearch:
 
 
 jwt:
-  secret: "inxupt-secret.allspark.studio"
+  secret: "example-secret"
   expiration: 180
 
 aliyun:
@@ -68,6 +68,6 @@ logging:
   config: classpath:logbackConfig.xml
 
 wechat:
-  appID: wx41157022e04c27bb
-  appSecret: 9219244ed75fedeabcda83565dfdeb96
+  appID: wxexampleappid
+  appSecret: exampleappsecret
 

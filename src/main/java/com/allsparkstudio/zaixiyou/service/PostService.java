@@ -3,10 +3,12 @@ package com.allsparkstudio.zaixiyou.service;
 import com.allsparkstudio.zaixiyou.enums.UserContentStateEnum;
 import com.allsparkstudio.zaixiyou.pojo.form.AddArticleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddPostForm;
+import com.allsparkstudio.zaixiyou.pojo.po.Category;
 import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.github.pagehelper.PageInfo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,4 +88,9 @@ public interface PostService {
      * 删除帖子或文章
      */
     ResponseVO deletePost(Integer postId, String token);
+
+    /**
+     * 获取帖子分类
+     */
+    ResponseVO<List<Category>> listCategories();
 }
