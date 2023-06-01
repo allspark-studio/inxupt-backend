@@ -2,6 +2,7 @@ package com.allsparkstudio.zaixiyou.controller;
 
 import com.allsparkstudio.zaixiyou.pojo.form.AddArticleForm;
 import com.allsparkstudio.zaixiyou.pojo.form.AddPostForm;
+import com.allsparkstudio.zaixiyou.pojo.po.Category;
 import com.allsparkstudio.zaixiyou.pojo.vo.PostVO;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.service.PostService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,21 +34,12 @@ public class PostController {
 
     @GetMapping("/posts")
     @ApiOperation("展示全部帖子")
-    public ResponseVO<PageInfo> listAll(@RequestParam(required = false, defaultValue = "1") Integer pageNum,
+    public ResponseVO<PageInfo> listAll(Integer categoryId,
+                                        @RequestParam(required = false, defaultValue = "1") Integer pageNum,
                                         @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                         @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
                                         @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(null, null, null, null, token, pageNum, pageSize, sortedBy);
-    }
-
-    @GetMapping("/category/{categoryId}/posts")
-    @ApiOperation("根据主标签展示全部帖子")
-    public ResponseVO<PageInfo> listByCategory(@PathVariable("categoryId") Integer categoryId,
-                                               @RequestParam(required = false, defaultValue = "1") Integer pageNum,
-                                               @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                               @RequestParam(required = false, defaultValue = "1") Integer sortedBy,
-                                               @RequestHeader(value = "token", required = false) String token) {
-        return postService.listAll(categoryId, null, null,  null, token, pageNum, pageSize, sortedBy);
+        return postService.listAll(categoryId, null, null, null, token, pageNum, pageSize, sortedBy);
     }
 
     @PostMapping("/article")
@@ -112,5 +105,11 @@ public class PostController {
     public ResponseVO<PostVO> getPost(@PathVariable("postId") Integer postId,
                                       @RequestHeader(value = "token", required = false) String token) {
         return postService.getPost(postId, token);
+    }
+
+    @GetMapping("/categories")
+    @ApiOperation("展示帖子分类列表")
+    public ResponseVO<List<Category>> listCategories() {
+        return postService.listCategories();
     }
 }

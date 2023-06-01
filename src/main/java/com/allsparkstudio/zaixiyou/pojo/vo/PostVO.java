@@ -79,4 +79,5 @@ public class PostVO {
 
     private Boolean coined;
 
+    private Boolean followed;
 }
