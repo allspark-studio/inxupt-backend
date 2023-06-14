@@ -211,8 +211,13 @@ public class PostServiceImpl implements PostService {
                 }
                 postVO.setTags(tagMapList);
             }
-            Follow follow = followMapper.selectBy2UserId(userId, postVO.getAuthorId());
-            postVO.setFollowed(follow != null);
+            Follow follow = followMapper.selectBy2UserId(myId, postVO.getAuthorId());
+            if(follow!=null && follow.getState()==true) {
+                postVO.setFollowed(true);
+            }
+            else{
+                postVO.setFollowed(false);
+            }
             postVOList.add(postVO);
         }
 
