@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.allsparkstudio.zaixiyou.dao.CollectionMapper">
+  <resultMap id="BaseResultMap" type="com.allsparkstudio.zaixiyou.pojo.po.Collection">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="topic_id" jdbcType="INTEGER" property="topicId" />
+    <result column="collection_name" jdbcType="VARCHAR" property="collectionName" />
+    <result column="collection_media_urls" jdbcType="VARCHAR" property="collectionMediaUrls" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, topic_id, collection_name, collection_media_urls
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from collection
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByTopicId" resultType="com.allsparkstudio.zaixiyou.pojo.po.Collection">
+    select
+    <include refid="Base_Column_List" />
+    from collection
+    where topic_id = #{topicId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from collection
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Collection" useGeneratedKeys="true">
+    insert into collection (topic_id, collection_name, collection_media_urls
+      )
+    values (#{topicId,jdbcType=INTEGER}, #{collectionName,jdbcType=VARCHAR}, #{collectionMediaUrls,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Collection" useGeneratedKeys="true">
+    insert into collection
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="topicId != null">
+        topic_id,
+      </if>
+      <if test="collectionName != null">
+        collection_name,
+      </if>
+      <if test="collectionMediaUrls != null">
+        collection_media_urls,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="topicId != null">
+        #{topicId,jdbcType=INTEGER},
+      </if>
+      <if test="collectionName != null">
+        #{collectionName,jdbcType=VARCHAR},
+      </if>
+      <if test="collectionMediaUrls != null">
+        #{collectionMediaUrls,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Collection">
+    update collection
+    <set>
+      <if test="topicId != null">
+        topic_id = #{topicId,jdbcType=INTEGER},
+      </if>
+      <if test="collectionName != null">
+        collection_name = #{collectionName,jdbcType=VARCHAR},
+      </if>
+      <if test="collectionMediaUrls != null">
+        collection_media_urls = #{collectionMediaUrls,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.allsparkstudio.zaixiyou.pojo.po.Collection">
+    update collection
+    set topic_id = #{topicId,jdbcType=INTEGER},
+      collection_name = #{collectionName,jdbcType=VARCHAR},
+      collection_media_urls = #{collectionMediaUrls,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
