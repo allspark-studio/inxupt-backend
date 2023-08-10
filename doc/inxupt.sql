@@ -374,3 +374,39 @@ CREATE TABLE `window` (
 ) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+DROP TABLE IF EXISTS `topic`;
+CREATE TABLE `topic`  (
+                          `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+                          `topic_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '话题名称',
+                          PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '话题表' ROW_FORMAT = DYNAMIC;
+
+DROP TABLE IF EXISTS `collection`;
+CREATE TABLE `collection`  (
+                               `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+                               `topic_id` int(11) NOT NULL COMMENT '话题id',
+                               `collection_name` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '合集名称',
+                               `collection_media_urls` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '合集图片url',
+                               PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '合集表' ROW_FORMAT = DYNAMIC;
+
+DROP TABLE IF EXISTS `hotspot_post`;
+CREATE TABLE `hotspot_post`  (
+                                 `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                 `post_id` int(11) NOT NULL COMMENT '帖子id',
+                                 `collection_id` int(11) NOT NULL COMMENT '合集id',
+                                 PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '热点帖子表' ROW_FORMAT = DYNAMIC;
+
+INSERT INTO `inxupt_dev`.`hotspot_post`(`id`, `post_id`, `collection_id`) VALUES (1, 1, 1);
+INSERT INTO `inxupt_dev`.`hotspot_post`(`id`, `post_id`, `collection_id`) VALUES (2, 2, 1);
+INSERT INTO `inxupt_dev`.`hotspot_post`(`id`, `post_id`, `collection_id`) VALUES (3, 3, 1);
+INSERT INTO `inxupt_dev`.`hotspot_post`(`id`, `post_id`, `collection_id`) VALUES (4, 4, 1);
+
+DROP TABLE IF EXISTS `hotspot_user`;
+CREATE TABLE `hotspot_user`  (
+                                 `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                 `user_id` int(11) NOT NULL COMMENT '用户id',
+                                 PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '热点用户表' ROW_FORMAT = DYNAMIC;
