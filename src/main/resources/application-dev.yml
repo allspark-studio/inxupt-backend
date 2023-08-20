@@ -30,7 +30,7 @@ spring:
   mail:
     host: "smtp.qq.com" #发送邮件服务器
     username: example@qq.com #发送邮件的邮箱地址
-    password:  example-password #客户端授权码，不是邮箱密码，这个在qq邮箱设置里面自动生成的
+    password: example-password #客户端授权码，不是邮箱密码，这个在qq邮箱设置里面自动生成的
     properties.mail.smtp.port: 465 #端口号465或587
     properties.mail.smtp.starttls.enable: true
     properties.mail.smtp.starttls.required: true
@@ -62,6 +62,13 @@ aliyun:
   accessKeySecret: ""
   oss:
     endpoint: ""
+    bucketName: ""
+
+qcloud:
+  accessKeyId: ""
+  accessKeySecret: ""
+  cos:
+    region: ""
     bucketName: ""
 
 logging:

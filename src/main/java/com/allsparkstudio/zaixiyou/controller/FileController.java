@@ -4,7 +4,7 @@ import com.allsparkstudio.zaixiyou.ZaixiyouApplication;
 import com.allsparkstudio.zaixiyou.enums.ResponseEnum;
 import com.allsparkstudio.zaixiyou.pojo.vo.ResponseVO;
 import com.allsparkstudio.zaixiyou.util.JWTUtils;
-import com.allsparkstudio.zaixiyou.util.OSSUtils;
+import com.allsparkstudio.zaixiyou.util.COSUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -37,7 +37,7 @@ public class FileController {
 
 
     @Autowired
-    OSSUtils ossUtils;
+    COSUtils cosUtils;
 
     @Autowired
     JWTUtils jwtUtils;
@@ -81,7 +81,7 @@ public class FileController {
                 file.transferTo(newFile);
                 //上传到OSS
                 try {
-                    String uploadUrl = ossUtils.upload(newFile, userId);
+                    String uploadUrl = cosUtils.upload(newFile, userId);
                     log.info("文件上传成功，url: [{}]", uploadUrl);
                     return ResponseVO.success(0, "上传成功", uploadUrl);
                 } catch (Exception e) {
