@@ -36,7 +36,6 @@ public class OSSUtils {
     @Value("${aliyun.oss.bucketName}")
     private String bucketName;
 
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final String USER_UPLOAD_PATH_PREFIX = "user-media";
 
     public String upload(File file, Integer userId){
@@ -59,14 +58,15 @@ public class OSSUtils {
             String fileUrl = USER_UPLOAD_PATH_PREFIX + "/"
                     + userId + "/"
                     + dateStr + "/"
-                    + UUID.randomUUID().toString()
+                    + UUID.randomUUID()
                     + fileSuffix;
             //上传文件
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileUrl, file);
             PutObjectResult result = ossClient.putObject(putObjectRequest);
             if(null != result){
-                log.info("OSS文件上传成功,OSS地址：[{}]", fileUrl);
-                return "https://" + bucketName + "." + endpoint + "/" + fileUrl;
+                String ossURL = "https://" + bucketName + "." + endpoint + "/" + fileUrl;
+                log.info("OSS文件上传成功,OSS地址：[{}]", ossURL);
+                return ossURL;
             }
         } catch (OSSException oe){
             log.error("上传文件出错, OSSException: [{}]", oe.getMessage());
